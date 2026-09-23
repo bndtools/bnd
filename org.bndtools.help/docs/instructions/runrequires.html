@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runrequires REQUIREMENT ( ',' REQUIREMENT )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runrequires REQUIREMENT ( ',' REQUIREMENT )*</h1>
+<ul>
+<li>
+<p>Example: <code>-runrequires=osgi.identity;filter:='(osgi.identity=&lt;bsn&gt;)', ...</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runrequires.md -->
+<p>The <code>-runrequires</code> instruction specifies root requirements for a resolve operation. These requirements are input into the resolver
+which generates a list of bundles (the <code>-runbundles</code> list) that can satisfy the requirements.</p>
+<p>Each requirement must be in the format of an entry in the OSGi standard <code>Require-Capability</code> header. See Section 3.3.6 ("Bundle Requirements") of OSGi Core Release 6 specification.</p>
+<p>A requirement can specify any arbitrary namespace, including but not limited to those listed in Chapter 8 ("Framework Namespaces Specification") of OSGi Core Release 6 specification and Chapter 135 ("Common Namespaces Specification") of OSGi Compendium Release 6.</p>
+<p>Bnd also supports <em>alias</em> namespaces -- see below. </p>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre><span></span><code>-runrequires: \
+    osgi.identity; filter:=&#39;(osgi.identity=org.example.foo)&#39;,\
+    osgi.identity; filter:=&#39;(&amp;(osgi.identity=org.example.bar)(version&gt;=1.0)(!(version&gt;=2.0)))&#39;
+</code></pre></div>
+
+<p>This specifies a requirement for the resource identified as "org.example.foo" (with any version) AND the resource identified as "org.example.bar" with version in the range 1.0 inclusive to 2.0 exclusive.</p>
+<h2 id="requirement-aliases">Requirement Aliases</h2>
+<p>To ease manual entry of requirements bnd supports alias namespaces which translate to standard namespaces and filters.</p>
+<p>In all cases, attributes and directives that are not consumed by the alias are passed through to the generated requirement. For example if the <code>bnd.identity</code> alias is used with a directive of <code>resolution:=optional</code> then the generated <code>osgi.identity</code> requirement shall also have the directive <code>resolution:=optional</code>.</p>
+<p>The following aliases are supported:</p>
+<h3 id="bndidentity"><code>bnd.identity</code></h3>
+<p>The <code>bnd.identity</code> namepace alias takes the following attributes:</p>
+<ul>
+<li><code>id</code>: the identity of the resource</li>
+<li><code>version</code>: a version range in conventional OSGi form, e.g. <code>[1.0, 2.0)</code>.</li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-runrequires:\
+    bnd.identity; id=org.example.foo,\
+    bnd.identity; id=org.example.bar; version=1.0,\
+    bnd.identity; id=org.example.baz; version=&#39;[1.0,2.0)&#39;
+</code></pre></div>
+
+<p>is translated to:</p>
+<div class="highlight"><pre><span></span><code>-runrequires:\
+    osgi.identity; filter:=&#39;(osgi.identity=org.example.foo)&#39;,\
+    osgi.identity; filter:=&#39;(&amp;(osgi.identity=org.example.bar)(version&gt;=1.0))&#39;,\
+    osgi.identity; filter:=&#39;(&amp;(osgi.identity=org.example.baz)(version&gt;=1.0)(!(version&gt;=2.0)))&#39;
+</code></pre></div>
+
+<h3 id="bndliteral"><code>bnd.literal</code></h3>
+<p>The <code>bnd.literal</code> alias can be used if you need to create a literal requirement that has a namespace clashing with one of the aliases. For example if you want to have a requirement with the literal namespace <code>bnd.identity</code>, i.e. <strong>not</strong> processed as an alias.</p>
+<p>Only one attribute is used:</p>
+<ul>
+<li><code>bnd.literal</code>: specifies the literal namespace</li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-runrequires:\
+    bnd.literal; bnd.literal=bnd.identity; filter:=&#39;(bnd.identity=foo)&#39;,\
+    bnd.literal; bnd.literal=bnd.literal; filter:=&#39;(bnd.literal=bar)&#39;
+</code></pre></div>
+
+<p>is translated to:</p>
+<div class="highlight"><pre><span></span><code>-runrequires:\
+    bnd.identity; filter:=&#39;(bnd.identity=foo)&#39;,\
+    bnd.literal; filter:=&#39;(bnd.literal=bar)&#39;
+</code></pre></div>
+
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="runbundles.html">-runbundles</a></li>
+</ul>
+<p><br /><br /></p>
+</body>
+</html>

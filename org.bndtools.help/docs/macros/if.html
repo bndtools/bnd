@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>if ';' STRING ';' STRING ( ';' STRING )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>if ';' STRING ';' STRING ( ';' STRING )?</h1>
+<p>if         ::= 'if' ';' condition ';' expansion ( ';' expansion )?
+    condition  ::= true | false
+    false      ::= 'false' | ''
+    true       ::= ! false
+    expansion  ::= ...</p>
+<p>The <code>${if}</code> macro allows a conditional expansion. The first argument is the <em>condition</em>. the condition is either <em>false</em> (empty or 'false') or otherwise <em>true</em>. If the condition is true, the value of the macro is the second argument, the first <em>expansion</em>. Otherwise, if a third argument is specified this is returned. If no third argument is specified, an empty string is  returned.</p>
+<p>Notice that if a macro is not set, it will revert to its literal value. This can be confusing. For example, if the macro <code>foo</code> is <strong>not</strong> set, the <code>${if;${foo};TRUE;FALSE}</code> will be <code>TRUE</code>. If you want to handle unset as false, the <a href="def.html">def</a> might be of use.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># expands to &#39;B&#39;
+aorb = ${if;;A;B}
+
+# Display ${foo} if set to a non-empty string that is not false, otherwise &#39;Ouch&#39;. See also ${def} 
+whatisfoo = ${if;${foo};${foo};Ouch}
+
+# Include a file conditionally. If ${test} is not empty or false, the file is included
+-include ${if;${test};test.bnd}
+</code></pre></div>
+</body>
+</html>

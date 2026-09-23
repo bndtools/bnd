@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>xref</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>xref</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   xref [options]  &lt;&lt;jar path&gt;&gt; &lt;[...]&gt;
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -c --classes ]</code> Show classes instead of packages</li>
+<li><code>[ -d --destination &lt;string&gt;* ]</code> Match destination types</li>
+<li><code>[ -f --from ]</code> Show references from other classes/packages (&lt;)</li>
+<li><code>[ -j --java ]</code> Include java.* packages</li>
+<li><code>[ -m --match &lt;string&gt;* ]</code> Filter for class names, a globbing expression</li>
+<li><code>[ -n --nested ]</code> Analyze nested JARs referenced via Bundle-ClassPath</li>
+<li><code>[ -r --referrredTo &lt;string&gt; ]</code> Output list of package/class names that have been referred to</li>
+<li><code>[ -s --source &lt;string&gt;* ]</code> Match source types</li>
+<li><code>[ -t --to ]</code> Show references to other classes/packages (&gt;)</li>
+</ul>
+<!-- Manual content from: ext/xref.md -->
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>   biz.aQute.bnd (master)$ bnd xref generated/*.jar
+                              aQute.bnd.annotation &gt; 
+                    aQute.bnd.annotation.component &gt; 
+                      aQute.bnd.annotation.headers &gt; 
+                     aQute.bnd.annotation.licenses &gt; 
+                     aQute.bnd.annotation.metatype &gt; 
+                                     aQute.bnd.ant &gt; aQute.service.reporter
+                                                     org.apache.tools.ant
+                                                     aQute.libg.reporter
+                                                     org.apache.tools.ant.taskdefs
+                                                     aQute.bnd.osgi
+                                                     aQute.bnd.build
+                                                     aQute.libg.qtokens
+                                                     org.apache.tools.ant.types
+                                                     aQute.bnd.osgi.eclipse
+                                                     aQute.bnd.service.progress
+                                                     aQute.bnd.service
+                                                     aQute.bnd.version
+                                                     aQute.bnd.build.model
+                                                     aQute.bnd.build.model.clauses
+                                   aQute.bnd.build &gt; aQute.service.reporter
+                                                     aQute.bnd.osgi
+                                                     aQute.bnd.service
+                                                     aQute.libg.command
+                                                     aQute.libg.sed
+                                                     aQute.bnd.version
+                                                     aQute.bnd.service.action
+                                                     aQute.bnd.header
+                                                     aQute.lib.io
+                                                     aQute.libg.reporter
+                                                     aQute.bnd.osgi.eclipse
+                                                     aQute.bnd.help
+                                                     aQute.lib.strings
+                                                     aQute.libg.generics
+                                                     aQute.bnd.maven.support
+                                                     aQute.libg.glob
+                                                     aQute.lib.converter
+                                                     aQute.lib.collections
+                                                     aQute.bnd.differ
+                                                     aQute.bnd.service.diff
+                                                     aQute.bnd.service.repository
+                                                     aQute.lib.deployer
+                                                     javax.naming
+                                                     aQute.lib.hex
+                                                     aQute.bnd.resource.repository
+                                                     aQute.bnd.url
+                                                     aQute.lib.settings
+                                                     aQute.bnd.service.url
+                                                     aQute.bnd.service.extension
+                             aQute.bnd.build.model &gt; aQute.bnd.build.model.conversions
+                                                     aQute.libg.tuple
+                                                     aQute.bnd.build.model.clauses
+                                                     aQute.bnd.header
+                                                     aQute.bnd.properties
+                                                     aQute.bnd.build
+                                                     aQute.bnd.version
+                                                     aQute.lib.io
+                                                     org.osgi.resource
+                                                     aQute.bnd.osgi
+                     aQute.bnd.build.model.clauses &gt; aQute.bnd.header
+                 aQute.bnd.build.model.conversions &gt; aQute.bnd.header
+                                                     aQute.libg.tuple
+                                                     aQute.bnd.osgi
+                                                     aQute.bnd.build.model
+                                                     aQute.bnd.build.model.clauses
+                                                     org.osgi.resource
+                                                     aQute.bnd.osgi.resource
+                                                     aQute.libg.qtokens
+                           aQute.bnd.compatibility &gt; aQute.bnd.osgi
+                               aQute.bnd.component &gt; aQute.bnd.osgi
+                                                     aQute.service.reporter
+                                                     aQute.lib.collections
+                                                     org.osgi.service.component.annotations
+                                                     aQute.bnd.version
+                                                     aQute.bnd.component.error
+                                                     aQute.lib.tag
+                                                     aQute.bnd.header
+                                                     aQute.bnd.service
+                         aQute.bnd.component.error &gt; 
+                                  aQute.bnd.differ &gt; aQute.bnd.header
+                                                     aQute.bnd.service.diff
+                                                     aQute.bnd.osgi
+                                                     aQute.bnd.version
+                                                     aQute.service.reporter
+                                                     aQute.libg.generics
+                                                     aQute.libg.cryptography
+                                                     aQute.lib.hex
+                                                     aQute.lib.io
+                                                     aQute.lib.collections
+                                                     aQute.bnd.annotation
+                                                     aQute.bnd.service
+                        aQute.bnd.enroute.commands &gt; aQute.lib.getopt
+                                                     aQute.bnd.osgi
+                                                     aQute.service.reporter
+                                                     aQute.bnd.main
+                                                     aQute.bnd.build
+                                                     aQute.lib.io
+                                aQute.bnd.filerepo &gt; aQute.bnd.version
+                                  aQute.bnd.header &gt; aQute.bnd.version
+                                                     aQute.bnd.osgi
+                                                     aQute.service.reporter
+                                                     aQute.libg.generics
+                                                     aQute.libg.qtokens
+                                                     aQute.lib.collections
+                                    aQute.bnd.help &gt; aQute.bnd.osgi
+</code></pre></div>
+
+<h2 id="nested-jars">Nested JARs</h2>
+<p>By default, <code>xref</code> only analyzes classes directly contained in the provided JAR files. Many OSGi bundles contain nested JARs that are referenced via the <code>Bundle-ClassPath</code> manifest header. To analyze these nested JARs as well, use the <code>--nested</code> option:</p>
+<div class="highlight"><pre><span></span><code>   bnd xref --nested mybundle.jar
+</code></pre></div>
+
+<p>This will:
+1. Parse the <code>Bundle-ClassPath</code> manifest header
+2. Extract and analyze any embedded JAR files
+3. Analyze directories referenced in the Bundle-ClassPath
+4. Include cross-references from all sources in the output</p>
+<p>For example, given a bundle with the following structure:</p>
+<div class="highlight"><pre><span></span><code>mybundle.jar
+├── META-INF/MANIFEST.MF (Bundle-ClassPath: .,lib/internal.jar)
+├── com/example/Main.class
+└── lib/internal.jar
+    └── com/example/internal/Helper.class
+</code></pre></div>
+
+<p>Without <code>--nested</code>, only <code>com.example.Main</code> would be analyzed. With <code>--nested</code>, both <code>com.example.Main</code> and <code>com.example.internal.Helper</code> classes are included in the cross-reference analysis.</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>trim ';' STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>trim ';' STRING</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>trim</code> macro removes leading and trailing whitespace from a string. It uses Java's <code>String.trim()</code> method, which removes spaces, tabs, newlines, and other whitespace characters.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${trim;&lt;string&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The string to trim</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Removes leading whitespace characters</li>
+<li>Removes trailing whitespace characters</li>
+<li>Returns the trimmed string</li>
+<li>Preserves whitespace within the string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Remove extra spaces:</p>
+<div class="highlight"><pre><span></span><code>${trim;  hello world  }
+# Returns: &quot;hello world&quot;
+</code></pre></div>
+
+<p>Clean up property value:</p>
+<div class="highlight"><pre><span></span><code>cleaned.value=${trim;${some.property}}
+</code></pre></div>
+
+<p>Trim after concatenation:</p>
+<div class="highlight"><pre><span></span><code>${trim;${first} ${second} }
+</code></pre></div>
+
+<p>Process multiline value:</p>
+<div class="highlight"><pre><span></span><code>${trim;
+    some value
+}
+# Returns: &quot;some value&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Cleaning up user input</li>
+<li>Normalizing property values</li>
+<li>Removing accidental whitespace</li>
+<li>Processing template output</li>
+<li>Formatting string values</li>
+<li>Preparing strings for comparison</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only removes leading and trailing whitespace</li>
+<li>Internal whitespace is preserved</li>
+<li>Whitespace includes spaces, tabs, newlines, etc.</li>
+<li>Uses Java's definition of whitespace</li>
+<li>Empty string after trim remains empty</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

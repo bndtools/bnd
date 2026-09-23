@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-plugin.* plugin-def ( ',' plugin-def )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-plugin.* plugin-def ( ',' plugin-def )*</h1>
+<ul>
+<li>
+<p>Example: <code>-plugin=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/plugin.md -->
+<p>A plugin is a parameterized piece of code that runs inside bndlib. The <code>-plugin</code> instruction defines a plugin by specifying its class name and a given set of parameters; a specific class can be instantiated multiple times.</p>
+<p>The <code>-plugin</code> instruction actually aggregates all properties that start with <code>-plugin*</code>. This makes it possible to set plugins in different places, for example include files or with the bndlib workspace extensions. The following sets the Git plugin:</p>
+<div class="highlight"><pre><span></span><code>-plugin.git = aQute.bnd.plugin.git.GitPlugin
+</code></pre></div>
+
+<p>Plugins are created at startup using a special <em>plugin class loader</em>. This class loader is pre-loaded with any URLs set in the <code>-pluginpath</code> instructions. The plugin definition can, however, also add additional URLs to this classloader with the 'path:' directive.</p>
+<p>If the plugin implements the <code>Plugin</code> interface, it is given the parameters specified in the <code>-plugin</code> instruction. It is then registered in the <em>plugin registry</em> and made available to the rest of the system.  </p>
+<p>All plugins are (unfortunately) loaded in a single class loader.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>-plugin*       ::= plugin-def ( &#39;,&#39; plugin-def )*
+plugin-def     ::= qname ( &#39;;&#39; ( attribute | directive ) )*
+</code></pre></div>
+
+<p>The <code>qname</code> must identify a class, if it is an interface then this will load proxies to any external plugins. This class will be loaded with the <code>-pluginpath</code> and/or the <code>path:</code> directive.</p>
+<p>Any attributes are passed to the plugin if it implements the <code>aQute.bnd.servce.Plugin</code> interface. Consult the actual plugin for the possible attributes. </p>
+<p>The following directives are architected.</p>
+<ul>
+<li><code>path:</code> – This directive specifies a comma separated list of file paths, the list must be enclosed in quotes when it contains a comma. Each of these files must be a directory or a JAR file and is added to the plugin class loader in the given sequence. </li>
+<li><code>command:</code> – If this directive is specified errors on initializing this plugin are only reported if this command is an instruction in the current properties. The purpose of this is to allow plugins to be built in the <code>cnf</code> directory; since the plugin does not exist during its first compilation errors would be reported. Since this project does not use the command itself, it can safely ignore this error.</li>
+<li><code>name</code> – Specifies the name of an external plugin. This name is a glob and can this be wildcarded. If not specified the name is <code>*</code>, which will load all external plugins for that type.</li>
+</ul>
+<h2 id="external-plugins">External Plugins</h2>
+<p>If the specified <code>qname</code> identifies an interface then the current repositories are searched for <em>external plugins</em> that implement this interface. Any found implementations are turned into a proxy that will lazily load the implementation class. The attributes in the clause will be given as properties when the plugin implements Closeable. External plugins that implement Closeable will be closed as normal plugins.</p>
+<h2 id="typical-example">Typical Example</h2>
+<p>The following example installs an embedded FileRepo and will load all exporters from this repository.</p>
+<div class="highlight"><pre><span></span><code>-plugin.repo.main:\
+  aQute.lib.deployer.FileRepo; \
+    name=&#39;Main&#39;; \
+    location=${build}/repo/main, \
+  aQute.bnd.service.export.Exporter;name=*
+</code></pre></div>
+
+<h2 id="errors-warnings">Errors &amp; Warnings</h2>
+<ul>
+<li><code>Problem adding path &lt;path&gt; to loader for plugin &lt;key&gt;. Exception: (&lt;e&gt;)</code> – An unexpected exceptio occurred while adding a new path to the plugin class loader.</li>
+<li><code>Cannot load the plugin &lt;class-name&gt;</code> – The give plugin cannot be loaded for an unknown reason.</li>
+<li><code>Failed to load plugin &lt;class-name&gt;;&lt;attrs&gt;, error: &lt;e&gt;</code> – An exception occurred trying to add a new plugin.</li>
+<li><code>While setting properties &lt;properties&gt; on plugin &lt;plugin&gt;, &lt;e&gt;</code> – An exception was thrown by the plugin when receiving its properties.</li>
+<li><code>Plugin path: &lt;path&gt;, specified url &lt;url&gt; and a sha1 but the file does not match the sha</code> – The <code>-pluginpath.*</code> instruction specified a download URL and a SHA digest; the file was downloaded but the content did not match the given SHA digest.</li>
+<li><code>Plugin path: &lt;path&gt;, specified url &lt;url&gt; and a sha1 '&lt;sha&gt;' but this is not a hexadecimal</code> – The SHA is not in hexadecimal form. </li>
+<li><code>No such file &lt;path&gt; from &lt;plugin&gt; and no 'url' attribute on the path so it can be downloaded</code> – The given path in <code>pluginpath*</code> was not found and there was no <code>url</code> attribute specified to download it from.</li>
+</ul>
+<h2 id="links">Links</h2>
+<ul>
+<li><code>-pluginpath</code> – Specifies JARs that populat the plugin class loader</li>
+<li><code>-extensions</code> – An alternative mechanism that can load plugins from repositories</li>
+</ul>
+<h2 id="caveats">Caveats</h2>
+<ul>
+<li>Use OSGi as the plugin system, it is kind of embarrassing that we have a poor mans plugin system when doing OSGi things. The reason is that bnd was started in 1999 and at that time OSGi was too slow and big to start/stop as often as it is done in bndlib user's environment. Alas ...</li>
+</ul>
+<p><br /><br /></p>
+</body>
+</html>

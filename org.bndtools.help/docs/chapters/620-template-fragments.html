@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Templates for Workspaces</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Templates for Workspaces</h1>
+<p>A good workspace setup makes all the difference in the development cycle. Since a workspace can
+contain many projects, creating new workspaces is relatively rare. However, a workspace tends
+to consist of many aspects. There is the <em>gradle setup</em>, the <em>OSGi release</em>, maybe the <em>maven
+layout</em> etc. Initially, we attempted to use a single GitHub repository as a template for new workspaces, but this approach quickly became complex.</p>
+<p>For example, if someone created a <a href="/instructions/library.html">library</a> for bnd, to make it easy for the
+user to setup his functionality, the author of the library had to maintain a full workspace 
+with gradle, etc. This put the burden on chasing the OSGi release, the gradle releases, on the
+people that were willing to spread the gospel around OSGi/bndtools.</p>
+<h2 id="template-fragments">Template Fragments</h2>
+<p>Instead, we developed <em>fragment</em> templates. A fragment models one aspect of a workspace and is maintained in Github repository, but one repository can hold many fragments. Multiple template fragments can be combined by the end-user to enrich the workspace with various aspects.
+During workspace creation there is a wizard where one can select template fragments via checkboxes.</p>
+<p><img src="" width="100%"></p>
+<p>Official templates from the <a href="https://github.com/bndtools">bndtools Github organisation</a> are shown with a green checkmark.
+Non-official templates from 3rd-party authors are shown with a yellow exclamation mark. </p>
+<blockquote>
+<h5 id="note-check-templates-before-installation">Note: Check templates before installation</h5>
+<p>Make sure you carefully check templates beforehand, since this is content from potentially untrusted sources which is downloaded to your computer.
+You should double click on an entry to open the Github repostory of that template in your browser. 
+This allows you to examine the content which is about to be downloaded to your workspace when you press finish. If you select at least one 3rd-Party template a confirmatin popup asks you to confirm, if you trust the authors. 
+{: .block-warning }</p>
+</blockquote>
+<p>The <a href="/chapters/123-tour-workspace.html">workspace</a> is already prepared for this model of fragments. The <a href="/chapters/820-instructions.html#merged-instructions">merged instructions</a> mean that 
+we can extend the properties and instructions from many different sources. However, the most important
+feature here is the <code>cnf/ext</code> folder. Any <code>bnd</code> or special fragment file placed in this folder will automatically
+be ready before the <code>build.bnd</code> file is read. For example, a fragment could contain the 
+index for OSGi R8. See <a href="150-build.html">build</a>.</p>
+<h2 id="providing-template-fragments-as-a-developer">Providing template fragments as a developer</h2>
+<p>There is a single master index for all template fragments hosted on</p>
+<p><a href="https://github.com/bndtools/workspace-templates/blob/master/index.bnd">https://github.com/bndtools/workspace-templates/blob/master/index.bnd</a></p>
+<p>This index is open for any person or organization that maintains one or more fragment and
+seeks an easy way to make them available to bndtools users. All that is needed is to host the fragment somewhere and provide 
+a pull request (PR) to add it to this index file.</p>
+<p>The format of the index file is like all Parameters. </p>
+<ul>
+<li>
+<p><code>key</code> – The key is the identity of the fragment. It is either a URL or provides the following structure:</p>
+<p><code>id ::= [organization ['/' repository [ '/' path ] ['#' git-ref ]]</code></p>
+</li>
+</ul>
+<p>The id is resolved against <code>bndtools/workspace-templates#master</code>. Therefore, in the <code>example</code> organization,
+the <code>example</code> is a valid id that resolves to <code>example/workspace-templates#master</code>. Since the ID has a path, 
+it is possible to host multiple fragments in a single repository. 
+Instead of a branch name like <code>#master</code> as <code>git-ref</code> you could also point to a specific commit via its SHA e.g. <code>#567648ff425693b27b191bd38ace7c9c10539c2d</code>.</p>
+<p>The index has the following attributes for a clause:</p>
+<ul>
+<li><code>name</code> – The human readable name for the template fragment</li>
+<li><code>description</code> – A human readable description for the template fragment</li>
+<li><code>require</code> – A comma separated list of fragment ids. Do not forget to quote when multiple fragments are required</li>
+<li><code>tag</code> – A comma separated list of tags, quotes are needed when there are multiple.</li>
+</ul>
+<h2 id="example">Example</h2>
+<p>For example consider this <code>index.bnd</code>:</p>
+<div class="highlight"><pre><span></span><code>-workspace-templates \
+    bndtools/workspace-templates/gradle; \
+        name=gradle; \
+        description=&quot;Setup gradle build for bnd workspace&quot;, \
+    bndtools/workspace-templates/maven#master; \
+        name=maven; \
+        description=&quot;Use the maven directory layout for sources and binaries&quot;, \
+    bndtools/workspace-templates/osgi#master; \
+        name=osgi; \
+        description=&quot;OSGi R8 with Felix distribution&quot;,\
+    acme-org/myrepo/subfolder/workspace-template#commitSHA; \
+        name=3rdparty-template; \
+        description=&quot;A Template fragment by acme-org at a specific commit SHA&quot;
+</code></pre></div>
+
+<p>The id must resolve to a folder in the repository, and can be translated to github URLs:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bndtools/workspace-templates/gradle</code></td>
+<td><code>https://github.com/bndtools/workspace-templates/tree/master/gradle</code></td>
+</tr>
+<tr>
+<td><code>bndtools/workspace-templates/maven#master</code></td>
+<td><code>https://github.com/bndtools/workspace-templates/tree/master/maven</code></td>
+</tr>
+<tr>
+<td><code>acme-org/myrepo/subfolder/workspace-template#otherbranch</code></td>
+<td><code>https://github.com/acme-org/myrepo/tree/otherbranch/subfolder/workspace-template</code></td>
+</tr>
+<tr>
+<td><code>acme-org/myrepo/subfolder/workspace-template#567648ff425693b27b191bd38ace7c9c10539c2d</code></td>
+<td><code>https://github.com/acme-org/myrepo/tree/567648ff425693b27b191bd38ace7c9c10539c2d/subfolder/workspace-template</code></td>
+</tr>
+</tbody>
+</table>
+<p>By default, bnd will recursively copy the
+content to the new workspace. However, if there is a file <code>tool.bnd</code> present it will use this to
+guide the copying process. This bnd file looks like:</p>
+<div class="highlight"><pre><span></span><code>-tool \
+    .*;tool.bnd;readme.md;skip=true, \
+    gradle.properties;macro=true;append=true,\
+    gradlew;exec=true, \
+    *
+</code></pre></div>
+
+<p>The <code>-tool</code> instruction is a SELECT that is matched against the file paths (not names!) in the fragment template folder.
+The attributes that can be set are:</p>
+<ul>
+<li><code>skip=true</code> – Skip the selected file,</li>
+<li><code>append=true</code> – Allow duplicates, append</li>
+<li><code>exec=true</code> – Set the execute bit on non-windows systems</li>
+<li><code>preprocess=true</code> – Preprocess the file (this uses the tool file and the current workspace as domain.</li>
+<li><code>delete=true</code> – Deletes an existing file in the target. Cannot be wildcarded</li>
+</ul>
+<p>It is possible to define the <a href="/instructions/workspace_templates.html"><code>-workspace-templates</code></a> instruction in the <code>build.bnd</code> file.
+It must contain the same format as the index. This local index is merged with the main index. In the</p>
+<p>Bndtools GUI, it is possible to add an additional index from a URL or file via the '+' button.
+For example you can directly point to a Github URL like:
+<code>https://raw.githubusercontent.com/bndtools/workspace-templates/567648ff425693b27b191bd38ace7c9c10539c2d/index.bnd</code></p>
+</body>
+</html>

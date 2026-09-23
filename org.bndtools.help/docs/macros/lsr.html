@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>lsr ';' DIR (';' SELECTORS )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>lsr ';' DIR (';' SELECTORS )</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>lsr</code> macro returns a comma-separated list of relative file paths from a directory, with optional filtering using selectors.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${lsr;&lt;directory&gt;[;&lt;selector&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>directory</code> - Directory path to list (relative to project base)</li>
+<li><code>selector</code> (optional) - One or more file selectors/patterns to filter results</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Lists files in the specified directory</li>
+<li>Returns relative paths (from the directory)</li>
+<li>Optional filtering with selectors</li>
+<li>Comma-separated output</li>
+<li>Recursive by default</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>List all files:</p>
+<div class="highlight"><pre><span></span><code>${lsr;src/main/java}
+# Returns relative paths
+</code></pre></div>
+
+<p>Filter by pattern:</p>
+<div class="highlight"><pre><span></span><code>${lsr;lib;*.jar}
+# Lists all JAR files with relative paths
+</code></pre></div>
+
+<p>Find source files:</p>
+<div class="highlight"><pre><span></span><code>${lsr;src;*.java}
+# All Java source files
+</code></pre></div>
+
+<p>Multiple patterns:</p>
+<div class="highlight"><pre><span></span><code>${lsr;resources;*.xml;*.properties}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>File discovery with relative paths</li>
+<li>Source file collection</li>
+<li>Resource listing</li>
+<li>Build inputs</li>
+<li>Pattern-based file selection</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns relative paths</li>
+<li>Recursive listing</li>
+<li>Selectors use file patterns</li>
+<li>See also: <code>${lsa}</code> for absolute paths</li>
+<li>See also: <code>${glob}</code> for pattern matching</li>
+<li>See also: <code>${findfile}</code> for filtered recursive search</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

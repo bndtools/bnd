@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-nodefaultversion  BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-nodefaultversion  BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-nodefaultversion=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/nodefaultversion.md -->
+<p>The <code>-nodefaultversion</code> instruction controls whether a default version is added to exported packages when no version is specified. By default, bnd will add the bundle version as the version for any exported package that does not have an explicit version. When this instruction is set to <code>true</code>, no default version will be added, and exported packages without a version will remain unversioned.</p>
+<p>This can be useful if you want to avoid implicit versioning and ensure that only explicitly specified versions are used in your exported packages.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

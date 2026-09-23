@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>p_bootclasspath</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>p_bootclasspath</h1>
+<hr />
+<p>layout: default
+class:  Project
+title:  p_bootclasspath
+summary: Get the project's boot classpath</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>p_bootclasspath</code> macro returns the project's boot classpath (Java runtime libraries) as a comma-separated list of paths.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${p_bootclasspath}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns boot classpath entries</li>
+<li>Typically JRE/JDK libraries</li>
+<li>Paths are absolute</li>
+<li>Results are comma-separated</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get boot classpath:</p>
+<div class="highlight"><pre><span></span><code>Boot-Classpath: ${p_bootclasspath}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Java runtime configuration</li>
+<li>Compiler configuration</li>
+<li>Cross-compilation setup</li>
+<li>Build documentation</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns JRE/JDK library paths</li>
+<li>Usually includes <code>rt.jar</code> or modules</li>
+<li>Platform-specific</li>
+<li>See also: <code>${p_buildpath}</code> for project dependencies</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Require-Bundle      ::= bundle-description ( ',' bundle-description )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Require-Bundle      ::= bundle-description ( ',' bundle-description )*</h1>
+<ul>
+<li>
+<p>Example: <code>Require-Bundle: com.acme.chess</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>visibility:</code> If the value is private (Default), then all visible packages from the required bundles are not re-exported. If the value is reexport then bundles that require this bundle will transitively have access to these required bundle’s exported packages.</li>
+<li>
+<p>Example: <code>visibility:=private</code></p>
+</li>
+<li>
+<p>Values: <code>private,reexport</code></p>
+</li>
+<li>
+<p>Pattern: <code>private|reexport</code></p>
+</li>
+<li>
+<p><code>resolution:</code> If the value is mandatory (default) then the required bundle must exist for this bundle to resolve. If the value is optional, the bundle will resolve even if the required bundle does not exist.</p>
+</li>
+<li>
+<p>Example: <code>resolution:=optional</code></p>
+</li>
+<li>
+<p>Values: <code>mandatory,optional</code></p>
+</li>
+<li>
+<p>Pattern: <code>mandatory|optional</code></p>
+</li>
+<li>
+<p><code>-split-package:</code> Indicates how an imported package should be merged when it is split between different exporters. The default is merge-first with warning.</p>
+</li>
+<li>
+<p>Example: <code>-split-package:=merge-first</code></p>
+</li>
+<li>
+<p>Values: <code>merge-first,merge-last,error,first</code></p>
+</li>
+<li>
+<p>Pattern: <code>merge-first|merge-last|error|first</code></p>
+</li>
+<li>
+<p><code>bundle-version</code> A version range to select the bundle version of the exporting bundle. The default value is 0.0.0.</p>
+</li>
+<li>
+<p>Example: <code>bundle-version=1.3</code></p>
+</li>
+<li>
+<p>Pattern: <code>((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/require_bundle.md -->
+<h1 id="require-bundle">Require-Bundle</h1>
+<p>The <code>Require-Bundle</code> header specifies that the bundle requires all exported packages from another bundle. This effectively imports the public interface of the required bundle, making its packages available to the requiring bundle.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Require-Bundle: com.example.otherbundle
+</code></pre></div>
+
+<p>This header is less common in OSGi and can make dependency management more complex. Prefer using <code>Import-Package</code> when possible.</p>
+<hr />
+<div class="highlight"><pre><span></span><code>    verifyDirectives(Constants.REQUIRE_BUNDLE, &quot;visibility:|resolution:&quot;, SYMBOLICNAME, &quot;bsn&quot;);
+
+
+
+        //
+    // If there is a Require bundle, all bets are off and
+    // we cannot verify anything
+    //
+
+    if (domain.getRequireBundle().isEmpty() &amp;&amp; domain.get(&quot;ExtensionBundle-Activator&quot;) == null
+            &amp;&amp; (domain.getFragmentHost()== null || domain.getFragmentHost().getKey().equals(&quot;system.bundle&quot;))) {
+
+        if (!unresolvedReferences.isEmpty()) {
+            // Now we want to know the
+            // classes that are the culprits
+            Set&lt;String&gt; culprits = new HashSet&lt;String&gt;();
+            for (Clazz clazz : analyzer.getClassspace().values()) {
+                if (hasOverlap(unresolvedReferences, clazz.getReferred()))
+                    culprits.add(clazz.getAbsolutePath());
+            }
+
+            if (analyzer instanceof Builder)
+                warning(&quot;Unresolved references to %s by class(es) %s on the &quot; + Constants.BUNDLE_CLASSPATH + &quot;: %s&quot;,
+                        unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
+            else
+                error(&quot;Unresolved references to %s by class(es) %s on the &quot; + Constants.BUNDLE_CLASSPATH + &quot;: %s&quot;,
+                        unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
+            return;
+        }
+    } else if (isPedantic())
+        warning(&quot;Use of &quot; + Constants.REQUIRE_BUNDLE + &quot;, ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references&quot;);
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

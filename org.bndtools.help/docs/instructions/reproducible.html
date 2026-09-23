@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-reproducible BOOLEAN | TIMESTAMP</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-reproducible BOOLEAN | TIMESTAMP</h1>
+<ul>
+<li>
+<p>Example: <code>-reproducible=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/reproducible.md -->
+<p>To ensure the bundle can be built in a reproducible manner, the timestamp of the zip entries is set to the fixed time <code>1980-02-01T00:00:00Z</code> when the value of this instruction is <code>true</code>.
+The value can also be set to either an ISO-8601 formatted time or the number of seconds since the epoch which is used as the timestamp for the zip entries.
+The <code>Bnd-LastModified</code> header is also omitted from the manifest.
+The default value is <code>false</code>.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-reproducible: true
+-reproducible: 1641127394
+-reproducible: 2022-01-02T12:43:14Z
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

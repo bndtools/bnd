@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-ActivationPolicy ::= policy ( ';' directive )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-ActivationPolicy ::= policy ( ';' directive )*</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-ActivationPolicy: lazy</code></p>
+</li>
+<li>
+<p>Values: <code>lazy</code></p>
+</li>
+<li>
+<p>Pattern: <code>lazy</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_activationpolicy.md -->
+<h1 id="bundle-activationpolicy">Bundle-ActivationPolicy</h1>
+<p>The <code>Bundle-ActivationPolicy</code> header specifies how the OSGi framework should activate the bundle once it has been started. The most common value for this header is <code>lazy</code>, which indicates that the bundle should be started in lazy activation mode. In this mode, the bundle's activator is not called until the first class from the bundle is loaded.</p>
+<p>This header can also include additional directives, such as <code>include</code> and <code>exclude</code>, to further control activation behavior. The header is typically used as follows:</p>
+<div class="highlight"><pre><span></span><code>Bundle-ActivationPolicy: lazy
+</code></pre></div>
+
+<p>For more details, see the <a href="https://docs.osgi.org/specification/osgi.core/8.0.0/framework.lifecycle.html#i3270439">OSGi Specification</a>.</p>
+<p>If the header is set incorrectly (for example, with no argument or with too many arguments), bnd will issue a warning. The value should be set to <code>lazy</code> for standard lazy activation.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

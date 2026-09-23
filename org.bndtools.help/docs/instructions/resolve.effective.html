@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-resolve.effective qname (',' qname )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-resolve.effective qname (',' qname )</h1>
+<ul>
+<li>
+<p>Example: <code>-resolve.effective=resolve,active</code></p>
+</li>
+<li>
+<p>Values: <code>qname (',' qname )</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/resolve.effective.md -->
+<p>Each requirement and capability has an <code>effective</code> or is <code>effective=resolve</code>. An effective of <code>resolve</code> is always processed by the resolver.However, in (very) special cases it is necessary to provide more rules.</p>
+<p>The <code>-resolve.effective</code> syntax is as follows:</p>
+<div class="highlight"><pre><span></span><code>-resolve.effective  ::= effective ( &#39;,&#39; effective )*
+effective       ::= NAME (&#39;;skip:=&#39; skip )
+skip            ::= skip = &#39;&quot;&#39; namespace ( &#39;,&#39; namespace ) * &#39;&quot;&#39;
+</code></pre></div>
+
+<p>The simplest model is to just list the names, for example:</p>
+<div class="highlight"><pre><span></span><code>-resolve.effective: resolve,active
+</code></pre></div>
+
+<p>In this case, the resolver will only look at requirements that are either resolve or active.</p>
+<p>Adding a <code>meta</code> effective could then be:</p>
+<div class="highlight"><pre><span></span><code>-resolve.effective: resolve,active, meta
+</code></pre></div>
+
+<p>However, in very, very rare (usually error) cases it is necessary to exclude certain namespaces. This can be done by using the <code>skip:</code> directive.</p>
+<div class="highlight"><pre><span></span><code>-resolve.effective: resolve,active, meta;skip:=&#39;osgi.extender,osgi.wiring.package&#39;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

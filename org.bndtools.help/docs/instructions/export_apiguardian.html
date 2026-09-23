@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-export-apiguardian PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-export-apiguardian PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</h1>
+<ul>
+<li>
+<p>Example: <code>-export-apiguardian=!*impl*,*;version=3.0</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/export_apiguardian.md -->
+<p><strong><a href="https://github.com/apiguardian-team/apiguardian">API Guardian</a></strong> is a</p>
+<blockquote>
+<p>Library that provides the <code>@API</code> annotation that is used to  annotate public types, methods, constructors, and fields within a  framework or application in order to publish their status and level of  stability and to indicate how they are intended to be used by consumers  of the API.</p>
+</blockquote>
+<p>The heuristic used by <strong>bnd</strong> to determine which packages to export is as follows:</p>
+<ul>
+<li>the instruction <code>-export-apiguardian</code> is required (i.e. opt-in is required). The value of the instruction is a package specification like most other <a href="/chapters/820-instructions.html">bnd instructions</a>. The minimal configuration is <code>-export-apiguardian: *</code> which instructs bnd to scan all classes in all packages with the plugin</li>
+<li>the plugin will export packages which have any class containing the <code>@API</code> annotation</li>
+<li>package exports will be marked with the attribute <code>status</code> using the highest value of <code>org.apiguardian.api.API.Status</code> (in ordinal order) found on <code>@API</code> annotations in the package</li>
+<li>package exports will be marked with the directive <code>mandatory:=status</code> for any package whose highest value of <code>org.apiguardian.api.API.Status</code>  found was <code>INTERNAL</code> . This implies that the package can only be imported by marking the import with the attribute <code>status=INTERNAL</code> </li>
+</ul>
+<h4 id="examples">Examples</h4>
+<p>Export all packages annotated with <code>@API</code> using version <code>1.2.3</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="na">-export-apiguardian</span><span class="o">:</span><span class="w"> </span><span class="s">*;version=&quot;1.2.3&quot;</span>
+</code></pre></div>
+
+<p>Export only packages annotated with <code>@API</code> named <code>com.acme.foo.*</code> but not <code>com.acme.foo.bar.*</code></p>
+<div class="highlight"><pre><span></span><code><span class="na">-export-apiguardian</span><span class="o">:</span><span class="se">\</span>
+<span class="w">    </span><span class="s">!com.acme.foo.bar.*,</span><span class="se">\</span>
+<span class="w">    </span><span class="s">com.acme.foo.*</span>
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

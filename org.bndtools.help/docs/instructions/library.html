@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-library library ( ',' library )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-library library ( ',' library )*</h1>
+<ul>
+<li>
+<p>Example: <code>-library: foo;version=1.2.3</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/library.md -->
+<p>The main reason for the <code>-library</code> instruction is to let you package and share <em>bnd-related configuration</em> in a self-contained way so it can be reused across workspaces, projects, or run descriptions.</p>
+<p>Let's use some examples for explanation.</p>
+<h2 id="example-1-common-bnd-configuration-across-multiple-projects">Example 1) Common bnd Configuration Across Multiple Projects</h2>
+<h3 id="scenario">Scenario</h3>
+<p>You have many projects that all need the same baseline OSGi or bnd settings—like default macros, a specific build plugin, or a certain analyzer configuration (e.g., “treat warnings as errors,” “export packages in a particular way,” etc.).</p>
+<h3 id="how-a-library-helps">How a Library Helps</h3>
+<ol>
+<li>Put these shared bnd instructions (i.e., the macros and plugin setups) in <code>project.bnd</code> (or <code>workspace.bnd</code>/<code>bndrun.bnd</code>) inside a “library bundle” in your repo.  </li>
+<li>In each project that wants these settings, just add:
+   <code>-library myconfig</code></li>
+<li>All the macros and plugin instructions from that library will be included.  </li>
+</ol>
+<p>This avoids copying the same lines into each <code>bnd.bnd</code>. Instead, every project references the same library, ensuring consistency.</p>
+<h2 id="example-2-including-pre-configured-toolingplugins">Example 2) Including Pre-Configured Tooling/Plugins</h2>
+<h3 id="scenario_1">Scenario</h3>
+<p>You have a plugin (e.g., for code generation) that always needs a certain set of properties to work properly—maybe a specific source folder or some environment variables.</p>
+<h3 id="how-a-library-helps_1">How a Library Helps</h3>
+<ol>
+<li>Provide a bundle that <em>contains</em> the plugin (or references it) plus a <code>bnd</code> file with the plugin’s configuration.  </li>
+<li>Other projects include that library:
+   <code>-library codegen</code></li>
+<li>Now each project automatically has the plugin in its build plus the right plugin settings (class paths, macros, etc.).  </li>
+</ol>
+<p>This is particularly nice if you have multiple plugins or complex plugin settings that you do not want to replicate.</p>
+<h2 id="creating-a-library">Creating a library</h2>
+<p>A <em>library</em> is stored in a <em>bundle</em>. A bundle can contain multiple libraries that are each described by a
+capability in the <code>bnd.library</code> name space. This capability looks like:</p>
+<div class="highlight"><pre><span></span><code>Provide-Capability: \
+    bnd.library; \
+        bnd.library     = foo; \
+        version         = 1.2.3; \
+        path           = lib/foo
+</code></pre></div>
+
+<p>The following attributes are defined for the <code>bnd.library</code> capabilities:</p>
+<ul>
+<li><code>bnd.library</code> – The name of the library. Names should be kept simple but the names are shared between all libraries. </li>
+<li><code>version</code> – The version of the library.</li>
+<li><code>path</code> – A path to a directory in the bundle. The contents of this directory are the root of the library. This root
+  is copied to the workspace cache.</li>
+</ul>
+<p>The root of the library should contain the bnd files to be included. The defaults (<code>workspace.bnd</code>, <code>project.bnd</code>, and 
+<code>bndrun.bnd</code>) should only be there if it makes sense to include the library in that type.</p>
+<h2 id="using-a-library">Using a library</h2>
+<p>A library can provide additional <em>named</em> functionality to a workspace, a project, or a bndrun file. It does this by
+including a <code>bnd</code> file in the setup that originates from a bundle in the repositories. This included bnd file
+can refer and use any binary resources in this bundle.   Bundles can contain multiple libraries.</p>
+<p>The <code>-library</code> instruction can apply a <em>library extension</em> from the repositories to a workspace or project. A library
+extension is a resource that is stored in one of the repositories. When the <code>-library</code> instruction is used, the corresponding resource
+will be expanded in the workspace's cache and one or more files from this area are read as include files containing
+bnd properties.</p>
+<div class="highlight"><pre><span></span><code>-library    ::=  library ( &#39;,&#39; library )*
+library     ::=  &#39;-&#39;? NAME ( &#39;;&#39; parameter ) *
+</code></pre></div>
+
+<p>For example, the <em>library</em> <code>foo</code> is included in a resource in the repository. We can apply this library in the 
+<code>build.bnd</code>, <code>bnd.bnd</code>, or <code>*.bndrun</code> file. </p>
+<div class="highlight"><pre><span></span><code>-library  foo
+</code></pre></div>
+
+<p>The following <code>parameter</code> attributes are architected:</p>
+<p>* <code>version</code> – The version range of the capability. If no version is specified, 0 is used. If a version is specified, then
+  this is the lowest acceptable version. The runtime will select the highest matching version. The <code>version</code> can also be:
+  * <code>file</code> – the library name is a path to a directory or JAR file. Since this lacks the 'where' of the library in the
+    directory or JAR, this can be set with the <code>where</code> attribute in the same clause.
+* <code>include</code> – The name of the include file or directory, relative to the root directory of the <em>library</em>. If a directory 
+  is targeted, all <code>*.bnd</code> files will be read. The default include depends on where the library is included. In:
+   * The workspace (<code>build.bnd</code>) – <code>workspace.bnd</code> 
+   * A project (<code>bnd.bnd</code>) – <code>project.bnd</code>
+   * A bndrun spec (<code>*.bndrun</code>) – <code>bndrun.bnd</code> </p>
+<p>Some remarks:</p>
+<ul>
+<li>If the library name starts with a <code>-</code>, there will be no error if the capability cannot be found.</li>
+<li>You can include a library multiple times with different include files/directories</li>
+<li>The <code>${.}</code> macro refers to the cached root directory of the library.</li>
+</ul>
+<h2 id="repositories-ordering">Repositories &amp; Ordering</h2>
+<p>Since libraries are stored in repositories but can also provide new repositories it is important to 
+understand the ordering.</p>
+<p>Only libraries included in the workspace can contribute repositories. The workspace will first read the <code>cnf/ext</code>
+directory bnd files and then <code>build.bnd</code>. Any repositories defined in these bnd files can be used for libraries.
+The workspace will include the libraries based on these repositories. However, after <em>all</em> libraries have
+been included, all plugins are reset and this will reset the repositories. Any repository plugins defined
+in a library will then become available.</p>
+<p>Projects and bndrun files can include libraries but they cannot define any new repositories. </p>
+<p>NOTE: what about standalone bndruns?</p>
+<p><br /><br /></p>
+</body>
+</html>
