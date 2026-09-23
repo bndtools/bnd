@@ -1,0 +1,89 @@
+# Shared bndrun for the SWTBot UI tests. Unlike test.shared.bndrun this
+# variant launches a RENDERED workbench: it swaps the headless launch bundle
+# (bndtools.core.test.launch, which installs a NullContextPresentationEngine)
+# for bndtools.core.test.launch.rendered and runs the SWTBot test bundle
+# (bndtools.core.test.swtbot.tests) instead of the headless test bundle.
+#
+# The full -runrequires list of test.shared.bndrun is repeated here (a
+# property cannot be partially overridden) with the following delta:
+#   - bndtools.core.test.launch          -> bndtools.core.test.launch.rendered
+#   - bndtools.core.test.tests           -> bndtools.core.test.swtbot.tests
+#   + org.eclipse.swtbot.swt.finder / org.eclipse.swtbot.eclipse.finder
+#
+# Note the ~ prefix: without it the -runrequires of the included file would
+# override the declaration in this file.
+
+-include: ~test.shared.bndrun
+
+-runrequires: \
+	bnd.identity;id='biz.aQute.bnd.embedded-repo',\
+	bnd.identity;id='biz.aQute.tester.junit-platform',\
+	bnd.identity;id='bndtools.api',\
+	bnd.identity;id='bndtools.builder',\
+	bnd.identity;id='bndtools.core',\
+	bnd.identity;id='bndtools.core.services',\
+	bnd.identity;id='bndtools.core.test.launch.rendered',\
+	bnd.identity;id='bndtools.core.test.swtbot.tests',\
+	bnd.identity;id='org.eclipse.swtbot.swt.finder',\
+	bnd.identity;id='org.eclipse.swtbot.eclipse.finder',\
+	bnd.identity;id='com.google.guava';version='[33.4.8,34.0.0)',\
+	bnd.identity;id='com.google.guava.failureaccess',\
+	bnd.identity;id='org.apache.ant',\
+	bnd.identity;id='org.bndtools.headless.build.manager',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.gradle',\
+	bnd.identity;id='org.bndtools.remoteinstall',\
+	bnd.identity;id='org.bndtools.templates.template',\
+	bnd.identity;id='org.bndtools.templating',\
+	bnd.identity;id='org.bndtools.templating.gitrepo',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.manager',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.plugin.git',\
+	bnd.identity;id='org.eclipse.ant.core',\
+	bnd.identity;id='org.eclipse.ant.ui',\
+	bnd.identity;id='org.eclipse.emf.ant',\
+	bnd.identity;id='org.eclipse.emf.codegen.ecore.ui',\
+	bnd.identity;id='org.eclipse.emf.codegen.ui',\
+	bnd.identity;id='org.eclipse.emf.common.ui',\
+	bnd.identity;id='org.eclipse.emf.databinding',\
+	bnd.identity;id='org.eclipse.emf.databinding.edit',\
+	bnd.identity;id='org.eclipse.emf.edit.ui',\
+	bnd.identity;id='org.eclipse.emf.exporter',\
+	bnd.identity;id='org.eclipse.emf.importer',\
+	bnd.identity;id='org.eclipse.emf.importer.ecore',\
+	bnd.identity;id='org.eclipse.emf.importer.java',\
+	bnd.identity;id='org.eclipse.core.databinding.beans',\
+	bnd.identity;id='org.eclipse.core.filesystem',\
+	bnd.identity;id='org.eclipse.e4.tools.services',\
+	bnd.identity;id='org.eclipse.egit.ui',\
+	bnd.identity;id='org.eclipse.equinox.event',\
+	bnd.identity;id='org.eclipse.jdt.annotation',\
+	bnd.identity;id='org.eclipse.m2e.binaryproject.ui',\
+	bnd.identity;id='org.eclipse.m2e.discovery',\
+	bnd.identity;id='org.eclipse.m2e.editor',\
+	bnd.identity;id='org.eclipse.m2e.jdt.ui',\
+	bnd.identity;id='org.eclipse.m2e.profiles.core',\
+	bnd.identity;id='org.eclipse.m2e.profiles.ui',\
+	bnd.identity;id='org.eclipse.m2e.refactoring',\
+	bnd.identity;id='org.eclipse.m2e.scm',\
+	bnd.identity;id='org.eclipse.m2e.sourcelookup.ui',\
+	bnd.identity;id='org.eclipse.osgi.compatibility.state',\
+	bnd.identity;id='org.eclipse.pde.build',\
+	bnd.identity;id='org.eclipse.pde.core',\
+	bnd.identity;id='org.eclipse.pde.genericeditor.extension',\
+	bnd.identity;id='org.eclipse.pde.launching',\
+	bnd.identity;id='org.eclipse.pde.runtime',\
+	bnd.identity;id='org.eclipse.pde.ua.core',\
+	bnd.identity;id='org.eclipse.pde.ua.ui',\
+	bnd.identity;id='org.eclipse.pde.ui',\
+	bnd.identity;id='org.eclipse.sdk',\
+	bnd.identity;id='org.eclipse.ui.browser',\
+	bnd.identity;id='org.eclipse.ui.console',\
+	bnd.identity;id='org.eclipse.ui.ide',\
+	bnd.identity;id='org.eclipse.ui.ide.application',\
+	bnd.identity;id='junit-jupiter-api';version='${range;[===,==+);${junit.jupiter.eclipse.version}}',\
+	bnd.identity;id='junit-jupiter-engine';version='${range;[===,==+);${junit.jupiter.eclipse.version}}',\
+	bnd.identity;id='junit-jupiter-params';version='${range;[===,==+);${junit.jupiter.eclipse.version}}',\
+	bnd.identity;id='junit-platform-commons';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-platform-engine';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-platform-launcher';version='${range;[===,==+);${junit.platform.eclipse.version}}',\
+	bnd.identity;id='junit-vintage-engine';version='${range;[===,==+);${junit.jupiter.eclipse.version}}'
