@@ -41,8 +41,8 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 				new IMarkerResolution2() {
 					@Override
 					public String getLabel() {
-						return "Rename duplicate occurrences of '" + key + "' in " + file.getName()
-							+ " to merged syntax";
+						return "Rename duplicate occurrences of '" + key + "' to unique merged property keys inside "
+							+ file.getName();
 					}
 
 					@Override
@@ -76,16 +76,18 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 			File file = new File(path);
 			if (!file.isFile())
 				continue;
+			String mergedKey = IncludeConflictDetector.mergedKey(key, file);
 			resolutions.add(new IMarkerResolution2() {
 				@Override
 				public String getLabel() {
-					return "Rename '" + key + "' to a unique merged key in " + file.getName();
+					return "Rename '" + key + "' to the unique merged property key '" + mergedKey + "' inside "
+						+ file.getName();
 				}
 
 				@Override
 				public String getDescription() {
-					return "Renames the plain property in " + file.getAbsolutePath()
-						+ " so bnd merges it with the other definitions instead of shadowing them.";
+					return "Renames the plain property in " + file.getAbsolutePath() + " to '" + mergedKey
+						+ "' so bnd merges it with the other definitions instead of shadowing them.";
 				}
 
 				@Override

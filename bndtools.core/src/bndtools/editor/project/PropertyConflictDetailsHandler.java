@@ -1,12 +1,15 @@
 package bndtools.editor.project;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
+import org.bndtools.core.editors.MarkerResolutionProposal;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
 import aQute.bnd.osgi.Processor;
@@ -24,5 +27,14 @@ public class PropertyConflictDetailsHandler extends AbstractBuildErrorDetailsHan
 	@Override
 	public List<IMarkerResolution> getResolutions(IMarker marker) {
 		return Arrays.asList(new IncludeConflictMarkerResolutionGenerator().getResolutions(marker));
+	}
+
+	@Override
+	public List<ICompletionProposal> getProposals(IMarker marker) {
+		List<ICompletionProposal> proposals = new ArrayList<>();
+		for (IMarkerResolution resolution : getResolutions(marker)) {
+			proposals.add(new MarkerResolutionProposal(resolution, marker));
+		}
+		return proposals;
 	}
 }

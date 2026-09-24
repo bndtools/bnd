@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.LocationKind;
@@ -71,8 +72,9 @@ public class IncludeConflictDetector {
 				continue;
 			IResource target = target(location, fallback);
 			IMarker marker = target.createMarker(MARKER_TYPE);
-			marker.setAttributes(attributes(conflict, location, processor));
-			marker.setAttribute(IMarker.MESSAGE, message);
+			Map<String, Object> attribs = attributes(conflict, location, processor);
+			marker.setAttributes(attribs);
+			marker.setAttribute(IMarker.MESSAGE, (String) attribs.get(IMarker.MESSAGE));
 			marker.setAttribute(IMarker.SEVERITY, severity);
 			marker.setAttribute(ATTR_OWNER, owner);
 		}
@@ -87,9 +89,41 @@ public class IncludeConflictDetector {
 		return fallback;
 	}
 
+	public static String workspaceRelativePath(String absoluteOrPath) {
+		if (absoluteOrPath == null || absoluteOrPath.isEmpty())
+			return absoluteOrPath;
+		try {
+			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(absoluteOrPath));
+			if (file != null && file.exists()) {
+				return file.getFullPath().makeRelative().toString();
+			}
+			File f = new File(absoluteOrPath);
+			if (f.isAbsolute()) {
+				IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(f.toURI());
+				if (files != null && files.length > 0 && files[0].exists()) {
+					return files[0].getFullPath().makeRelative().toString();
+				}
+			}
+		} catch (Throwable e) {
+			// headless unit test or no workspace running
+		}
+		return absoluteOrPath;
+	}
+
+	public static String formatMessage(PropertyConflict conflict) {
+		String sources = conflict.occurrences().stream()
+			.map(property -> workspaceRelativePath(property.source()) + ":" + (property.line() + 1))
+			.collect(Collectors.joining(", "));
+		return "[Property Conflict]: `" + conflict.key() + "` "
+			+ (conflict.kind() == PropertyConflict.Kind.DUPLICATE ? "is defined more than once" : "is shadowed by -include")
+			+ " (" + sources + ")."
+			+ (conflict.mergeable() ? " Use unique .<suffix> keys to merge values, or remove the unwanted definition."
+				: " Remove or edit the unwanted definition.");
+	}
+
 	static Map<String, Object> attributes(PropertyConflict conflict, Location location, Processor processor) {
 		Map<String, Object> attributes = new HashMap<>();
-		attributes.put(IMarker.MESSAGE, location.message);
+		attributes.put(IMarker.MESSAGE, formatMessage(conflict));
 		attributes.put(IMarker.LINE_NUMBER, location.line + 1);
 		attributes.put(ATTR_KEY, conflict.key());
 		attributes.put(ATTR_IN_FILE, conflict.kind() == PropertyConflict.Kind.DUPLICATE);
@@ -98,6 +132,8 @@ public class IncludeConflictDetector {
 			.distinct().collect(Collectors.joining("\n")));
 		if (processor.getPropertiesFile() != null)
 			attributes.put(ATTR_ROOT, processor.getPropertiesFile().getAbsolutePath());
+		attributes.put(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, conflict.mergeable());
+		attributes.put("$bndType", PropertyConflict.class.getName());
 		return attributes;
 	}
 
@@ -168,9 +204,13 @@ public class IncludeConflictDetector {
 		return result.toString();
 	}
 
-	private static String suffixBase(File file) {
+	public static String suffixBase(File file) {
 		String name = file.getName().replaceFirst("\\.bnd(?:run)?$", "").replaceAll("[^A-Za-z0-9._-]", "-");
 		return name.isEmpty() ? "local" : name;
+	}
+
+	public static String mergedKey(String key, File file) {
+		return key + "." + suffixBase(file);
 	}
 
 	private IncludeConflictDetector() {}

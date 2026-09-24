@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.PropertyConflict;
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.service.reporter.Report.Location;
 
 class PropertyConflictTest {
@@ -76,14 +78,25 @@ class PropertyConflictTest {
 	}
 
 	@Test
-	void suffixedMergedHeaderMarkerHasMergeResolution() {
+	void suffixedMergedHeaderMarkerHasMergeResolution(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		File file = new File(tmp, "app.ui_win32.win32.x86-64.bndrun");
+		aQute.lib.io.IO.store("-runblacklist: mac\n", file);
 		IMarker marker = mock(IMarker.class);
-		when(marker.getAttribute(IncludeConflictDetector.ATTR_KEY, null)).thenReturn("-runblacklist.win32");
+		when(marker.getAttribute(IncludeConflictDetector.ATTR_KEY, null)).thenReturn("-runblacklist");
 		when(marker.getAttribute(IncludeConflictDetector.ATTR_MERGEABLE, false)).thenReturn(true);
-		when(marker.getAttribute(IncludeConflictDetector.ATTR_SOURCES, "")).thenReturn("C:/test/file.bnd");
+		when(marker.getAttribute(IncludeConflictDetector.ATTR_SOURCES, "")).thenReturn(file.getAbsolutePath());
 		when(marker.getAttribute(IncludeConflictDetector.ATTR_IN_FILE, false)).thenReturn(false);
-		when(marker.getAttribute(IncludeConflictDetector.ATTR_ROOT, "C:/test/file.bnd")).thenReturn("C:/test/file.bnd");
+		when(marker.getAttribute(IncludeConflictDetector.ATTR_ROOT, file.getAbsolutePath())).thenReturn(file.getAbsolutePath());
 		IncludeConflictMarkerResolutionGenerator generator = new IncludeConflictMarkerResolutionGenerator();
 		assertThat(generator.hasResolutions(marker)).isTrue();
+		org.eclipse.ui.IMarkerResolution[] resolutions = generator.getResolutions(marker);
+		assertThat(resolutions).hasSize(1);
+		assertThat(resolutions[0].getLabel()).isEqualTo("Rename '-runblacklist' to the unique merged property key '-runblacklist.app.ui_win32.win32.x86-64' inside app.ui_win32.win32.x86-64.bndrun");
+
+		PropertyConflictDetailsHandler handler = new PropertyConflictDetailsHandler();
+		List<org.eclipse.jface.text.contentassist.ICompletionProposal> proposals = handler.getProposals(marker);
+		assertThat(proposals).hasSize(1);
+		assertThat(proposals.get(0).getDisplayString()).isEqualTo("Rename '-runblacklist' to the unique merged property key '-runblacklist.app.ui_win32.win32.x86-64' inside app.ui_win32.win32.x86-64.bndrun");
 	}
 }
