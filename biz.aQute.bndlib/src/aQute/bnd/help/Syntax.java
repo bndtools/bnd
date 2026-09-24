@@ -649,6 +649,10 @@ public class Syntax implements Constants {
 			PEDANTIC + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 
+		new Syntax(PROPERTYCONFLICTS,
+			"Report duplicate property definitions and shadowed plain merged properties. Defaults to off, or warning with -pedantic. Error fails the build.",
+			PROPERTYCONFLICTS + ": error", "off,warning,error", Pattern.compile("off|warning|error")),
+
 		new Syntax(PLUGIN, "Define the plugins.",
 			PLUGIN + "=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}", null, null),
 		new Syntax(PLUGINPATH, "Define the plugins load path.",
