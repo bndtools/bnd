@@ -12,7 +12,7 @@ This information will help us review and fix your issue faster.
 
 ## Development Setups
 
-We provide pre-configured setups using Eclipse oomph installer, which help you getting started quickly. 
+We provide pre-configured setups using Eclipse oomph installer, which help you getting started quickly.
 This way you get a dedicated Eclipse instance with pre-installed bndtools source code with a simple one-click installer.
 
 **Find our different setups and P2 Repositories at:**
@@ -26,7 +26,7 @@ To launch bndtools from Eclipse (e.g. to try out a change to debug), use one of 
 * `bndtools.cocoa.macosx.aarch64.bndrun` for running on MacOS (64-bit Apple Silicon / AArch64)
 * `bndtools.gtk.linux.x86_64.bndrun` for running on Linux (64-bit Intel x86).
 * `bndtools.gtk.linux.x86.bndrun` for running on Linux (32-bit Intel x86).
-* `bndtools.win32.x86.bndrun` for running on Win32 (XP, Vista etc).
+* `bndtools.win32.x86_64.bndrun` for running on Win32 (XP, Vista etc).
 
 Right click on the file that matches your computer's architecture and select "Run As" > "Bnd OSGi Run Launcher". If none of these files matches the architecture you want to run on, then please create a new one and submit it back as a patch.
 
@@ -68,7 +68,7 @@ We recommend the section [Build Environment](#build-environment) below to learn 
 
 ## Running single tests
 
-Sometimes it can be useful to run a single testcase without running a full build. 
+Sometimes it can be useful to run a single testcase without running a full build.
 
 - Running only a specific Test - e.g. runs the test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`
 
@@ -108,7 +108,7 @@ The only thing you need to build Bnd/Bndtools is Java.
   ```bash
   ./gradlew build
   ```
-- alternative skip tests for faster local builds 
+- alternative skip tests for faster local builds
   ```bash
   ./gradlew build -x test -x testOSGi
   ```

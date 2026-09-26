@@ -5,7 +5,7 @@ class: Project
 summary: An exporter to export features from a bnd build
 parent: Plugins
 ---
-The Bnd Export plugin is a powerful tool that enables the export of a p2 repository. This manual will guide you through the process of using the plugin effectively. 
+The Bnd Export plugin is a powerful tool that enables the export of a p2 repository. This manual will guide you through the process of using the plugin effectively.
 
 The plugin is activated by adding it to the `-plugin` clauses of the `build.bnd`. It takes no configuration. In the Bndtools, there is a context menu to help.
 
@@ -22,21 +22,21 @@ looks as follows:
             type=p2; \
             name=MyReleaseRepo.jar
 
-With this instruction, the plugin exports a p2 repository named "MyReleaseRepo.jar" containing the specified features, plugins, and metadata. You can also include additional requirements and customize various aspects of the repository using Bnd's capabilities. The key is the master release bndrun file, the specified type is for a p2 repository. 
+With this instruction, the plugin exports a p2 repository named "MyReleaseRepo.jar" containing the specified features, plugins, and metadata. You can also include additional requirements and customize various aspects of the repository using Bnd's capabilities. The key is the master release bndrun file, the specified type is for a p2 repository.
 
 
 ## P2 Signing using PGP signatures
 
-The p2 infrastructure analyzes the integrity and trustworthiness of artifacts during provisioning and installation, to guarantee artifact integrity, and also to help users decide whether or not to trust a particular artifact source (see [Using PGP Signatures in p2](https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Fguide%2Fp2_pgp.html)). 
+The p2 infrastructure analyzes the integrity and trustworthiness of artifacts during provisioning and installation, to guarantee artifact integrity, and also to help users decide whether or not to trust a particular artifact source (see [Using PGP Signatures in p2](https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Fguide%2Fp2_pgp.html)).
 
-The P2Export supports signing via `gpg` and can be enabled with the `sign=true` option. 
+The P2Export supports signing via `gpg` and can be enabled with the `sign=true` option.
 Without any further options this will sign each artifact using `gpg` (must be installed on the machine).
 
 Example:
 
 ```
 
-# key (mandatory - name of the key), 
+# key (mandatory - name of the key),
 # passphrase (optional passphrase for the pgp key)
 # pubkey (mandatory: the public key - read publickey file e.g. from ~./bnd/ folder)
 
@@ -54,7 +54,7 @@ pubkey="${global;p2.pub_key;${env;P2_PUB_KEY}}"
     sign_passphrase=${passphrase}
 ```
 
-In the example above the idea is to first check global variables in `~./bnd/settings.json` (via `${global}` macro) and fallback to environment (via `${env}` macro) if not found.  
+In the example above the idea is to first check global variables in `~./bnd/settings.json` (via `${global}` macro) and fallback to environment (via `${env}` macro) if not found.
 For example if you are using Github Actions for your build you would set the environment variables via Github Secret variables.
 
 ## Defining the features
@@ -90,8 +90,8 @@ And last but not least, general header files.
         ASL-2.0;\
             description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0";\
             link="https://opensource.org/licenses/Apache-2.0"
-            
-    
+
+
     Bundle-DocURL:          https://bnd.bndtools.org/
     Bundle-Vendor           bnd
     Bundle-Copyright:       Copyright bndtools
@@ -138,13 +138,28 @@ The following headers can be used in the feature files.
 
 The format of these headers is exactly as outlined by their OSGi specification.
 
-Features can require bundles and other features. 
+Features can require bundles and other features.
 
 Bundles will come from the `-runbundles` instruction. This instruction can be managed with the resolver but it can also be set manually. Standard rules apply. The workspace is consulted to find the bundles and their versions. The bundles will be the highest available version in the repository.
 
     -runbundles \
         biz.aQute.bnd.annotation;version=5.0.0,\
         org.apache.felix.gogo.runtime;version=1.1.0
+
+By default, the exporter uses the exact resolved bundle version for the
+feature requirement. When a `-runbundles` entry declares a version range, the
+exporter uses that range for the feature requirement without changing which
+artifact is included in the repository:
+
+    -runbundles \
+    slf4j.api;version='[2.0.9,3)',\
+    com.example.consumer;version='${range;[===,+00);2.0.9}',\
+    com.example.provider;version='${range;[===,=+0);2.0.9}'
+
+The examples generate `[2.0.9,3.0.0)` for a consumer range and
+`[2.0.9,2.1.0)` for a provider range. A single version, `latest`, `snapshot`,
+`project`, or an omitted version still generates an exact requirement for the
+resolved artifact version.
 
 Features can also require other features. Features, and theoretically other requirements can be added using the Require-Capability header. For this reason, a number of pseudo namespaces are created to make it more readable.
 
@@ -208,7 +223,7 @@ In project X's `bnd.bnd` file:
         release.bndrun; \
 			type=p2;\
             name=myrepo.jar; \
-            
+
 
 In `release.bndrun` file (this file will control the content of `META-INF/MANIFEST.MF` in the resulting `myrepo.jar`. It inherits everything from `cnf/build.bnd`, but NOT from the project's  `bnd.bnd`):
 
@@ -270,11 +285,11 @@ This will generate a p2 archive called `myrepo.jar` in the project's `generated`
 * `p2.index`
 * `plugins/`
     * `com.example.util-1.0.0.jar`
-    * `com.example.util2-1.0.0.jar` 
+    * `com.example.util2-1.0.0.jar`
     * `com.example.a-1.0.0.jar`
     * `com.example.b-1.0.0.jar`
- 
-Note that bnd still creates a normal jar file for the project's `bnd.bnd` with the usual `bsn.jar` name. If you set `-export`'s `name` property also to `bsn.jar` then the P2Export will overwrite the normal `bsn.jar`. 
+
+Note that bnd still creates a normal jar file for the project's `bnd.bnd` with the usual `bsn.jar` name. If you set `-export`'s `name` property also to `bsn.jar` then the P2Export will overwrite the normal `bsn.jar`.
 
 A working example can be found in this [testcase](https://github.com/bndtools/bnd/blob/master/biz.aQute.repository/testdata/p2-publish/ws-1/p1/bnd.bnd) and in bnd's own [org.bndtools.p2 bundle](https://github.com/bndtools/bnd/blob/master/org.bndtools.p2/bnd.bnd).
 
