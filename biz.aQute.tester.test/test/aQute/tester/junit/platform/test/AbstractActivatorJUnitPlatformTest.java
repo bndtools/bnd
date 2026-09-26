@@ -414,8 +414,9 @@ abstract class AbstractActivatorJUnitPlatformTest extends AbstractActivatorCommo
 				.allMatch(x -> x.equals(nameOf(JUnit5ParameterizedTest.class, "parameterizedMethod")));
 		assertThat(parameterTests.stream()).as("dynamic")
 			.allMatch(x -> x.isDynamicTest);
+		// JUnit 6 quotes String arguments in display names; JUnit 5 does not
 		assertThat(parameterTests.stream()
-			.map(x -> x.displayName)).as("displayNames")
+			.map(x -> x.displayName.replace("\"", ""))).as("displayNames")
 				.containsExactlyInAnyOrder("1 ==> param: 'one', param2: 1.0", "2 ==> param: 'two', param2: 2.0",
 					"3 ==> param: 'three', param2: 3.0", "4 ==> param: 'four', param2: 4.0",
 					"5 ==> param: 'five', param2: 5.0");

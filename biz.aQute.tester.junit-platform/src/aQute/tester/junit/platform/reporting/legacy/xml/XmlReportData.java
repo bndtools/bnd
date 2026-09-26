@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import org.junit.platform.commons.util.ExceptionUtils;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.launcher.TestIdentifier;
@@ -75,7 +74,7 @@ class XmlReportData {
 		this.endInstants.put(testIdentifier, this.clock.instant());
 		if (result.getStatus() == ABORTED) {
 			String reason = result.getThrowable()
-				.map(ExceptionUtils::readStackTrace)
+				.map(XmlReportWriter::readStackTrace)
 				.orElse("");
 			this.skippedTests.put(testIdentifier, reason);
 		} else {
