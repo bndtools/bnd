@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,6 +33,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 
@@ -87,12 +89,20 @@ class P2PublisherTest {
 					.contains("<property name=\"pgp.signatures\" value=\"FAKE SIGNATURE\"/>")
 					.contains("<property name=\"pgp.publicKeys\" value=\"FAKE PUBLIC KEY\"/>");
 
-				InputStream xmlContent = content.getResource("content.xml")
-					.openInputStream();
+				byte[] xmlContent;
+				try (InputStream xmlContentIs = content.getResource("content.xml")
+					.openInputStream()) {
+					xmlContent = xmlContentIs.readAllBytes();
+				}
 
-				boolean validateXMLContent = validateXML(xmlContent,
+				boolean validateXMLContent = validateXML(new ByteArrayInputStream(xmlContent),
 					P2PublisherTest.class.getResourceAsStream("content-schema.xsd"));
 				assertTrue("P2 content.xml is invalid", validateXMLContent);
+				assertThat(new String(xmlContent, StandardCharsets.UTF_8))
+					.contains("<unit id=\"org.slf4j.api\" version=\"1.7.30.v20200204-2150\"")
+					.contains("name=\"org.slf4j.api\" range=\"[1.7.30,2.0.0)\"")
+					.contains("name=\"org.osgi.service.coordinator\" range=\"[1.0.2,1.1.0)\"")
+					.contains("name=\"org.osgi.service.repository\" range=\"[1.1.0,2.0.0)\"");
 
 				InputStream xmlFeatureIs = featureMain.getResource("feature.xml")
 					.openInputStream();
@@ -107,7 +117,8 @@ class P2PublisherTest {
 
 				String expectedMain = Files.readString(p.getFile("expected-feature.main.xml")
 					.toPath());
-				assertEquals("feature.xml does not match expected-feature.main.xml", expectedMain, xmlFeatureMain);
+				assertEquals("feature.xml does not match expected-feature.main.xml", normalizeXml(expectedMain),
+					normalizeXml(xmlFeatureMain));
 
 				InputStream xmlFeaturePdeIs = featurePde.getResource("feature.xml")
 					.openInputStream();
@@ -118,6 +129,25 @@ class P2PublisherTest {
 					.toPath());
 				assertEquals("feature.xml does not match expected-feature.xml", expectedPde, xmlFeaturePde);
 			} finally {}
+		}
+	}
+
+	@Test
+	void testBundleRequirementVersionRanges() throws Exception {
+		String resolvedVersion = "2.0.9";
+		assertThat(P2Export.toRequirementRange(resolvedVersion, null)).isEqualTo("[2.0.9,2.0.9]");
+		assertThat(P2Export.toRequirementRange(resolvedVersion, resolvedVersion)).isEqualTo("[2.0.9,2.0.9]");
+
+		try (Processor processor = new Processor()) {
+			String consumerRange = processor.getReplacer()
+				.process("${range;[===,+00);2.0.9}");
+			String providerRange = processor.getReplacer()
+				.process("${range;[===,=+0);2.0.9}");
+
+			assertThat(P2Export.toRequirementRange(resolvedVersion, consumerRange))
+					.isEqualTo("[2.0.9,3.0.0)");
+			assertThat(P2Export.toRequirementRange(resolvedVersion, providerRange))
+					.isEqualTo("[2.0.9,2.1.0)");
 		}
 	}
 
@@ -141,6 +171,11 @@ class P2PublisherTest {
 		}
 	}
 
+	private static String normalizeXml(String xml) {
+		return xml.replaceAll("\\r\\n", "\n")
+			.replaceAll("[ \\t]+(?=\\n)", "")
+			.replaceAll("(?m)^[ \\t]+(?=<)", "");
+	}
 
 	/**
 	 * Validate an XML against a DTD. Source of DTD:
