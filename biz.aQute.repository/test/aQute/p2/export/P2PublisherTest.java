@@ -137,6 +137,7 @@ class P2PublisherTest {
 		String resolvedVersion = "2.0.9";
 		assertThat(P2Export.toRequirementRange(resolvedVersion, null)).isEqualTo("[2.0.9,2.0.9]");
 		assertThat(P2Export.toRequirementRange(resolvedVersion, resolvedVersion)).isEqualTo("[2.0.9,2.0.9]");
+		assertThat(P2Export.toRequirementRange(resolvedVersion, "[2.0.0,2.1.0]")).isEqualTo("[2.0.0,2.1.0]");
 
 		try (Processor processor = new Processor()) {
 			String consumerRange = processor.getReplacer()
