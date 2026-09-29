@@ -6,9 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -18,7 +16,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.MD5;
@@ -126,10 +123,7 @@ public final class TrustedChecksums {
 			checksumFile);
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
 
-			writer.write("# Generated (" + Dates.formatMillis(DateTimeFormatter
-				.ofPattern("yyyy/MM/dd HH:mm:ss", Locale.ROOT)
-				.withZone(Dates.UTC_ZONE_ID), new Date().getTime())
-				+ "): Trusted Checksums for each GAV in the maven index");
+			writer.write("# Generated Trusted Checksums for each GAV in the maven index");
 			writer.newLine();
 
 			List<Archive> sorted = archives.stream()
