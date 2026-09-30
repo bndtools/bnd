@@ -419,6 +419,41 @@ public class JarTest {
 		}
 	}
 
+	/**
+	 * Simplest reproducer for the second regression since bnd 7.2.0 found in
+	 * bndtools/bnd#7452: writing a manifest silently drops duplicate
+	 * attributes/directives.
+	 * <p>
+	 * {@code Jar.writeManifest} cleans the manifest and, since 018ebcfd7
+	 * ("Fix directive ordering inconsistency in OSGi headers"), reorders the
+	 * clauses of all OSGi syntax headers in {@code Jar.reorderClause}. It does
+	 * that by parsing the header with {@code OSGiHeader.parseHeader}, which
+	 * keeps only one of two attributes/directives with the same name, and
+	 * printing it again. Headers that intentionally contain a duplicate, like
+	 * the TCK's {@code classloading.tb14b} (it must be rejected by the
+	 * framework), are therefore changed.
+	 */
+	@Test
+	public void testManifestKeepsDuplicateDirectives() throws Exception {
+		String header = "a.b;x:=\"1\";x:=\"2\"";
+		System.err.println("\n=== #7452: duplicate directive in manifest ===");
+		System.err.println("Bundle-SymbolicName in : " + header);
+
+		Manifest manifest = new Manifest(
+			new ByteArrayInputStream(("Manifest-Version: 1.0\nBundle-SymbolicName: " + header + "\n").getBytes()));
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		Jar.writeManifest(manifest, bout);
+
+		Manifest written = new Manifest(new ByteArrayInputStream(bout.toByteArray()));
+		String out = written.getMainAttributes()
+			.getValue(Constants.BUNDLE_SYMBOLICNAME);
+		System.err.println("Bundle-SymbolicName out: " + out
+			+ (header.equals(out) ? "" : "   <-- duplicate dropped by Jar.reorderClause"));
+
+		assertEquals(header, out);
+	}
+
 	@Test
 	public void testManifestCleaningWithOrdering() throws Exception {
 		// Test that the cleaning process (which includes reordering) works correctly
