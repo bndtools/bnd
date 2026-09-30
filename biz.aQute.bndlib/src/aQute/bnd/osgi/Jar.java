@@ -830,7 +830,18 @@ public class Jar implements Closeable {
     }
 
     private static String reorderClause(String s, Collator collator) {
-        Parameters header = OSGiHeader.parseHeader(s);
+        // Parsing drops duplicate attributes/directives unless explicitly
+        // allowed. Those cannot be reordered without losing them (and the
+        // duplicate marker cannot be printed for attributes), so leave such
+        // clauses as they are.
+        Parameters header = OSGiHeader.parseHeader(s, null, new Parameters(true));
+        for (Attrs attrs : header.values()) {
+            for (String key : attrs.keySet()) {
+                if (Processor.isDuplicate(key)) {
+                    return s;
+                }
+            }
+        }
         for (Map.Entry<String, Attrs> entry : header.entrySet()) {
             Attrs newAttrs = new Attrs();
             Attrs oldAttrs = entry.getValue();

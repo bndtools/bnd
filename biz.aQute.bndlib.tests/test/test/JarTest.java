@@ -419,6 +419,28 @@ public class JarTest {
 		}
 	}
 
+	/**
+	 * Reordering the clauses of OSGi syntax headers when writing a manifest
+	 * must not drop duplicate attributes/directives (bndtools/bnd#7452).
+	 */
+	@Test
+	public void testManifestKeepsDuplicateDirectives() throws Exception {
+		String manifestContent = "Manifest-Version: 1.0\n"
+			+ "Bundle-SymbolicName: a.b;fragment-attachment:=\"always\";fragment-attachment:=\"never\"\n"
+			+ "Provide-Capability: test;b=2;a=1\n";
+
+		Manifest original = new Manifest(new ByteArrayInputStream(manifestContent.getBytes()));
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		Jar.writeManifest(original, bout);
+		Manifest written = new Manifest(new ByteArrayInputStream(bout.toByteArray()));
+
+		assertEquals("a.b;fragment-attachment:=\"always\";fragment-attachment:=\"never\"",
+			written.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME));
+		// clauses without duplicates are still reordered
+		assertEquals("test;a=1;b=2", written.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
+	}
+
 	@Test
 	public void testManifestCleaningWithOrdering() throws Exception {
 		// Test that the cleaning process (which includes reordering) works correctly
