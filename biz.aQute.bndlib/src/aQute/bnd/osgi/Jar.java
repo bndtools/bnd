@@ -1175,6 +1175,10 @@ public class Jar implements Closeable {
 		return reproducible;
 	}
 
+	public long getReproducibleTimestamp() {
+		return zipEntryConstantTime;
+	}
+
 	public void setReproducible(String outputTimestamp) {
 		reproducible = Processor.isTrue(outputTimestamp);
 		if (!reproducible || Boolean.parseBoolean(outputTimestamp = outputTimestamp.trim())) {
