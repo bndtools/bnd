@@ -57,7 +57,7 @@ public class MakeBnd implements MakePlugin, Constants {
 				}
 			}
 
-			return new JarResource(jar);
+			return new JarResource(jar, false);
 		} else {
 			builder.error("Could not create make resource, args=%s", argumentsOnMake);
 			return null;

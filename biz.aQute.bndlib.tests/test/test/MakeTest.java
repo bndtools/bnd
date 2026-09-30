@@ -1,5 +1,6 @@
 package test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -149,6 +150,45 @@ public class MakeTest {
 			Resource resource = jar.getResource("www/xyz.jar");
 			assertNotNull(resource);
 			assertTrue(resource instanceof JarResource);
+		}
+	}
+
+	@Test
+	public void testNestedMakeJarLifecycle() throws Exception {
+		java.nio.file.Path base = java.nio.file.Files.createTempDirectory("nested-make");
+		java.nio.file.Files.writeString(base.resolve("main.bnd"),
+			"-resourceonly: true\n"
+				+ "-make: (*).jar;type=bnd;recipe=$1.bnd\n"
+				+ "Include-Resource: outer1.jar, outer2.jar\n");
+		java.nio.file.Files.writeString(base.resolve("outer1.bnd"),
+			"-resourceonly: true\n"
+				+ "-make: (*).jar;type=bnd;recipe=$1.bnd\n"
+				+ "Include-Resource: outer1.txt, inner.jar\n");
+		java.nio.file.Files.writeString(base.resolve("outer2.bnd"),
+			"-resourceonly: true\n"
+				+ "-make: (*).jar;type=bnd;recipe=$1.bnd\n"
+				+ "Include-Resource: outer2.txt, inner.jar\n");
+		java.nio.file.Files.writeString(base.resolve("inner.bnd"),
+			"-resourceonly: true\n"
+				+ "Include-Resource: inner.txt\n");
+		java.nio.file.Files.writeString(base.resolve("outer1.txt"), "outer1\n");
+		java.nio.file.Files.writeString(base.resolve("outer2.txt"), "outer2\n");
+		java.nio.file.Files.writeString(base.resolve("inner.txt"), "inner\n");
+
+		try (Builder root = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("-resourceonly", "true");
+			p.setProperty("-make", "(*).jar;type=bnd;recipe=$1.bnd");
+			p.setProperty("Include-Resource", "main.jar");
+			root.setBase(base.toFile());
+			root.setProperties(p);
+
+			Jar jar = root.build();
+			report(root);
+
+			assertNotNull(jar.getResource("main.jar"));
+			java.io.File output = base.resolve("nested-main.jar").toFile();
+			assertDoesNotThrow(() -> jar.write(output));
 		}
 	}
 
