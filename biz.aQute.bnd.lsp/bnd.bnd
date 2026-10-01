@@ -1,0 +1,57 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+Bundle-SymbolicName: biz.aQute.bnd.lsp
+Bundle-Version: 7.5.0.${tstamp}
+Bundle-Description: Language Server Protocol (LSP) Server for bnd
+
+-buildpath: \
+	osgi.annotation,\
+	org.osgi.framework;version='1.10',\
+	org.osgi.dto;version='1.0',\
+	org.osgi.resource;version='1.0',\
+	org.osgi.util.tracker;version='1.5',\
+	org.osgi.service.coordinator;version=latest,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
+	org.osgi.service.resolver;version=latest,\
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
+	aQute.libg,\
+	biz.aQute.bnd.util;version=latest,\
+	biz.aQute.bndlib;version=latest,\
+	biz.aQute.repository;version=latest,\
+	biz.aQute.resolve;version=latest,\
+	org.eclipse.lsp4j;version=1.0.0,\
+	org.eclipse.lsp4j.jsonrpc;version=1.0.0,\
+	com.google.gson,\
+	slf4j.api;version=latest
+
+-testpath: \
+	${junit},\
+	assertj-core;version=latest,\
+	slf4j.simple;version=latest
+
+-conditionalpackage: \
+	aQute.lib.*,\
+	aQute.libg.*,\
+	org.osgi.*
+
+-includeresource: \
+	${workspace}/LICENSE, \
+	@${repo;biz.aQute.bnd.util;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
+	@${repo;org.eclipse.lsp4j;1.0.0}!/!META-INF/*, \
+	@${repo;org.eclipse.lsp4j.jsonrpc;1.0.0}!/!META-INF/*, \
+	@${repo;com.google.gson;[2.8,3)}!/!META-INF/*, \
+	@${repo;slf4j.api;[1.7.25,2)}!/!META-INF/*, \
+	@${repo;slf4j.simple;[1.7.25,2)}!/!META-INF/*
+
+Private-Package: \
+	aQute.bnd.lsp,\
+	aQute.bnd.lsp.models,\
+	aQute.bnd.lsp.services
+
+Main-Class: aQute.bnd.lsp.Main
