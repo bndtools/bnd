@@ -1,0 +1,5 @@
+{
+"bnd.server.mode": "java",
+  "bnd.server.jar": "C:/git/github.com/bndtools/bnd.wt/fea-bnd-ls/biz.aQute.bnd.lsp/generated/biz.aQute.bnd.lsp.jar",
+  "bnd.server.javaExecutable": "java"
+}
