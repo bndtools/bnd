@@ -1,0 +1,4 @@
+Bundle-Name: Project C (Indirect Cycle)
+Bundle-SymbolicName: com.example.indirect.c
+Bundle-Version: 1.0.0
+-buildpath: project-a;version=project

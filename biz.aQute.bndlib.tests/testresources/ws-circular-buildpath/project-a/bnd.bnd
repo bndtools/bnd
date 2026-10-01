@@ -1,0 +1,4 @@
+Bundle-Name: Project A
+Bundle-SymbolicName: com.example.bundle.a
+Bundle-Version: 1.0.0
+-buildpath: project-b;version=project

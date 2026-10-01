@@ -1,0 +1,4 @@
+Bundle-Name: Project B (Linear)
+Bundle-SymbolicName: com.example.linear.b
+Bundle-Version: 1.0.0
+-buildpath: project-c;version=project
