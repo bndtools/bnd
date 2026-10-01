@@ -1,0 +1,30 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+Bundle-SymbolicName: org.bndtools.jdtls
+Bundle-Version: 7.5.0.${tstamp}
+Bundle-Description: Headless bnd workspace support for Eclipse JDT LS integration
+
+-buildpath: \
+	osgi.annotation,\
+	aQute.libg,\
+	biz.aQute.bndlib;version=latest,\
+	biz.aQute.repository;version=latest,\
+	biz.aQute.resolve;version=latest,\
+	bndtools.api;version=latest,\
+	slf4j.api;version=latest
+
+-testpath: \
+	${junit},\
+	aQute.libg;version=latest,\
+	biz.aQute.bnd.util;version=latest,\
+	assertj-core;version=latest,\
+	slf4j.simple;version=latest
+
+Export-Package: \
+	org.bndtools.jdtls,\
+	org.bndtools.jdtls.dto
+
+-conditionalpackage: \
+	aQute.lib.*;-split-package:=merge-first, \
+	aQute.libg.*;-split-package:=merge-first
