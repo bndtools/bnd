@@ -36,6 +36,7 @@ import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -78,6 +79,12 @@ public class CDIAnnotations implements AnalyzerPlugin {
 			.collect(toMap(path -> path, FunctionWithException.asFunction(path -> {
 				Resource resource = currentJar.getResource(path);
 				if (resource != null) {
+					if (resource instanceof JarResource jarResource) {
+						// the Jar is owned by the resource (e.g. made by
+						// -make); we must not close it
+						return findDiscoveryMode(jarResource.getJar()
+							.getResource("META-INF/beans.xml"));
+					}
 					// we need to make sure to close the jar
 					try (Jar jar = Jar.fromResource(path, resource)) {
 						Resource beansResource = jar.getResource("META-INF/beans.xml");
