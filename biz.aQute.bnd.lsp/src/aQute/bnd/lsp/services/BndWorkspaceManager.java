@@ -115,7 +115,13 @@ public class BndWorkspaceManager {
 			return null;
 
 		try {
-			return ws.getProjectFromFile(file);
+			// Workspace.getProjectFromFile only accepts the project directory itself
+			for (File dir = file.isDirectory() ? file : file.getParentFile(); dir != null; dir = dir.getParentFile()) {
+				Project project = ws.getProjectFromFile(dir);
+				if (project != null)
+					return project;
+			}
+			return null;
 		} catch (Exception e) {
 			logger.debug("Could not get project for file {}", file, e);
 			return null;

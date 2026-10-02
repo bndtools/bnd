@@ -35,6 +35,7 @@ public class BndWorkspaceService implements WorkspaceService {
 	private static final Logger			logger	= LoggerFactory.getLogger(BndWorkspaceService.class);
 
 	private final BndWorkspaceManager	workspaceManager;
+	private final BndLaunchService		launchService;
 	private LanguageClient				client;
 	private BndTextDocumentService documents;
 	private boolean effectivePropertiesTrusted;
@@ -46,6 +47,11 @@ public class BndWorkspaceService implements WorkspaceService {
 
 	public BndWorkspaceService(BndWorkspaceManager workspaceManager) {
 		this.workspaceManager = workspaceManager;
+		this.launchService = new BndLaunchService(workspaceManager);
+	}
+
+	public void shutdown() {
+		launchService.shutdown();
 	}
 
 	public void setClient(LanguageClient client) {
@@ -74,6 +80,10 @@ public class BndWorkspaceService implements WorkspaceService {
 						return executeRepoList(args);
 					case Constants.COMMAND_JAR_PRINT :
 						return executeJarPrint(args);
+					case Constants.COMMAND_LAUNCH_PREPARE :
+						return executeLaunchPrepare(args);
+					case Constants.COMMAND_LAUNCH_DISPOSE :
+						return executeLaunchDispose(args);
 					default :
 						logger.warn("Unknown command: {}", command);
 						return null;
@@ -110,6 +120,44 @@ public class BndWorkspaceService implements WorkspaceService {
 		boolean merged = !request.has("merged") || request.get("merged").getAsBoolean();
 		return new BndEffectivePropertiesService().evaluate(file, snapshot == null ? null : snapshot.text(),
 			snapshot == null ? null : snapshot.version(), expanded, merged);
+	}
+
+	private Object executeLaunchPrepare(List<Object> args) throws Exception {
+		if (!effectivePropertiesTrusted) {
+			throw new IllegalStateException("Launching requires a trusted workspace.");
+		}
+		if (args == null || args.size() != 1) {
+			throw new IllegalArgumentException("Expected one launch request.");
+		}
+		JsonObject request = new Gson().toJsonTree(args.get(0))
+			.getAsJsonObject();
+		File file = getFileFromUri(request.get("uri")
+			.getAsString());
+		BndLaunchService.Kind kind = request.has("kind") && "test".equals(request.get("kind")
+			.getAsString()) ? BndLaunchService.Kind.test : BndLaunchService.Kind.run;
+		List<String> tests = new ArrayList<>();
+		if (request.has("tests") && request.get("tests")
+			.isJsonArray()) {
+			request.getAsJsonArray("tests")
+				.forEach(test -> tests.add(test.getAsString()));
+		}
+		boolean build = !request.has("build") || request.get("build")
+			.getAsBoolean();
+		try {
+			return launchService.prepare(new BndLaunchService.Request(file, kind, tests, build));
+		} catch (BndLaunchService.LaunchException e) {
+			return Map.of("error", e.getMessage(), "errors", e.getErrors());
+		}
+	}
+
+	private Object executeLaunchDispose(List<Object> args) {
+		if (args == null || args.isEmpty() || args.get(0) == null) {
+			throw new IllegalArgumentException("Missing launch id");
+		}
+		String id = args.get(0) instanceof String s ? s
+			: new Gson().toJsonTree(args.get(0))
+				.getAsString();
+		return Map.of("disposed", launchService.dispose(id));
 	}
 
 	private Object executeResolveBndrun(List<Object> args) throws Exception {

@@ -90,7 +90,8 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 		ExecuteCommandOptions cmdOptions = new ExecuteCommandOptions(Arrays.asList(Constants.COMMAND_BUILD_PROJECT,
 			Constants.COMMAND_BUILD_WORKSPACE, Constants.COMMAND_BUILD_CLEAN, Constants.COMMAND_RESOLVE_BNDRUN,
 			Constants.COMMAND_BASELINE, Constants.COMMAND_MACRO_EXPAND, Constants.COMMAND_REPO_LIST,
-			Constants.COMMAND_JAR_PRINT, Constants.COMMAND_EFFECTIVE_PROPERTIES));
+			Constants.COMMAND_JAR_PRINT, Constants.COMMAND_EFFECTIVE_PROPERTIES, Constants.COMMAND_LAUNCH_PREPARE,
+			Constants.COMMAND_LAUNCH_DISPOSE));
 		capabilities.setExecuteCommandProvider(cmdOptions);
 
 		return CompletableFuture.completedFuture(new InitializeResult(capabilities));
@@ -99,6 +100,7 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 	@Override
 	public CompletableFuture<Object> shutdown() {
 		logger.info("Shutting down bnd Language Server");
+		workspaceService.shutdown();
 		workspaceManager.shutdown();
 		scheduler.shutdown();
 		return CompletableFuture.completedFuture(new Object());
