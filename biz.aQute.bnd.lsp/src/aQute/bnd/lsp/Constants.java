@@ -13,6 +13,8 @@ public interface Constants {
 	String	COMMAND_REPO_LIST			= "bnd.repo.list";
 	String	COMMAND_JAR_PRINT			= "bnd.jar.print";
 	String	COMMAND_EFFECTIVE_PROPERTIES = "bnd.properties.effective";
+	String	COMMAND_LAUNCH_PREPARE		= "bnd.launch.prepare";
+	String	COMMAND_LAUNCH_DISPOSE		= "bnd.launch.dispose";
 
 	// Notifications
 	String	NOTIFICATION_STATUS			= "bnd/status";
