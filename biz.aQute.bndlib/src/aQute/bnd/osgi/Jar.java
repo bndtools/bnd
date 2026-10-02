@@ -74,6 +74,7 @@ import aQute.lib.zip.ZipUtil;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.PathSet;
+import aQute.service.reporter.Reporter;
 
 public class Jar implements Closeable {
 	private static final int	BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
@@ -124,6 +125,7 @@ public class Jar implements Closeable {
 	private int													fileLength				= -1;
 	private long												zipEntryConstantTime	= ZIP_ENTRY_CONSTANT_TIME;
 	private boolean												closeResources			= true;
+	private Reporter											logger					= null;
 
 	public static final Pattern									METAINF_SIGNING_P		= Pattern
 		.compile("META-INF/([^/]+\\.(?:DSA|RSA|EC|SF)|SIG-[^/]+)", Pattern.CASE_INSENSITIVE);
@@ -756,16 +758,51 @@ public class Jar implements Closeable {
 	public void writeManifest(OutputStream out) throws Exception {
 		check();
 		stripSignatures();
-		writeManifest(getManifest(), out);
+		writeManifest(getManifest(), out, logger);
 	}
 
+	/**
+	 * Writes the specified manifest to the output stream after cleaning it.
+	 * <p>
+	 * This method does not perform any logging during the cleaning process.
+	 * Callers should prefer
+	 * {@link #writeManifest(Manifest, OutputStream, Reporter)} instead which
+	 * allows logging via reporter from the caller
+	 *
+	 * @param manifest the manifest to clean and write; if {@code null}, no
+	 *            action is taken
+	 * @param out the output stream to which the manifest is written
+	 * @throws IOException if an I/O error occurs while writing the manifest
+	 */
 	public static void writeManifest(Manifest manifest, OutputStream out) throws IOException {
 		if (manifest == null)
 			return;
 
-		manifest = clean(manifest);
+		manifest = clean(manifest, null);
 		outputManifest(manifest, out);
 	}
+
+	/**
+	 * Writes the specified manifest to the output stream after cleaning it. Any
+	 * messages generated during the cleaning process are reported through the
+	 * specified reporter.
+	 *
+	 * @param manifest the manifest to clean and write; if {@code null}, no
+	 *            action is taken
+	 * @param out the output stream to which the manifest is written
+	 * @param logger the reporter used to report messages during cleaning; may
+	 *            be {@code null}
+	 * @throws IOException if an I/O error occurs while writing the manifest
+	 */
+	public static void writeManifest(Manifest manifest, OutputStream out, Reporter logger) throws IOException {
+
+		if (manifest == null)
+			return;
+
+		manifest = clean(manifest, logger);
+		outputManifest(manifest, out);
+	}
+
 
 	/**
 	 * Main function to output a manifest properly in UTF-8.
@@ -778,7 +815,7 @@ public class Jar implements Closeable {
 		ManifestUtil.write(manifest, out);
 	}
 
-	private static Manifest clean(Manifest org) {
+	private static Manifest clean(Manifest org, Reporter logger) {
 		Manifest result = new Manifest();
 		Attributes mainAttributes = result.getMainAttributes();
 		Collator collator = attrCollator(); // Create once and reuse
@@ -788,7 +825,7 @@ public class Jar implements Closeable {
 			Object key = entry.getKey();
 			if (Constants.OSGI_SYNTAX_HEADERS.contains(key.toString())
 				&& !Constants.BUNDLE_NATIVECODE.equals(key.toString())) {
-				nice = reorderClause(nice, collator);
+				nice = reorderClause(nice, collator, logger);
 			}
 			mainAttributes.put(key, nice);
 		}
@@ -829,8 +866,8 @@ public class Jar implements Closeable {
         return collator.compare(k1, k2);
     }
 
-    private static String reorderClause(String s, Collator collator) {
-        Parameters header = OSGiHeader.parseHeader(s);
+	private static String reorderClause(String s, Collator collator, Reporter logger) {
+		Parameters header = OSGiHeader.parseHeader(s, logger);
         for (Map.Entry<String, Attrs> entry : header.entrySet()) {
             Attrs newAttrs = new Attrs();
             Attrs oldAttrs = entry.getValue();
@@ -1263,7 +1300,7 @@ public class Jar implements Closeable {
 				Version v = new Version(version);
 				main.putValue(Constants.BUNDLE_VERSION, v.toStringWithoutQualifier());
 			}
-			writeManifest(m2, dout);
+			writeManifest(m2, dout, logger);
 
 			for (Map.Entry<String, Resource> entry : getResources().entrySet()) {
 				String path = entry.getKey();
@@ -1363,5 +1400,9 @@ public class Jar implements Closeable {
 
 	public void setDerived() {
 		this.closeResources = false;
+	}
+
+	public void setReporter(Reporter logger) {
+		this.logger = logger;
 	}
 }
