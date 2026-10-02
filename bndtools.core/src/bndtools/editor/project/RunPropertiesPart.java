@@ -2,21 +2,22 @@ package bndtools.editor.project;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.bndtools.core.ui.StickyToolTipSupport;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -42,7 +43,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
-import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
@@ -57,10 +57,6 @@ import bndtools.editor.common.MapEntryCellModifier;
 import bndtools.editor.common.PropertiesTableLabelProvider;
 import bndtools.editor.utils.ToolTips;
 import bndtools.utils.ModificationLock;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
 
 public class RunPropertiesPart extends BndEditorPart {
 
@@ -78,9 +74,7 @@ public class RunPropertiesPart extends BndEditorPart {
 	private Map<String, String>						inheritedProvenances	= new java.util.LinkedHashMap<>();
 
 	private String									programArgs				= null;
-	private String									inheritedProgramArgs	= null;
 	private String									vmArgs					= null;
-	private String									inheritedVmArgs			= null;
 
 	/** Key used to write local properties; may be plain or a .local suffix. */
 	private String									localPropertiesKey		= Constants.RUNPROPERTIES;
