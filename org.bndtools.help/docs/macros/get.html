@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>get ';' INDEX (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>get ';' INDEX (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>get</code> macro retrieves an element from one or more lists at a specified index position. It supports negative indices to count from the end of the list.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${get;&lt;index&gt;;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>index</code> - The zero-based position of the element to retrieve (negative values count from the end)</li>
+<li><code>list</code> - One or more semicolon-separated lists (items within lists are comma-separated)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists into a single list</li>
+<li>Uses zero-based indexing (0 = first element, 1 = second element, etc.)</li>
+<li>Supports negative indices (-1 = last element, -2 = second-to-last, etc.)</li>
+<li>Throws an exception if the index is out of bounds</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get first element (index 0):</p>
+<div class="highlight"><pre><span></span><code>${get;0;apple,banana,cherry}
+# Returns: &quot;apple&quot;
+</code></pre></div>
+
+<p>Get second element:</p>
+<div class="highlight"><pre><span></span><code>${get;1;red,green,blue}
+# Returns: &quot;green&quot;
+</code></pre></div>
+
+<p>Get last element (negative index):</p>
+<div class="highlight"><pre><span></span><code>${get;-1;one,two,three}
+# Returns: &quot;three&quot;
+</code></pre></div>
+
+<p>Get second-to-last element:</p>
+<div class="highlight"><pre><span></span><code>${get;-2;alpha,beta,gamma,delta}
+# Returns: &quot;gamma&quot;
+</code></pre></div>
+
+<p>Get from multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${get;3;red,green;blue,yellow}
+# Returns: &quot;yellow&quot; (4th element from combined list)
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Extracting specific elements from lists</li>
+<li>Getting the first or last element with predictable position</li>
+<li>Accessing elements by position in configuration</li>
+<li>Selecting specific items from generated lists</li>
+<li>Array-like access to list elements</li>
+<li>Implementing ordered selections</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Index is zero-based (0 is the first element)</li>
+<li>Negative indices are supported (-1 is the last element)</li>
+<li>Throws IndexOutOfBoundsException if index is invalid</li>
+<li>For first element, consider using <code>${first}</code> macro</li>
+<li>For last element, consider using <code>${last}</code> macro</li>
+<li>See also: <code>${sublist}</code> for extracting multiple elements</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

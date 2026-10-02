@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-standalone repo-spec (, repo-spec )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-standalone repo-spec (, repo-spec )</h1>
+<ul>
+<li>
+<p>Example: <code>-standalone=index.html;name=..., ...</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/standalone.md -->
+<p>The <code>-standalone</code> instruction in bnd allows you to transform a bndrun file into a standalone file that doesn't require a workspace. It is a merged property, meaning you can specify additional <code>repo-specs</code> using <code>-standalone.extra</code>. However, the presence of the exact <code>-standalone</code> flag is what determines if the bndrun file is standalone. Without the <code>-standalone</code> flag, even if <code>-standalone.extra</code> is specified, a workspace will still be required.</p>
+<p>A <code>bndrun</code> file is by default connected to its workspace, where the workspace defines the context and most important: the repositories. The workspace is by default defined in the workspace's <code>cnf</code> directory. </p>
+<p>The <code>-standalone</code> instruction tells bnd that this connection should be severed and that all information is contained in the <code>bndrun</code> file. The value of the <code>-standalone</code> instruction is used to define the repositories. Each <code>repo-spec</code> clause defines a repository.</p>
+<div class="highlight"><pre><span></span><code>-standalone     ::= repo-spec ( &#39;,&#39; repo-spec )*
+repo-spec       ::= &lt;relative url&gt; ( &#39;; &lt;fixed index repo attrs&gt; )*
+</code></pre></div>
+
+<p>The repositories that are created from the <code>-standalone</code> instruction are the OSGi Capabilities repositories as implemented by the Fixed Index Repository. For this repository you can add the following attributes:</p>
+<ul>
+<li><code>name</code> – Name of the repository</li>
+<li><code>cache</code> – File path to a cache directory</li>
+<li><code>timeout</code> – Time out for downloading the index</li>
+</ul>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre><span></span><code>-standalone:    index.html; name=local
+-runfw:         org.apache.felix.framework;version=5
+-runee:         JavaSE-1.8
+-runrequires:   osgi.identity;filter:=&#39;(osgi.identity=com.springsource.org.apache.tools.ant)&#39;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

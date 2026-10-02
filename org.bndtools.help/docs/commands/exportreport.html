@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>exportreport</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>exportreport</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   exportreport  &lt;[list | export | jarexport | readme | jarreadme]&gt; ...
+</code></pre></div>
+
+<h2 id="available-sub-commands">Available sub-commands</h2>
+<ul>
+<li><code>export</code> - Export the user defined reports. </li>
+<li><code>jarexport</code> - Export a custom report of a Jar. </li>
+<li><code>jarreadme</code> - Export a readme file of a Jar (template can be parametrized with system properties starting with 'bnd.reporter.*'). </li>
+<li><code>list</code> - List the user defined reports. </li>
+<li><code>readme</code> - Export a set of readme files (template can be parametrized with system properties starting with 'bnd.reporter.*'). </li>
+</ul>
+<h3 id="export">export</h3>
+<p>Export the user defined reports.</p>
+<h4 id="synopsis_1">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   export [options]  ...
+</code></pre></div>
+
+<h5 id="options">Options:</h5>
+<ul>
+<li><code>[ -e --exclude &lt;string;&gt; ]</code> Exclude files by pattern</li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+<li><code>[ -v --verbose ]</code> prints more processing information</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Use the following workspace</li>
+</ul>
+<h3 id="jarexport">jarexport</h3>
+<p>Export a custom report of a Jar.</p>
+<h4 id="synopsis_2">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   jarexport [options]  &lt;jar path&gt; &lt;output path&gt;
+</code></pre></div>
+
+<h5 id="options_1">Options:</h5>
+<ul>
+<li><code>[ -c --configName &lt;string&gt; ]</code> A configuration name defined in the property file (check -reportconfig documentation), if not set a default configuration will be used.</li>
+<li><code>[ -l --locale &lt;string&gt; ]</code> A locale (language-COUNTRY-variant) used to localized the report data.</li>
+<li><code>[ -p --parameters &lt;string;&gt; ]</code> A list of parameters that will be provided to the transformation process if any. eg: --parameters 'param1=value1,param2=value2'</li>
+<li><code>[ -P --properties &lt;string&gt; ]</code> Path to a property file</li>
+<li><code>[ -t --template &lt;string&gt; ]</code> Path or URL to a template file used to transform the generated report (twig or xslt). eg: --template bundle.xslt</li>
+<li><code>[ -T --templateType &lt;string&gt; ]</code> The template type (aka template file extension), must be set if it could not be guess from the template file name.</li>
+</ul>
+<h3 id="jarreadme">jarreadme</h3>
+<p>Export a readme file of a Jar (template can be parametrized with system properties starting with 'bnd.reporter.*').</p>
+<h4 id="synopsis_3">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   jarreadme [options]  &lt;jar path&gt; &lt;output path&gt;
+</code></pre></div>
+
+<h5 id="options_2">Options:</h5>
+<ul>
+<li><code>[ -e --exclude &lt;string;&gt; ]</code> Exclude files by pattern</li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+<li><code>[ -v --verbose ]</code> prints more processing information</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Use the following workspace</li>
+</ul>
+<h3 id="list">list</h3>
+<p>List the user defined reports.</p>
+<h4 id="synopsis_4">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   list [options]  ...
+</code></pre></div>
+
+<h5 id="options_3">Options:</h5>
+<ul>
+<li><code>[ -e --exclude &lt;string;&gt; ]</code> Exclude files by pattern</li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+<li><code>[ -v --verbose ]</code> prints more processing information</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Use the following workspace</li>
+</ul>
+<h3 id="readme">readme</h3>
+<p>Export the user defined reports.</p>
+<h4 id="synopsis_5">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   readme [options]  ...
+</code></pre></div>
+
+<h5 id="options_4">Options:</h5>
+<ul>
+<li><code>[ -e --exclude &lt;string;&gt; ]</code> Exclude files by pattern</li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+<li><code>[ -v --verbose ]</code> prints more processing information</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Use the following workspace</li>
+</ul>
+</body>
+</html>

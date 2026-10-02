@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>p_output</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>p_output</h1>
+<hr />
+<p>layout: default
+class:  Project
+title:  p_output
+summary: Get the absolute path to the project's output directory</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>p_output</code> macro returns the absolute path to the project's output/target directory where compiled classes and built artifacts are placed.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${p_output}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns absolute path to output directory</li>
+<li>Typically <code>bin</code> or <code>target</code> directory</li>
+<li>No arguments allowed</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get output directory:</p>
+<div class="highlight"><pre><span></span><code>Output-Directory: ${p_output}
+</code></pre></div>
+
+<p>Reference output in paths:</p>
+<div class="highlight"><pre><span></span><code>classes.location=${p_output}/classes
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Referencing build output location</li>
+<li>Configuring post-build tasks</li>
+<li>Documentation of build structure</li>
+<li>Tool integration</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns absolute path</li>
+<li>Usually <code>bin</code> or <code>target</code> directory</li>
+<li>Cannot take arguments</li>
+<li>See also: <code>${p_sourcepath}</code> for source directories</li>
+<li>See also: <code>${basedir}</code> for project root</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

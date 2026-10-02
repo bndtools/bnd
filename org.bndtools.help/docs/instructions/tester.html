@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-tester REPO-SPEC</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-tester REPO-SPEC</h1>
+<ul>
+<li>
+<p>Example: <code>-tester=biz.aQute.tester;version=latest</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/tester.md -->
+<p>The <code>-tester</code> instruction defines what bundle is used to setup testing. This bundle must have a Tester-Plugin that will setup the test environment.</p>
+<p>By default the, <code>-tester</code> is the bundle <code>biz.aQute.tester</code>. This bundle will instruct bnd to add this bundle to the <code>-runbundles</code>, sets the appropriate properties, and then launches. It will then run whatever tests are configured.</p>
+<h2 id="older-versions">Older Versions</h2>
+<p>For a long time bnd had biz.aQute.junit as the tester. This launcher added itself to the <code>-runpath</code> and then executed the tests from there. Unfortunately this required that the tester actually exported the JUnit packages. This caused constraints between JUnit and bnd that was not good because JUnit itself is not directly a shining example of software engineering :-(</p>
+<p>If you want to be backward compatible with the older model, set:</p>
+<div class="highlight"><pre><span></span><code>-tester: biz.aQute.junit
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

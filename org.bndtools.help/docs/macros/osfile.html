@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>osfile ';' DIR ';' NAME</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>osfile ';' DIR ';' NAME</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>osfile</code> macro constructs an absolute file path by combining a base directory and a relative path, using the operating system's native path separator (e.g., backslash on Windows, forward slash on Unix).</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${osfile;&lt;base&gt;;&lt;path&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>base</code> - The base directory path</li>
+<li><code>path</code> - The relative path to append to the base</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines the base directory and relative path</li>
+<li>Uses the OS-native path separator</li>
+<li>Returns an absolute path</li>
+<li>Creates proper path syntax for the current platform</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Create OS-specific path on Unix:</p>
+<div class="highlight"><pre><span></span><code>${osfile;/home/user;project/src/Main.java}
+# Returns: &quot;/home/user/project/src/Main.java&quot;
+</code></pre></div>
+
+<p>Create OS-specific path on Windows:</p>
+<div class="highlight"><pre><span></span><code>${osfile;C:/Users/user;project\\src\\Main.java}
+# Returns: &quot;C:\Users\user\project\src\Main.java&quot;
+</code></pre></div>
+
+<p>Build path from project base:</p>
+<div class="highlight"><pre><span></span><code>config.file=${osfile;${basedir};config/app.properties}
+</code></pre></div>
+
+<p>Create platform-specific classpath entry:</p>
+<div class="highlight"><pre><span></span><code>jar.path=${osfile;${basedir};lib/dependency.jar}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Creating platform-independent path references</li>
+<li>Building absolute paths for external tools</li>
+<li>Generating OS-specific file references</li>
+<li>Creating portable build scripts</li>
+<li>Path construction in cross-platform projects</li>
+<li>Interfacing with OS-specific tools</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The resulting path uses the OS-native separator</li>
+<li>Windows paths use backslash (), Unix uses forward slash (/)</li>
+<li>Returns an absolute path, not a relative one</li>
+<li>Handles path separator conversion automatically</li>
+<li>See also: <code>${path}</code> for Unix-style paths</li>
+<li>See also: <code>${pathseparator}</code> for the OS path separator</li>
+<li>See also: <code>${basedir}</code> for getting the project base directory</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

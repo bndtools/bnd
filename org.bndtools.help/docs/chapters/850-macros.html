@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Macro Reference</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Macro Reference</h1>
+<p>Bnd has a simple macro processor for the header processing. Variables allow a single definition of a value, and the use of derivations. Each header is a macro that can be expanded. Notice that headers that do not start with an upper case character will not be copied to the manifest, so they can be used as working variables. Variables are expanded by enclosing the name of the variable in <code>${&lt;name&gt;}</code> (curly braces) or <code>$(&lt;name&gt;)</code> (parenthesis). Additionally, square brackets [], angled brackets &lt;&gt;, double guillemets «», and single guillemets ‹› are also allowed for brackets. If brackets are nested, that is <code>$[replace;acaca;a(.*)a;[$1]]</code> will return <code>[cac]</code>.</p>
+<p>There are also a number of macros that perform basic functions. All these functions have the following basic syntax:</p>
+<div class="highlight"><pre><span></span><code> macro ::= &#39;${&#39; function &#39;}&#39; 
+     | &#39;$\[&#39; function &#39;\]&#39;
+     | &#39;$(&#39; function &#39;)&#39;
+     | &#39;$&lt;&#39; function &#39;&gt;&#39;
+
+ function ::= name ( &#39;;&#39; argument ) *
+</code></pre></div>
+
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>version=1.23.87.200109111023542
+Bundle-Version= ${version}
+Bundle-Description= This bundle has version ${version}
+</code></pre></div>
+
+<p>All macros are listed on the <a href="/chapters/855-macros-ref.html">Macro index</a></p>
+<h2 id="macro-patterns">Macro patterns</h2>
+<p>The default macro pattern is the <code>${...}</code> pattern, a dollar sign ('$') followed by a left curly bracket ('{') and closed by a right curly bracket ('}'). However, since bndlib is often used inside other systems it also supports alternative macro patterns:</p>
+<ul>
+<li><code>$(...)</code>, </li>
+<li><code>$&lt;...&gt;</code>, </li>
+<li><code>$[...]</code>, </li>
+<li><code>$«..»</code> (pointing double angle quotation mark \u00AB abd \u00BB), and</li>
+<li><code>$‹...›</code> (single pointing angle quotation mark)</li>
+</ul>
+<h2 id="arguments">Arguments</h2>
+<p>@Since("2.3") Macros can contain arguments. These arguments are available in the expansion as ${0} to ${9}. ${0} is the name of the macro, so the actual arguments start at 1. The name is also available as ${@}. The arguments as an array (without the name of the macro) is available as ${#}. The more traditional * could not be used because it clashes with wildcard keys, it means ALL values. </p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>foo: Hello ${1} -&gt; ${foo;Peter} -&gt; &quot;Hello Peter&quot;
+</code></pre></div>
+
+<h2 id="wildcarded-keys">Wildcarded Keys</h2>
+<p>Keys can be wildcarded. For example, if you want to set -plugin from different places, then you can set the <code>plugin.xxx</code> properties in different places and combine them with <code>-plugins= ${plugins.*}</code>.</p>
+<h2 id="expansion-of">Expansion of ./</h2>
+<p>The <code>./</code> sequence is automatically expanded to the current filename when found in a macro source file. This generally what you want but unfortunately not always. The <code>./</code> prefix is only replaced when:</p>
+<ul>
+<li>It is at the start of the expansion, or</li>
+<li>Preceded by a whitespace.</li>
+</ul>
+<p>So, do you really require the <code>./</code> without expansion? If so, then there are the following solutions. The first one is to use another macro to break the sequence:</p>
+<div class="highlight"><pre><span></span><code>.=.
+Some-Header: ${.}/conf/admin.xml
+</code></pre></div>
+
+<p>Alternatively there are a couple of macros that return the given value when called appropriately, and thereby break the sequence:</p>
+<div class="highlight"><pre><span></span><code>Some-Header-1: ${def;.;.}/conf/jetty/admin.xml
+Some-Header-2: ${uniq;.}/conf/jetty/admin.xml
+Some-Header-3: ${unescape;.}/conf/jetty/admin.xml
+</code></pre></div>
+
+<h2 id="booleans">Booleans</h2>
+<p>In many places a header is used to indicate false or true. In those cases we use some heuristics. The header/macro or whatever is false when:</p>
+<ul>
+<li>not set</li>
+<li>empty string</li>
+<li>'false'</li>
+<li>'!'</li>
+<li>'off'</li>
+<li>'not'</li>
+</ul>
+<p>If the value starts with <code>!</code> and text follows, the <code>!</code> is removed and the remaining text is interpreted as a boolean and then negated.</p>
+<p>In other cases, the value is considered <code>true</code>.</p>
+<h2 id="types">Types</h2>
+<p>@TODO</p>
+</body>
+</html>

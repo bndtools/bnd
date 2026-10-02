@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>cat ';' FILEPATH</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>cat ';' FILEPATH</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>cat</code> macro reads the contents of a file, directory, or URL and returns it as a string. It's similar to the Unix <code>cat</code> command, allowing you to embed file contents directly in your configuration.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${cat;&lt;path-or-url&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>path-or-url</code> - Path to a file or directory (relative to project), or a URL</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li><strong>For files</strong>: Returns the entire file contents as a string, with backslashes escaped</li>
+<li><strong>For directories</strong>: Returns a list of filenames in the directory</li>
+<li><strong>For URLs</strong>: Downloads and returns the content (assumes UTF-8 encoding)</li>
+<li>File paths are resolved relative to the project directory</li>
+<li>Returns null if the path doesn't exist and isn't a valid URL</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Read a text file:</p>
+<div class="highlight"><pre><span></span><code>license.text=${cat;LICENSE.txt}
+</code></pre></div>
+
+<p>Read a property file:</p>
+<div class="highlight"><pre><span></span><code>build.info=${cat;build.properties}
+</code></pre></div>
+
+<p>List directory contents:</p>
+<div class="highlight"><pre><span></span><code>resource.files=${cat;resources}
+</code></pre></div>
+
+<p>Fetch content from a URL:</p>
+<div class="highlight"><pre><span></span><code>remote.config=${cat;https://example.com/config.txt}
+</code></pre></div>
+
+<p>Embed a template:</p>
+<div class="highlight"><pre><span></span><code>header=${cat;templates/header.txt}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Embedding license text in bundle manifests</li>
+<li>Reading version information from external files</li>
+<li>Loading configuration templates</li>
+<li>Fetching remote configuration or data</li>
+<li>Including file contents in property values</li>
+<li>Listing files in a directory for processing</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Backslashes in file content are automatically escaped (useful for Windows paths)</li>
+<li>For large files, consider using file references instead of embedding</li>
+<li>URL fetching requires network access and may fail in restricted environments</li>
+<li>Directory listing returns a simple list of filenames</li>
+<li>UTF-8 encoding is assumed for both files and URLs</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

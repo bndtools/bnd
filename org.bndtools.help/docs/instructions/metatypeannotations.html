@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-metatypeannotations SELECTORS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-metatypeannotations SELECTORS</h1>
+<ul>
+<li>
+<p>Example: <code>-metatypeannotations: *</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/metatypeannotations.md -->
+<p>The <code>-metatypeannotations</code> instruction tells <strong>bnd</strong> which bundle classes, if any, to search for <a href="https://osgi.org/specification/osgi.cmpn/8.0.0/service.metatype.html">Metatype Service</a> annotations. <strong>bnd</strong> will then process those classes into Metatype XML resources.</p>
+<p>The value of this instruction is a comma delimited list of fully qualified class names.</p>
+<p>The default value of this instruction is <code>*</code>, which means that by default <strong>bnd</strong> will process all bundle classes looking for Metatype annotations.</p>
+<p>The behavior of Metatype annotation processing can be further configured using the <a href="metatypeannotations_options.html">-metatypeannotations-options</a> instruction.</p>
+<p><a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/metatype/MetatypeAnnotations.java">source</a></p>
+<p><br /><br /></p>
+</body>
+</html>

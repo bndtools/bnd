@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-pom BOOLEAN | PROPERTIES</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-pom BOOLEAN | PROPERTIES</h1>
+<ul>
+<li>
+<p>Example: <code>-pom=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/pom.md -->
+<p>The <code>-pom</code> instruction can generate a pom derived from the manifest and store it in the
+bundle. The groupId can be specified by the <code>groupid</code> key which defaults to the value of
+the <code>-groupid</code> instruction. If neither the <code>groupid</code> key or the <code>-groupid</code> instruction
+are specified, the groupId will be derived from the Bundle Symbolic Name by using
+everything until the last '.' (bsn prefix) and the artifactId will be everything from the
+last '.' to the end (bsn suffix).</p>
+<p>The following properties are supported:</p>
+<p>|Key              |Default          |Description                         |
+|<code>groupid</code>        |<code>-groupid</code>       |The groupId to use. Will default to bsn prefix if no groupid is set.|
+|<code>artifactid</code>     |bundle symbolic name|The artifactId to use. Will default to bsn suffix if no groupid is set.|
+|<code>version</code>        |bundle version   |The version to use.                 |
+|<code>where</code>          |<code>META-INF/maven/&lt;groupid&gt;/&lt;artifactid&gt;/pom.xml</code>|The location of the pom.xml file. Will default to <code>pom.xml</code> if no groupid is set.|</p>
+<p><strong>Note:</strong> When <code>-pom</code> is defined, then existing <code>META-INF/maven/</code> subfolders will be removed, before the <code>pom.xml</code> is generated. This might remove folders which existed previously e.g. by <a href="/instructions/includeresource.html#rolling">unrolling jar</a> files.</p>
+<p>The <code>-pom</code> instruction can use any macro but the <code>${@bsn}</code> and <code>${@version}</code> macros
+refer to the current JAR being built. </p>
+<p>The <code>-pom</code> instruction will also attempt to convert the following headers to their POM counterpart:</p>
+<ul>
+<li><code>Bundle-Description</code></li>
+<li><code>Bundle-DocUrl</code></li>
+<li><code>Bundle-Vendor</code>  – If the  value ends with a HTTP or HTTPS url then this URL is used as the organization URL and the name with be the part without the URL. Otherwise the whole value is used as the value for the organization name.</li>
+<li><code>Bundle-License</code></li>
+<li><code>Bundle-Developers</code> – This is an unofficial header. The key must be the email. It consist of the following parameters:</li>
+</ul>
+<p>|Parameters          |Default       |Description|
+|<code>email</code>             |              |Email address (mandatory)|
+|<code>id</code>                |email         |A developer id (defaults to email)|
+|<code>name</code>              |              |Name of the developer|
+|<code>organization</code>      |              |Name of the organization|
+|<code>organizationUrl</code>   |              |URL of the organization|
+|<code>roles</code>             |              |Roles of the developer (comma separated)|
+|<code>timezone</code>          |              |Three letter time zone|</p>
+<div class="highlight"><pre><span></span><code>Bundle-Developers: \
+  Peter.Kriens@aQute.biz; \
+    name=&quot;Peter Kriens&quot;; \
+    organization=aQute; \
+    roles=&quot;programmer,gopher&quot;
+</code></pre></div>
+
+<ul>
+<li><code>Bundle-SCM</code> – This is an unofficial header. The key must be the It consists of the following parameters:</li>
+</ul>
+<p>|Parameters             |Default       |Description|
+|<code>connection</code>           |              |Read only connection|
+|<code>developerConnection</code>  |              |Developer connection|
+|<code>url</code>                  |              |The URL for a web front end to your SCM system.|</p>
+<div class="highlight"><pre><span></span><code>Bundle-SCM: \
+    url=https://github.com/bndtools, \
+    connection=scm:git:https://github.com/bndtools/bnd, \
+    developerConnection=scm:git:git@github.com/bndtools/bnd
+</code></pre></div>
+
+<h3 id="example">Example</h3>
+<p>The following example bnd file:</p>
+<div class="highlight"><pre><span></span><code>Bundle-SymbolicName: com.example.foo
+Bundle-Version: 1.2.3.qualifier
+-pom: true
+</code></pre></div>
+
+<p>Generates the following pom in <code>pom.xml</code>:</p>
+<div class="highlight"><pre><span></span><code>&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;
+    xmlns:xsi=&quot;&quot; 
+    xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+            &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+            &lt;groupId&gt;com.example&lt;/groupId&gt;
+            &lt;artifactId&gt;foo&lt;/artifactId&gt;
+            &lt;version&gt;1.2.3.qualifier&lt;/version&gt;
+            &lt;name&gt;com.example.foo&lt;/name&gt;
+&lt;/project&gt;
+</code></pre></div>
+
+<p>You can override the different parts of the Maven coordinates:</p>
+<div class="highlight"><pre><span></span><code>Bundle-SymbolicName:          com.example.foo
+Bundle-Version:               1.2.3.qualifier
+Bundle-Developers:            Peter.Kriens@aQute.biz; \
+  name=&quot;Peter Kriens&quot;; \
+  organization=aQute; \
+  roles=&quot;programmer,gopher&quot;
+Bundle-SCM: url=https://github.com/bndtools, \
+  connection=scm:git:https://github.com/bndtools/bnd, \
+  developerConnection=scm:git:git@github.com/bndtools/bnd
+-pom: groupid=com.example, \
+  where=META-INF/maven/pom.xml, \
+  version=${versionmask;==;${Bundle-Version}}
+</code></pre></div>
+
+<p>Generates the following pom in <code>META-INF/maven/pom.xml</code>:</p>
+<div class="highlight"><pre><span></span><code>&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; 
+    xmlns:xsi=&quot;&quot;
+    xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+            &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+            &lt;groupId&gt;com.example&lt;/groupId&gt;
+            &lt;artifactId&gt;com.example.foo&lt;/artifactId&gt;
+            &lt;version&gt;1.2&lt;/version&gt;
+            &lt;name&gt;com.example.foo&lt;/name&gt;
+            &lt;scm&gt;
+                &lt;url&gt;https://github.com/bndtools&lt;/url&gt;
+                &lt;connection&gt;scm:git:https://github.com/bndtools/bnd&lt;/connection&gt;
+                &lt;developerConnection&gt;scm:git:git@github.com/bndtools/bnd&lt;/developerConnection&gt;
+            &lt;/scm&gt;
+            &lt;developers&gt;
+                &lt;developer&gt;
+                    &lt;id&gt;Peter.Kriens@aQute.biz&lt;/id&gt;
+                    &lt;name&gt;Peter Kriens&lt;/name&gt;
+                    &lt;organization&gt;aQute&lt;/organization&gt;
+                    &lt;roles&gt;
+                        &lt;role&gt;programmer&lt;/role&gt;
+                        &lt;role&gt;gopher&lt;/role&gt;
+                    &lt;/roles&gt;
+                    &lt;email&gt;Peter.Kriens@aQute.biz&lt;/email&gt;
+                &lt;/developer&gt;
+            &lt;/developers&gt;
+&lt;/project&gt;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-builderignore PATH-SPEC ( ',' PATH-SPEC ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-builderignore PATH-SPEC ( ',' PATH-SPEC ) *</h1>
+<ul>
+<li>
+<p>Example: <code>-builderignore=${if;${driver;gradle};bin,bin_test,generated;build}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/builderignore.md -->
+<p>Specified paths must be relative to the project. Each path represents a directory in a project to be ignored by the builder when deciding if the bundles of the project need to be built. This is processed for workspace model builds by the Bndtools builder in Eclipse and the Bnd Gradle plugin.</p>
+<p>This can be useful when the workspace is configured to use different output folders for Bndtools in Eclipse and for Gradle. For example:</p>
+<div class="highlight"><pre><span></span><code>bin: ${if;${driver;gradle};build/classes/java/main;bin}
+testbin: ${if;${driver;gradle};build/classes/java/test;bin_test}
+target-dir: ${if;${driver;gradle};build/libs;generated}
+</code></pre></div>
+
+<p>When configuring the workspace to use different output folders for Bndtools in Eclipse and for Gradle, you should also use <code>-builderignore</code> to instruct the builder to ignore the other builder's output folders.</p>
+<div class="highlight"><pre><span></span><code>-builderignore: ${if;${driver;gradle};bin,bin_test,generated;build}
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>
