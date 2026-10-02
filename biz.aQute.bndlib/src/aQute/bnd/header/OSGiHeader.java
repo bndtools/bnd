@@ -16,15 +16,19 @@ import aQute.service.reporter.Reporter;
 public class OSGiHeader {
 	public final static Pattern TOKEN_P = Pattern.compile(PatternConstants.TOKEN);
 
+	/**
+	 * Like {@link #parseHeader(String, Reporter)} but without a Reporter (no
+	 * logging possible). Does not allow duplicate attributes)
+	 */
 	static public Parameters parseHeader(String value) {
 		return parseHeader(value, null);
 	}
 
 	/**
-	 * Standard OSGi header parser. This parser can handle the format clauses
-	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
-	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
-	 * }
+	 * Standard OSGi header parser (which does not allow duplicate attributes).
+	 * This parser can handle the format clauses ::= clause ( ',' clause ) +
+	 * clause ::= name ( ';' name ) (';' key '=' value ) This is mapped to a Map
+	 * { name => Map { attr|directive => value } }
 	 *
 	 * @param value A string
 	 * @return a Map<String,Map<String,String>>
@@ -33,6 +37,9 @@ public class OSGiHeader {
 		return parseHeader(value, logger, new Parameters());
 	}
 
+	/**
+	 * Standard OSGi header parser for full control via the result parameter.
+	 */
 	static public Parameters parseHeader(String value, Reporter logger, Parameters result) {
 		if (value == null || value.trim()
 			.isEmpty())

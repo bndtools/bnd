@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.text.Collator;
+import java.util.List;
 import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -38,6 +39,8 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 public class JarTest {
 	@Test
@@ -463,8 +466,12 @@ public class JarTest {
 
 	@Test
 	public void testReorderClauseMethod() throws Exception {
+		// test logger
+		Reporter logger = new ReporterAdapter(System.err);
+
 		// Test the reorderClause method directly using reflection
-		Method reorderClauseMethod = Jar.class.getDeclaredMethod("reorderClause", String.class, Collator.class);
+		Method reorderClauseMethod = Jar.class.getDeclaredMethod("reorderClause", String.class, Collator.class,
+			Reporter.class);
 		reorderClauseMethod.setAccessible(true);
 
 		// Create a collator for testing
@@ -474,7 +481,7 @@ public class JarTest {
 
 		// Test case 1: Mixed attributes and directives
 		String input1 = "com.example.api;uses:=\"com.example.internal\";version=\"1.0.0\";mandatory:=\"version\";provider=acme";
-		String output1 = (String) reorderClauseMethod.invoke(null, input1, collator);
+		String output1 = (String) reorderClauseMethod.invoke(null, input1, collator, logger);
 
 		// Verify that all components are present
 		assertTrue(output1.contains("com.example.api"), "Package name should be preserved");
@@ -493,7 +500,7 @@ public class JarTest {
 
 		// Test case 2: Simple case with one attribute and one directive
 		String input2 = "com.example;directive:=value;attribute=value";
-		String output2 = (String) reorderClauseMethod.invoke(null, input2, collator);
+		String output2 = (String) reorderClauseMethod.invoke(null, input2, collator, logger);
 
 		assertTrue(output2.contains("com.example"), "Package name should be preserved");
 		assertTrue(output2.contains("directive:=value"), "directive should be present");
@@ -501,7 +508,7 @@ public class JarTest {
 
 		// Test case 3: Only attributes
 		String input3 = "com.example;version=\"1.0.0\";provider=acme";
-		String output3 = (String) reorderClauseMethod.invoke(null, input3, collator);
+		String output3 = (String) reorderClauseMethod.invoke(null, input3, collator, logger);
 
 		assertTrue(output3.contains("com.example"), "Package name should be preserved");
 		assertTrue(output3.contains("version=\"1.0.0\""), "version should be present");
@@ -509,7 +516,7 @@ public class JarTest {
 
 		// Test case 4: Only directives
 		String input4 = "com.example;uses:=\"com.other\";mandatory:=\"version\"";
-		String output4 = (String) reorderClauseMethod.invoke(null, input4, collator);
+		String output4 = (String) reorderClauseMethod.invoke(null, input4, collator, logger);
 
 		assertTrue(output4.contains("com.example"), "Package name should be preserved");
 		assertTrue(output4.contains("uses:="), "uses directive should be present");
@@ -819,5 +826,50 @@ public class JarTest {
 			jar.putResource("foo/../ok.txt", new EmbeddedResource("ok", 0L));
 			assertThat(jar.exists("ok.txt")).isTrue();
 		}
+	}
+
+	/**
+	 * <p>
+	 * {@code Jar.writeManifest} cleans the manifest and, since 018ebcfd7 ("Fix
+	 * directive ordering inconsistency in OSGi headers"), reorders the clauses
+	 * of all OSGi syntax headers in {@code Jar.reorderClause}. It does that by
+	 * parsing the header with {@code OSGiHeader.parseHeader}, which keeps only
+	 * one of two attributes/directives with the same name, and printing it
+	 * again. This test verifies that duplicate removal and also ensures that
+	 * the problem is logged with a warning.
+	 */
+	@Test
+	public void testManifestRemoveDuplicateDirectivesWithWarning() throws Exception {
+		String header = "a.b;fragment-attachment:=\"always\";fragment-attachment:=\"never\"";
+		System.err.println("\n=== #7452: duplicate directive in manifest ===");
+		System.err.println("Bundle-SymbolicName in : " + header);
+
+		Manifest manifest = new Manifest(
+			new ByteArrayInputStream(("Manifest-Version: 1.0\nBundle-SymbolicName: " + header + "\n").getBytes()));
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+		Reporter logger = new ReporterAdapter() {
+			@Override
+			public boolean isPedantic() {
+				return true;
+			}
+
+		};
+		Jar.writeManifest(manifest, bout, logger);
+
+		List<String> warnings = logger.getWarnings();
+		System.err.println(warnings);
+		assertEquals(
+			"Duplicate attribute/directive name fragment-attachment: in a.b;fragment-attachment:=\"always\";fragment-attachment:=\"never\". This attribute/directive will be ignored",
+			warnings.get(0));
+
+		Manifest written = new Manifest(new ByteArrayInputStream(bout.toByteArray()));
+		String out = written.getMainAttributes()
+			.getValue(Constants.BUNDLE_SYMBOLICNAME);
+		System.err.println("Bundle-SymbolicName out: " + out
+			+ (header.equals(out) ? "" : "   <-- duplicate dropped by Jar.reorderClause"));
+
+		assertEquals("a.b;fragment-attachment:=never", out);
 	}
 }

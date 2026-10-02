@@ -210,6 +210,7 @@ public class Builder extends Analyzer {
 		Jar dot = getJar();
 		if (dot == null) {
 			dot = new Jar("dot");
+			dot.setReporter(this);
 			setJar(dot);
 		}
 
@@ -334,6 +335,7 @@ public class Builder extends Analyzer {
 		if (f.exists()) {
 			Jar jar = new Jar(f);
 			jar.setDoNotTouchManifest();
+			jar.setReporter(this);
 			buildInstrs.compression()
 				.ifPresent(jar::setCompression);
 
@@ -384,7 +386,7 @@ public class Builder extends Analyzer {
 			File fp = f.getParentFile();
 			IO.mkdirs(fp);
 			try (OutputStream out = IO.outputStream(f)) {
-				Jar.writeManifest(dot.getManifest(), out);
+				Jar.writeManifest(dot.getManifest(), out, this);
 			}
 			changedFile(f);
 		}
@@ -443,6 +445,7 @@ public class Builder extends Analyzer {
 		}
 
 		Jar jar = new Jar(CONDITIONALPACKAGE);
+		jar.setReporter(this);
 		addClose(jar);
 		for (PackageRef pref : referred) {
 			for (Jar cpe : getClasspath()) {
@@ -1457,6 +1460,7 @@ public class Builder extends Analyzer {
 			int n = 0;
 			for (String file : map.keySet()) {
 				Jar c = new Jar(getFile(file));
+				c.setReporter(this);
 				c.setDoNotTouchManifest();
 
 				buildInstrs.compression()
