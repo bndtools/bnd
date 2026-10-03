@@ -5,7 +5,7 @@ class: Processor
 summary: |
    Control diagnostics for duplicate and shadowed property definitions.
 parent: Instruction Reference
-note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder.
+note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
 - Example: `-propertyconflicts: error`
