@@ -76,6 +76,32 @@ public class UTF8Properties extends Properties {
 	public UTF8Properties() {
 	}
 
+	/** A parsed declaration, with a zero-based line and half-open key offsets. */
+	public record Property(String key, String source, int line, int start, int end) {}
+
+	/**
+	 * Loads properties and reports every decoded key before overwriting values.
+	 * When supplied, the declaration consumer owns duplicate reporting; other
+	 * parser diagnostics are still sent to the reporter.
+	 */
+	public void load(String source, File file, Reporter reporter, Collection<String> syntaxHeaders,
+		String provenance, java.util.function.Consumer<Property> declarations) throws IOException {
+		new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter, this, syntaxHeaders,
+			provenance, declarations).parse();
+	}
+
+	/** Loads a file with declaration reporting, preserving encoding detection. */
+	public void load(File file, Reporter reporter, Collection<String> syntaxHeaders,
+		java.util.function.Consumer<Property> declarations) throws IOException {
+		load(decode(IO.read(file)), file, reporter, syntaxHeaders, file.getAbsolutePath(), declarations);
+	}
+
+	/** Loads a stream with declaration reporting, preserving encoding detection. */
+	public void load(InputStream input, File file, Reporter reporter, Collection<String> syntaxHeaders,
+		String provenance, java.util.function.Consumer<Property> declarations) throws IOException {
+		load(decode(IO.read(input)), file, reporter, syntaxHeaders, provenance, declarations);
+	}
+
 	private static Collection<String> fromArray(String[] array) {
 		return (array != null) ? Arrays.asList(array) : null;
 	}

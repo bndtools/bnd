@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
@@ -20,15 +22,16 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 
 	@Override
 	public boolean hasResolutions(IMarker marker) {
-		return marker.getAttribute(IncludeConflictDetector.ATTR_KEY, null) != null;
+		return marker.getAttribute(IncludeConflictDetector.ATTR_MERGEABLE, false);
 	}
 
 	@Override
 	public IMarkerResolution[] getResolutions(IMarker marker) {
 		String key = marker.getAttribute(IncludeConflictDetector.ATTR_KEY, null);
 		String sources = marker.getAttribute(IncludeConflictDetector.ATTR_SOURCES, "");
-		if (key == null || sources.isEmpty())
+		if (!hasResolutions(marker) || key == null || sources.isEmpty())
 			return new IMarkerResolution[0];
+		File root = new File(marker.getAttribute(IncludeConflictDetector.ATTR_ROOT, sources.split("\n")[0]));
 
 		if (marker.getAttribute(IncludeConflictDetector.ATTR_IN_FILE, false)) {
 			File file = new File(sources);
@@ -38,8 +41,8 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 				new IMarkerResolution2() {
 					@Override
 					public String getLabel() {
-						return "Rename duplicate occurrences of '" + key + "' in " + file.getName()
-							+ " to merged syntax";
+						return "Rename duplicate occurrences of '" + key + "' to unique merged property keys inside "
+							+ file.getName();
 					}
 
 					@Override
@@ -56,7 +59,9 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 					@Override
 					public void run(IMarker m) {
 						try {
-							IncludeConflictDetector.renameDuplicateKeysInFile(file, key);
+							if (!confirm(key))
+								return;
+							IncludeConflictDetector.renameKeysInFile(file, key, root, true);
 							m.delete();
 						} catch (Exception e) {
 							logger.logError("Failed to rename duplicates of " + key + " in " + file, e);
@@ -67,21 +72,22 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 		}
 
 		List<IMarkerResolution> resolutions = new ArrayList<>();
-		for (String path : sources.split(";")) {
+		for (String path : sources.split("\n")) {
 			File file = new File(path);
 			if (!file.isFile())
 				continue;
-			String newKey = key + "." + IncludeConflictDetector.suggestSuffixForFile(file, key);
+			String mergedKey = IncludeConflictDetector.mergedKey(key, file);
 			resolutions.add(new IMarkerResolution2() {
 				@Override
 				public String getLabel() {
-					return "Rename '" + key + "' to '" + newKey + "' in " + file.getName();
+					return "Rename '" + key + "' to the unique merged property key '" + mergedKey + "' inside "
+						+ file.getName();
 				}
 
 				@Override
 				public String getDescription() {
-					return "Renames the plain property in " + file.getAbsolutePath()
-						+ " so bnd merges it with the other definitions instead of shadowing them.";
+					return "Renames the plain property in " + file.getAbsolutePath() + " to '" + mergedKey
+						+ "' so bnd merges it with the other definitions instead of shadowing them.";
 				}
 
 				@Override
@@ -92,7 +98,9 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 				@Override
 				public void run(IMarker m) {
 					try {
-						IncludeConflictDetector.renameKeyInFile(file, key, newKey);
+						if (!confirm(key))
+							return;
+						IncludeConflictDetector.renameKeysInFile(file, key, root, false);
 						m.delete();
 					} catch (Exception e) {
 						logger.logError("Failed to rename " + key + " in " + file, e);
@@ -101,5 +109,10 @@ public class IncludeConflictMarkerResolutionGenerator implements IMarkerResoluti
 			});
 		}
 		return resolutions.toArray(new IMarkerResolution[0]);
+	}
+
+	private static boolean confirm(String key) {
+		return MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Merge property definitions",
+			"Renaming '" + key + "' adds previously shadowed values and can change their order. Continue?");
 	}
 }
