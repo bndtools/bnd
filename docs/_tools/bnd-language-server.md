@@ -38,3 +38,5 @@ Effective-properties evaluation requires a trusted workspace. It uses the open d
 ## JDT LS Bridge
 
 The `org.bndtools.jdtls` project exports a headless Java API for JDT LS integrations. `BndJdtLsBridge` detects bnd workspaces and exposes project and workspace metadata, resolved build/test classpaths, and package names under source and test roots. The bridge is a library; it does not itself register as a JDT LS extension or provide an LSP client.
+
+The separate `org.bndtools.jdtls.adapter` bundle registers a native JDT LS project importer, classpath-container initializer and build-support extension. It imports bnd projects before Gradle, maps source/test roots and outputs, resolves build/test dependencies and refreshes them after configuration changes. It requires JDT LS 1.61 or later running on Java 21 or later. Build it using Java 21 or later with `JDT_LS_CORE_JAR` set to the installed `org.eclipse.jdt.ls.core_*.jar`, then contribute the resulting bundle through a VS Code extension's `contributes.javaExtensions`. Imported project metadata is owned by bnd rather than Gradle/Buildship. Source and output directories outside a project are currently unsupported.
