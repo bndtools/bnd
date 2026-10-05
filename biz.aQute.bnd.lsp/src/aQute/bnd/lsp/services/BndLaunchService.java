@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,7 +37,7 @@ public class BndLaunchService {
 
 	public record Result(String launchId, String mainClass, List<String> classPaths, List<String> vmArgs,
 		List<String> args, Map<String, String> env, String cwd, String javaExecutable, String runee, String name,
-		List<String> warnings) {}
+		List<String> warnings, List<String> sourcePaths) {}
 
 	public static class LaunchException extends Exception {
 		private static final long	serialVersionUID	= 1L;
@@ -145,9 +146,18 @@ public class BndLaunchService {
 			// bnd default; let the client pick a runtime matching -runee
 			java = null;
 		}
+		var sources = new LinkedHashSet<String>();
+		for (Project candidate : project.getWorkspace().getAllProjects()) {
+			boolean launched = candidate.getBase().equals(project.getBase()) || launcher.getRunBundles().stream()
+				.anyMatch(bundle -> new File(bundle).toPath().startsWith(candidate.getBase().toPath()));
+			if (launched) {
+				candidate.getSourcePath().stream().filter(File::isDirectory).map(IO::absolutePath).forEach(sources::add);
+				if (candidate.getTestSrc().isDirectory()) sources.add(IO.absolutePath(candidate.getTestSrc()));
+			}
+		}
 		return new Result(id, launcher.getMainTypeName(), List.copyOf(launcher.getClasspath()), vmArgs,
 			List.copyOf(launcher.getRunProgramArgs()), new LinkedHashMap<>(launcher.getRunEnv()),
-			IO.absolutePath(cwd), java, project.getProperty(Constants.RUNEE), project.getName(), warnings);
+			IO.absolutePath(cwd), java, project.getProperty(Constants.RUNEE), project.getName(), warnings, List.copyOf(sources));
 	}
 
 	private static void build(Project project, boolean bndrun) throws Exception {

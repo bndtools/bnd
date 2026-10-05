@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.eclipse.jdt.ls.core.importers">
+    <importer id="bndProjectImporter" order="100" class="org.bndtools.jdtls.adapter.BndProjectImporter"/>
+  </extension>
+  <extension point="org.eclipse.jdt.core.classpathContainerInitializer">
+    <classpathContainerInitializer id="org.bndtools.jdtls.BND_CONTAINER" class="org.bndtools.jdtls.adapter.BndProjectImporter$ContainerInitializer"/>
+  </extension>
+  <extension point="org.eclipse.jdt.ls.core.buildSupport">
+    <buildSupport id="bndBuildSupport" order="100" class="org.bndtools.jdtls.adapter.BndProjectImporter$BuildSupport"/>
+  </extension>
+</plugin>
