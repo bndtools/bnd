@@ -90,8 +90,15 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 		ExecuteCommandOptions cmdOptions = new ExecuteCommandOptions(Arrays.asList(Constants.COMMAND_BUILD_PROJECT,
 			Constants.COMMAND_BUILD_WORKSPACE, Constants.COMMAND_BUILD_CLEAN, Constants.COMMAND_RESOLVE_BNDRUN,
 			Constants.COMMAND_BASELINE, Constants.COMMAND_MACRO_EXPAND, Constants.COMMAND_REPO_LIST,
-			Constants.COMMAND_JAR_PRINT, Constants.COMMAND_EFFECTIVE_PROPERTIES, Constants.COMMAND_LAUNCH_PREPARE,
-			Constants.COMMAND_LAUNCH_DISPOSE));
+			Constants.COMMAND_JAR_PRINT, Constants.COMMAND_JAR_PRINT_TEXT, Constants.COMMAND_EFFECTIVE_PROPERTIES,
+			Constants.COMMAND_RESOLUTION_ANALYZE, Constants.COMMAND_LAUNCH_PREPARE,
+			Constants.COMMAND_LAUNCH_DISPOSE, Constants.COMMAND_REPOSITORIES_LIST,
+			Constants.COMMAND_REPOSITORIES_BUNDLES, Constants.COMMAND_REPOSITORIES_VERSIONS,
+			Constants.COMMAND_REPOSITORIES_FEATURE, Constants.COMMAND_REPOSITORIES_GET,
+			Constants.COMMAND_REPOSITORIES_SEARCH, Constants.COMMAND_REPOSITORIES_ACTIONS,
+			Constants.COMMAND_REPOSITORIES_RUN_ACTION, Constants.COMMAND_REPOSITORIES_REFRESH,
+			Constants.COMMAND_REPOSITORIES_PUT, Constants.COMMAND_REPOSITORIES_DOWNLOAD,
+			Constants.COMMAND_WORKSPACE_OFFLINE));
 		capabilities.setExecuteCommandProvider(cmdOptions);
 
 		return CompletableFuture.completedFuture(new InitializeResult(capabilities));
