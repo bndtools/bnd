@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -28,6 +29,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.lsp.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.print.JarPrinter;
 import aQute.bnd.service.RepositoryPlugin;
 import biz.aQute.resolve.RunResolution;
 
@@ -36,6 +38,7 @@ public class BndWorkspaceService implements WorkspaceService {
 
 	private final BndWorkspaceManager	workspaceManager;
 	private final BndLaunchService		launchService;
+	private final BndRepositoriesService	repositoriesService;
 	private LanguageClient				client;
 	private BndTextDocumentService documents;
 	private boolean effectivePropertiesTrusted;
@@ -48,6 +51,7 @@ public class BndWorkspaceService implements WorkspaceService {
 	public BndWorkspaceService(BndWorkspaceManager workspaceManager) {
 		this.workspaceManager = workspaceManager;
 		this.launchService = new BndLaunchService(workspaceManager);
+		this.repositoriesService = new BndRepositoriesService(workspaceManager);
 	}
 
 	public void shutdown() {
@@ -68,6 +72,11 @@ public class BndWorkspaceService implements WorkspaceService {
 				switch (command) {
 					case Constants.COMMAND_EFFECTIVE_PROPERTIES :
 						return executeEffectiveProperties(args);
+						case Constants.COMMAND_RESOLUTION_ANALYZE :
+							if (!effectivePropertiesTrusted) {
+								throw new IllegalStateException("Resolution analysis requires a trusted workspace.");
+							}
+							return BndResolutionService.analyze(workspaceManager, args);
 					case Constants.COMMAND_RESOLVE_BNDRUN :
 						return executeResolveBndrun(args);
 					case Constants.COMMAND_BUILD_PROJECT :
@@ -80,10 +89,36 @@ public class BndWorkspaceService implements WorkspaceService {
 						return executeRepoList(args);
 					case Constants.COMMAND_JAR_PRINT :
 						return executeJarPrint(args);
+					case Constants.COMMAND_JAR_PRINT_TEXT :
+						return executeJarPrintText(args);
 					case Constants.COMMAND_LAUNCH_PREPARE :
 						return executeLaunchPrepare(args);
 					case Constants.COMMAND_LAUNCH_DISPOSE :
 						return executeLaunchDispose(args);
+					case Constants.COMMAND_REPOSITORIES_LIST :
+						return repositoriesService.list(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_BUNDLES :
+						return repositoriesService.bundles(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_VERSIONS :
+						return repositoriesService.versions(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_FEATURE :
+						return repositoriesService.feature(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_GET :
+						return repositoriesService.get(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_SEARCH :
+						return repositoriesService.search(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_ACTIONS :
+						return repositoriesService.actions(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_RUN_ACTION :
+						return repositoriesService.runAction(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_REFRESH :
+						return repositoriesService.refresh(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_PUT :
+						return repositoriesService.put(repositoriesRequest(args));
+					case Constants.COMMAND_REPOSITORIES_DOWNLOAD :
+						return repositoriesService.download(repositoriesRequest(args));
+					case Constants.COMMAND_WORKSPACE_OFFLINE :
+						return repositoriesService.offline(repositoriesRequest(args));
 					default :
 						logger.warn("Unknown command: {}", command);
 						return null;
@@ -148,6 +183,20 @@ public class BndWorkspaceService implements WorkspaceService {
 		} catch (BndLaunchService.LaunchException e) {
 			return Map.of("error", e.getMessage(), "errors", e.getErrors());
 		}
+	}
+
+	private JsonObject repositoriesRequest(List<Object> args) {
+		if (!effectivePropertiesTrusted) {
+			throw new IllegalStateException("Repositories require a trusted workspace.");
+		}
+		if (args == null || args.size() != 1 || args.get(0) == null) {
+			throw new IllegalArgumentException("Expected one repositories request.");
+		}
+		JsonElement request = new Gson().toJsonTree(args.get(0));
+		if (!request.isJsonObject()) {
+			throw new IllegalArgumentException("Expected one repositories request.");
+		}
+		return request.getAsJsonObject();
 	}
 
 	private Object executeLaunchDispose(List<Object> args) {
@@ -307,6 +356,29 @@ public class BndWorkspaceService implements WorkspaceService {
 				result.put("manifest", headers);
 			}
 			return result;
+		}
+	}
+
+	/**
+	 * Same report as the bndtools JAR editor Print page: all JarPrinter options.
+	 */
+	private Object executeJarPrintText(List<Object> args) throws Exception {
+		if (args == null || args.size() != 1) {
+			throw new IllegalArgumentException("Expected one jar print request.");
+		}
+		JsonObject request = new Gson().toJsonTree(args.get(0))
+			.getAsJsonObject();
+		JsonElement uri = request.get("uri");
+		if (uri == null || !uri.isJsonPrimitive()) {
+			throw new IllegalArgumentException("Missing jar file uri.");
+		}
+		File jarFile = new File(URI.create(uri.getAsString()));
+		if (!jarFile.isFile()) {
+			throw new IllegalArgumentException("Jar file does not exist: " + jarFile);
+		}
+		try (Jar jar = new Jar(jarFile); JarPrinter printer = new JarPrinter()) {
+			printer.doPrint(jar, -1, false, false);
+			return Map.of("text", printer.toString());
 		}
 	}
 
