@@ -889,10 +889,11 @@ public class AnalyzerTest {
 		try {
 			Properties p = new Properties();
 			p.put("Private-Package", "org.objectweb.*");
-			p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
+			p.put("Bundle-Activator", "test.activator.Activator");
 			a.setClasspath(new Jar[] {
 				new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
 			});
+			a.addClasspath(new File("bin_test"));
 			a.setProperties(p);
 			a.build();
 			Manifest manifest = a.getJar()
@@ -903,12 +904,12 @@ public class AnalyzerTest {
 			assertEquals(1, a.getWarnings()
 				.size());
 			assertTrue(
-				a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
+				a.check("Bundle-Activator test.activator.Activator is being imported into the bundle"));
 
 			String imports = manifest.getMainAttributes()
 				.getValue("Import-Package");
 			assertNotNull(imports);
-			assertTrue(imports.contains("org.osgi.framework"));
+			assertTrue(imports.contains("test.activator"));
 		} finally {
 			a.close();
 		}

@@ -89,6 +89,7 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
 					Position position = model.getPosition(annotation);
 					if (isAtPosition(context.getOffset(), position, document)) {
 						IMarker marker = ((MarkerAnnotation) annotation).getMarker();
+						int before = proposals.size();
 						String errorType = marker.getAttribute("$bndType", null);
 						if (errorType != null) {
 							BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(errorType);
@@ -106,9 +107,9 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
 								}
 							}
 						}
-						if (proposals.isEmpty()) {
+						if (proposals.size() == before) {
 							try {
-								IMarkerResolution[] ideResolutions = IDE.getMarkerHelpRegistry().getResolutions(marker);
+								IMarkerResolution[] ideResolutions = getMarkerResolutions(marker);
 								if (ideResolutions != null) {
 									for (IMarkerResolution resolution : ideResolutions) {
 										proposals.add(new MarkerResolutionProposal(resolution, marker));
@@ -128,6 +129,10 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
 		}
 
 		return proposals.toArray(new ICompletionProposal[0]);
+	}
+
+	IMarkerResolution[] getMarkerResolutions(IMarker marker) {
+		return IDE.getMarkerHelpRegistry().getResolutions(marker);
 	}
 
 }
