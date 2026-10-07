@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -55,6 +56,7 @@ import aQute.bnd.lsp.models.BndHeaderClause;
 import aQute.bnd.lsp.models.BndHeaderEntry;
 import aQute.bnd.lsp.models.BndToken;
 import aQute.bnd.lsp.models.BndTokenType;
+import aQute.bnd.properties.BadLocationException;
 
 public class BndTextDocumentService implements TextDocumentService {
 	private static final Logger						logger			= LoggerFactory
@@ -215,10 +217,15 @@ public class BndTextDocumentService implements TextDocumentService {
 
 			List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
 			for (BndHeaderEntry entry : model.getHeaderEntries()) {
-				Range headerRange = new Range(new Position(entry.getStartLine(), 0),
-					new Position(entry.getEndLine(), entry.getValueLength()));
-				Range selectionRange = new Range(new Position(entry.getStartLine(), 0),
-					new Position(entry.getStartLine(), entry.getKeyLength()));
+				Range headerRange;
+				try {
+					headerRange = new Range(new Position(entry.getStartLine(), 0),
+						new Position(entry.getEndLine(), model.getLineInformation(entry.getEndLine()).getLength()));
+				} catch (BadLocationException e) {
+					throw new CompletionException(e);
+				}
+				Range selectionRange = new Range(model.offsetToPosition(entry.getKeyOffset()),
+					model.offsetToPosition(entry.getKeyOffset() + entry.getKeyLength()));
 
 				DocumentSymbol headerSymbol = new DocumentSymbol(entry.getKey(), SymbolKind.Property, headerRange,
 					selectionRange, entry.getValue());
