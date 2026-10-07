@@ -23,6 +23,32 @@ public class BndLanguageServerTest {
 	Path temporary;
 
 	@Test
+	public void documentSymbolsUseSourceRanges() throws Exception {
+		String text = "Bundle-Version: 1\r\n  Bundle-Name:   \r\n-buildpath: \\\r\n  example.long.name,\\\r\n  x";
+		String uri = temporary.resolve("bnd.bnd").toUri().toString();
+		BndLanguageServer server = new BndLanguageServer();
+		try {
+			server.initialize(new InitializeParams()).get();
+			server.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(
+				new TextDocumentItem(uri, "bnd", 1, text)));
+			var symbols = server.getTextDocumentService().documentSymbol(new org.eclipse.lsp4j.DocumentSymbolParams(
+				new org.eclipse.lsp4j.TextDocumentIdentifier(uri))).get();
+			assertThat(symbols).hasSize(3);
+			var version = symbols.get(0).getRight();
+			assertThat(version.getRange()).isEqualTo(new org.eclipse.lsp4j.Range(
+				new org.eclipse.lsp4j.Position(0, 0), new org.eclipse.lsp4j.Position(0, 17)));
+			var name = symbols.get(1).getRight();
+			assertThat(name.getSelectionRange()).isEqualTo(new org.eclipse.lsp4j.Range(
+				new org.eclipse.lsp4j.Position(1, 2), new org.eclipse.lsp4j.Position(1, 13)));
+			assertThat(name.getRange().getEnd()).isEqualTo(new org.eclipse.lsp4j.Position(1, 17));
+			var buildpath = symbols.get(2).getRight();
+			assertThat(buildpath.getRange().getEnd()).isEqualTo(new org.eclipse.lsp4j.Position(4, 3));
+		} finally {
+			server.shutdown().get();
+		}
+	}
+
+	@Test
 	public void effectivePropertiesRequiresTrustAndUsesVersionedText() throws Exception {
 		Path file = temporary.resolve("launch.bndrun");
 		Files.writeString(file, "value: saved\n");
