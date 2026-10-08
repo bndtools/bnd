@@ -68,17 +68,22 @@ public class BndLaunchService {
 			throw new IllegalArgumentException("Expected an existing .bndrun or bnd.bnd file: " + file);
 		}
 		Workspace ws = workspaceManager.getWorkspaceForFile(file);
-		if (ws == null) {
-			throw new IllegalStateException("Not in a bnd workspace: " + file);
-		}
 
 		boolean bndrun = file.getName()
 			.endsWith(".bndrun");
 		Project project;
 		if (bndrun) {
-			project = Run.createRun(ws, file);
+			Run run = Run.createRun(ws, file);
+			if (ws == null && !run.isStandAlone()) {
+				run.close();
+				throw new IllegalStateException("Not in a bnd workspace: " + file);
+			}
+			project = run;
 		} else if (file.getName()
 			.equals(Project.BNDFILE)) {
+			if (ws == null) {
+				throw new IllegalStateException("Not in a bnd workspace: " + file);
+			}
 			project = workspaceManager.getProjectForFile(file);
 			if (project == null) {
 				throw new IllegalStateException("Could not find project for: " + file);
