@@ -76,6 +76,23 @@ class BndLaunchServiceTest {
 	}
 
 	@Test
+	void standaloneBndrunDoesNotRequireWorkspace() throws Exception {
+		Path file = Files.writeString(temporary.resolve("standalone.bndrun"), "-standalone: true\n");
+		var service = new BndLaunchService(new BndWorkspaceManager());
+		var result = service
+			.prepare(new BndLaunchService.Request(file.toFile(), BndLaunchService.Kind.run, List.of(), true));
+		assertThat(result.launchId()).isNotBlank();
+		assertThat(service.dispose(result.launchId())).isTrue();
+		assertThat(service.size()).isZero();
+
+		Path workspaceRun = Files.writeString(temporary.resolve("workspace-required.bndrun"), "");
+		assertThatThrownBy(() -> service.prepare(new BndLaunchService.Request(workspaceRun.toFile(),
+			BndLaunchService.Kind.run, List.of(), false)))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("Not in a bnd workspace");
+	}
+
+	@Test
 	void findsProjectForBndFile() throws Exception {
 		Path dir = workspace();
 		var manager = new BndWorkspaceManager();
