@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-includepackage PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-includepackage PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*</h1>
+<ul>
+<li>
+<p>Example: <code>-includepackage: -includepackage com.example.foo.*</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/includepackage.md -->
+<p>The <code>-includepackage</code> instruction falls in the family of instructions to pull in packages from the current class path. The
+instructions lists one of more package specifications that can contain wildcards. Any attributes or directives are 
+ignored. This instruction only operates during the <em>expand</em> phase of the JAR. It has not further semantics.</p>
+<p>The primary motivation for this instruction is the use of the <code>@Export</code> annotation. Using that annoation puts
+bnd in a bind. A Private-Package should be private and an Export-Package should be exported. Since a bnd file
+should always have the final say, the <code>@Export</code> instruction needed an instruction that took in the packages but
+that did not put export semantics on it.</p>
+<p>This instruction is also taken into account when taken the decision to automatically fill up the JAR from the
+current project. If this instruction is set (or any other construction instruction) it is assumed that the user
+wants to be in control and the instructions are followed. If none of these instructions is set then the JAR is 
+constructed from the project's output folder.</p>
+<p>When the packages selected by the <code>-includepackage</code> instructions overlap with either Private-Package or Export-Package
+then the Export-Package has the highest priority and then Private-Package. That is, any <code>@Export</code> in a package that is selected 
+by Export-Package or Private-Package is ignored silently. </p>
+<p>Notice that an annotation like <code>@Version</code> in a a package like selected can still provide the version if the Export-Package 
+header for that package provides no version.</p>
+<h2 id="example">Example</h2>
+<p>The following example includes all packages from <code>com.example.*</code> except <code>com.example.bar</code>.</p>
+<div class="highlight"><pre><span></span><code>-includepackage !com.example.bar, com.example.*
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

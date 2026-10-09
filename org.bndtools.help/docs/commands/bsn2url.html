@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>bsn2url</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>bsn2url</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   bsn2url [options]  ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+</ul>
+<!-- Manual content from: ext/bsn2url.md -->
+<h2 id="bsn2url-command">bsn2url Command</h2>
+<p>The <code>bsn2url</code> command in bnd is used to generate a list of URLs for bundles based on their bundle symbolic names (bsns) and versions. This is useful for creating lists of bundle locations for deployment, analysis, or documentation purposes.</p>
+<p>The command reads a list of bsns (and optional version ranges) from input files, looks up the available versions in the configured repositories, and outputs the corresponding URLs for each matching bundle.</p>
+<p><strong>Example:</strong></p>
+<p>Suppose you have a file <code>bundles.txt</code> containing:</p>
+<div class="highlight"><pre><span></span><code>com.example.foo;version=&#39;[1.0,2.0)&#39;
+com.example.bar
+</code></pre></div>
+
+<p>You can generate a list of URLs for these bundles with:</p>
+<div class="highlight"><pre><span></span><code>bnd bsn2url bundles.txt
+</code></pre></div>
+
+<p>This will print the URLs for the matching bundles and versions, making it easy to retrieve or reference them in other tools or scripts.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

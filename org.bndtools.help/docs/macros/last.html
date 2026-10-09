@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>last (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>last (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>last</code> macro returns the last element from one or more comma-separated lists. If multiple lists are provided, it returns the last element from the combined lists.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${last;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of values (items within each list are comma-separated)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists into a single list</li>
+<li>Returns the last element from the combined list</li>
+<li>Returns an empty string if all lists are empty</li>
+<li>Preserves the original value (no trimming or transformation)</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get last element from a list:</p>
+<div class="highlight"><pre><span></span><code>${last;apple,banana,cherry}
+# Returns: &quot;cherry&quot;
+</code></pre></div>
+
+<p>Get last from multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${last;red,green;blue,yellow}
+# Returns: &quot;yellow&quot;
+</code></pre></div>
+
+<p>Get last defined value:</p>
+<div class="highlight"><pre><span></span><code>version=${last;1.0.0;${custom.version};${snapshot.version}}
+# Returns last defined version
+</code></pre></div>
+
+<p>Use with property lists:</p>
+<div class="highlight"><pre><span></span><code>latest.jar=${last;${buildpath}}
+</code></pre></div>
+
+<p>Select last matching file:</p>
+<div class="highlight"><pre><span></span><code>newest=${last;${sort;${lsr;logs;*.log}}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Selecting the final item from a list</li>
+<li>Getting the most recent value (when lists are ordered)</li>
+<li>Extracting tail elements for processing</li>
+<li>Choosing the last available option</li>
+<li>Implementing last-wins strategies</li>
+<li>Getting the tail of a sequence</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns empty string (not null) for empty lists</li>
+<li>Does not modify or trim the value</li>
+<li>Can handle multiple list arguments separated by semicolons</li>
+<li>See also: <code>${first}</code> for getting the first element</li>
+<li>See also: <code>${get}</code> with negative index (-1) for the same result</li>
+<li>See also: <code>${sublist}</code> for extracting multiple elements</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>githead</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>githead</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>githead</code> macro returns the SHA-1 hash of the current Git HEAD commit. It searches for a <code>.git</code> directory starting from the project base directory and walking up the file hierarchy, then resolves symbolic references to find the actual commit hash.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${githead}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Searches for a <code>.git</code> directory starting from the project base, going up the directory tree</li>
+<li>Handles both regular Git repositories and Git worktrees</li>
+<li>Reads the <code>.git/HEAD</code> file to find the current commit</li>
+<li>Resolves symbolic references (e.g., <code>ref: refs/heads/main</code>) to actual commit SHAs</li>
+<li>Handles packed references (when Git has optimized/compressed references)</li>
+<li>Returns the commit SHA in uppercase hexadecimal format</li>
+<li>Returns empty string if no Git repository is found</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Include Git commit in manifest:</p>
+<div class="highlight"><pre><span></span><code>Bundle-SCM-Revision: ${githead}
+# Result: Bundle-SCM-Revision: 4A3B2C1D0E9F8A7B6C5D4E3F2A1B0C9D8E7F6A5B
+</code></pre></div>
+
+<p>Create version with Git hash:</p>
+<div class="highlight"><pre><span></span><code>Implementation-Version: ${version}-${githead}
+</code></pre></div>
+
+<p>Document build source:</p>
+<div class="highlight"><pre><span></span><code>Build-From: commit ${githead}
+</code></pre></div>
+
+<p>Conditional on Git availability:</p>
+<div class="highlight"><pre><span></span><code>git.revision=${if;${githead};${githead};not-in-git-repo}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Tracking exact source code version in built artifacts</li>
+<li>Creating reproducible builds with commit information</li>
+<li>Debugging - knowing exactly which commit produced an artifact</li>
+<li>Audit trails for compliance and security</li>
+<li>Continuous integration - linking builds to source commits</li>
+<li>Version identification beyond semantic versioning</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns empty string if not in a Git repository</li>
+<li>Works with Git worktrees (separate working directories)</li>
+<li>Handles both direct SHA references and symbolic references</li>
+<li>Handles Git's packed-refs optimization</li>
+<li>The returned SHA is in uppercase</li>
+<li>The search walks up the directory tree to find the Git repository</li>
+<li>Useful for embedding in bundle manifests for traceability</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

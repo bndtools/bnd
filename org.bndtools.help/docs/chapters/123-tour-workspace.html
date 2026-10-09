@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Guided Tour Workspace & Projects</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Guided Tour Workspace & Projects</h1>
+<p>The bnd workspace is a foundational concept in bnd, providing the structure and context in which OSGi projects are developed and built.</p>
+<p>In the introduction we mentioned this as the second part of bnd:</p>
+<blockquote>
+<p>The other part is a IDE/build tool independent model of a workspace with projects.</p>
+</blockquote>
+<p>This guide provides a high-level overview of how to set up and use bndlib <strong>workspaces</strong> and <strong>projects</strong>. It is aimed at build engineers or developers responsible for configuring OSGi builds using bnd, and it focuses on the underlying concepts and mechanics that bndlib offers for automating build tasks.</p>
+<p>Rather than teaching OSGi itself or prescribing a full build system, this guide demonstrates how bndlib operates under the hood—tool-agnostic and from the command line—using a sample workspace named com.acme.prime. While the bnd command-line interface is used for illustration, this is not the typical way bndlib is consumed in practice. Most real-world builds are orchestrated through tools like Gradle or IDEs like Bndtools.</p>
+<p>Think of this guide as a conceptual tour that will help you understand how workspaces, properties, plugins, and projects come together in bndlib. The goal is to clarify the structure and extensibility of a bndlib-powered build environment, not to provide production-ready build instructions.</p>
+<p>Since this section provides a tool independent view of bndlib, we use the <a href="120-install.html">bnd command line application</a> to demonstrate the features. Though this is an excellent way to show the low level functionality (the porcelain in git terms), it is not the normal way bndlib is used. In general, a build tool like gradle, ant, make, or maven drives this process from the command line an IDE like bndtools handles the user interaction. So please, please, do not take this <code>com.acme.prime</code> as a guide how to create a build. However handy bnd is, it falls far short of a real build tool like for example gradle.</p>
+<h2 id="workspace">Workspace</h2>
+<p>A workspace is a directory with the following mandatory files/directories:</p>
+<div class="highlight"><pre><span></span><code>./
+    cnf/
+        build.bnd
+        ext/
+</code></pre></div>
+
+<p>That's all! So let's create one:</p>
+<div class="highlight"><pre><span></span><code>$ bnd add workspace com.acme.prime
+$ cd com.acme.prime
+$ ls
+cnf
+</code></pre></div>
+
+<p>The <code>cnf</code> directory is the 'magic' directory that makes a directory a workspace, just like the <code>.git</code> directory does for git. </p>
+<p>In the <code>cnf</code> directory you find the following files:</p>
+<div class="highlight"><pre><span></span><code>$ ls cnf
+bnd.bnd         build.bnd       ext
+</code></pre></div>
+
+<p>The <code>build.bnd</code> is part of the magic to make something a workspace, it contains <em>your</em> workspace properties. The <code>ext</code> directory contains more properties. The <code>bnd.bnd</code> is the last piece of magic, it makes bndlib recognize the <code>cnf</code> directory as a project.</p>
+<h3 id="naming">Naming</h3>
+<p>Why such a long name for the workspace? Wouldn't just <code>tour</code> suffice? Well, glad you asked. If you work with bnd(tools) for some time you will find that you will get many different workspaces since a workspace is another level of <em>modularity</em>. You can see a workspace as a <em>cohesive</em> set of bundles; just like any module it can import and export. Just like any other module, it imports and exports the thing it encapsulates. For example, a bundle imports and exports packages. In case of the workspace this is the <em>bundle</em>. A workspace imports and exports bundles through repositories. </p>
+<p>A good module has cohesion; this means that its constituents have a rather strong relation. Since they also tend to come from the same organization they will have very similar bundle symbolic names. Since some of these bundles will escape in the wild it is always beneficial if you can quickly find the source of that bundle. Therefore naming the workspace with the shared prefix of the bundle symbolic names of its constituents is highly recommended.</p>
+<p>That said, bndlib does not enforce this guideline in any way, unlike project names. You can name your workspace <code>foo</code> if you want to.</p>
+<h3 id="properties">Properties</h3>
+<p>A workspace so created is quite empty. However, if we look in the <code>cnf</code> directory then we can see the <code>build.bnd</code> file. This file  is 100% for you ... Any property, instruction, or header specified in here is available in anything you build in this workspace; all other bnd files will inherit everything from this properties file. In this file should add for example the headers Bundle-Vendor and Bundle-Copyright. However, using the macro language we can also add custom variables and macros that are useful across the workspace.</p>
+<h2 id="plugins">Plugins</h2>
+<p>An important aspect of the workspace is that it hosts <em>plugins</em>. A plugin is an extension to bndlib that gets loaded when the workspace is opened. Plugins provide a lot of different functions in bndlib. You can see the currently loaded plugins with bnd:</p>
+<div class="highlight"><pre><span></span><code>$ bnd plugins
+000 Workspace [com.acme.prime]
+001 java.util.concurrent.ThreadPoolExecutor@a4102b8[Running, ...]
+002 java.util.Random@11dc3715
+003 Maven [m2=...]
+004 Settings[/Users/aqute/.bnd/settings.json]
+005 bnd-cache
+006 ResourceRepositoryImpl [... ]
+007 aQute.bnd.osgi.Processor
+</code></pre></div>
+
+<p>The plugins you see are the built-in plugins of bnd itself, they always are available. However, the purpose of plugins is to extend the base functionality. As almost everything, the set of external plugins is managed through an instruction, which is a property in the Workspace.</p>
+<p>Before bndlib reads the <code>build.bnd</code> file to read the workspace properties, it first reads all the files with a <code>.bnd</code> extension in the <code>cnf/ext</code> folder. The purpose of this folder is to manage setups for plugins. We can add additional plugins by their name. You can see a list of built-in plugins with the add plugin command:</p>
+<div class="highlight"><pre><span></span><code>$ bnd add plugin
+Type                           Description
+ant                            aQute.bnd.plugin.ant.AntPlugin
+blueprint                      aQute.lib.spring.SpringXMLType
+eclipse                        aQute.bnd.plugin.eclipse.EclipsePlugin
+filerepo                       aQute.lib.deployer.FileRepo
+git                            aQute.bnd.plugin.git.GitPlugin
+gradle                         aQute.bnd.plugin.gradle.GradlePlugin
+...
+</code></pre></div>
+
+<p>An interesting plugin is the Eclipse plugin that will prepare any projects for Eclipse. We could also add the git plugin that will make sure the proper .gitignore files are in place.</p>
+<div class="highlight"><pre><span></span><code>$ bnd add plugin eclipse
+$ bnd add plugin git
+$ bnd plugins
+...
+007 aQute.bnd.osgi.Processor
+008 EclipsePlugin
+009 GitPlugin
+</code></pre></div>
+
+<p>Since you likely need to maintain this build it is good to know how this is stored. If you look in the <code>cnf/ext</code> directory you should see an <code>eclipse.bnd</code> and a <code>git.bnd</code> file:</p>
+<div class="highlight"><pre><span></span><code>$ ls cnf/ext
+eclipse.bnd         git.bnd
+</code></pre></div>
+
+<p>The <code>eclipse.bnd</code> file contains the following:</p>
+<div class="highlight"><pre><span></span><code>$ more cnf/ext/eclipse.bnd
+#
+# Plugin eclipse setup
+#
+-plugin.eclipse = aQute.bnd.plugin.eclipse.EclipsePlugin
+</code></pre></div>
+
+<p>So how does this work? When the workspace is opened bndlib will first read all the bnd files in the <code>cnf/ext</code> directory in alphabetical order. After that, it will read the <code>build.bnd</code> file. The idea of the <code>cnf/ext</code> files is that they should not be touched by you, the <code>build.bnd</code> file is, however, all yours. You can override any previous setting in the <code>build.bnd</code> file since it is read last. </p>
+<p>As you can see, the <code>eclipse.bnd</code> file defines the property <code>-plugin.eclipse</code>. In most cases that a value should be settable in different places, bndlib uses <em>merged properties</em>. When bndlib loads the plugins, it actually gets the property <code>-plugin</code>, merged with any other property that has a key that starts with <code>-plugin.</code> (ordered alphabetically). This allows you to add to a merged property anywhere in the many places in bndlib where you can set properties.  </p>
+<p>So now we can try to build the workspace:</p>
+<div class="highlight"><pre><span></span><code>$ bnd build
+No Projects
+</code></pre></div>
+
+<p>Which makes some sense ...</p>
+<h2 id="project">Project</h2>
+<p>An empty workspace is not so useful, let's add a project. </p>
+<div class="highlight"><pre><span></span><code>$ bnd add project com.acme.prime.hello
+$ ls -a com.acme.prime.hello/
+.               .gitignore      bin_test        src
+..              .project        bnd.bnd         test
+.classpath      bin             generated
+</code></pre></div>
+
+<p>This classic layout defines separate source folders for the main code and the test code. The <code>generated</code> directory is a temporary directory, it contains the artifacts produced by this build. </p>
+<h2 id="setup">Setup</h2>
+<h2 id="changing-the-layout">Changing the Layout</h2>
+<p>This is a classical Eclipse layout, with a separate <code>src</code> and <code>test</code> folder. However, this is not baked into bndlib, it is possible to, for example, use the maven layout with the <code>src/main/java</code>, <code>src/test/java</code>, and <code>target</code> directories. We can try this out with the maven plugin.</p>
+<div class="highlight"><pre><span></span><code>$ bnd add plugin maven
+$ more cnf/ext/maven.bnd
+-plugin.maven = aQute.bnd.plugin.maven.MavenPlugin
+
+-outputmask = ${@bsn}-${versionmask;===S;${@version}}.jar
+
+src=src/main/java
+bin=target/classes
+testsrc=src/test/java
+testbin=target/test-classes
+target-dir=target
+</code></pre></div>
+
+<p>The maven plugin adds a number of properties that are recognized by bndlib and used appropriately.</p>
+</body>
+</html>

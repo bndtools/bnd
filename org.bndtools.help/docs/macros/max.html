@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>max (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>max (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>max</code> macro compares strings lexicographically using Java's <code>String.compareTo()</code> and returns the maximum (highest) value.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${max;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of strings</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Compares strings lexicographically</li>
+<li>Case-sensitive comparison</li>
+<li>Returns the highest string value</li>
+<li>Uses standard Java string ordering</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find maximum string:</p>
+<div class="highlight"><pre><span></span><code>${max;apple,banana,cherry}
+# Returns: &quot;cherry&quot;
+</code></pre></div>
+
+<p>Multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${max;abc,xyz;def,mno}
+# Returns: &quot;xyz&quot;
+</code></pre></div>
+
+<p>Numeric strings (lexicographic):</p>
+<div class="highlight"><pre><span></span><code>${max;1,10,2,20}
+# Returns: &quot;20&quot; (lexicographic, not numeric)
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Finding highest string value</li>
+<li>String comparison</li>
+<li>Alphabetic sorting (last)</li>
+<li>String selection</li>
+<li>Data analysis</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Lexicographic (dictionary) ordering</li>
+<li>Case-sensitive ("Z" &lt; "a")</li>
+<li>Not numeric comparison</li>
+<li>For numeric max, use proper number comparison</li>
+<li>See also: <code>${min}</code> for minimum</li>
+<li>See also: <code>${vmax}</code> for version comparison</li>
+<li>See also: <code>${nmax}</code> for numeric comparison</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

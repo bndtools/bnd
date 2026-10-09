@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>repodigests ( ';' NAME )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>repodigests ( ';' NAME )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>repodigests</code> macro returns hexadecimal cryptographic digests representing the contents of all repositories or specific named repositories. This is useful for detecting changes in repository state.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${repodigests[;&lt;repo-name&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>repo-name</code> (optional) - One or more repository names. If omitted, returns digests for all repositories.</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Calculates digest for each specified repository</li>
+<li>Returns comma-separated hex-encoded digests</li>
+<li>Repositories without digest support are skipped</li>
+<li>Reports error if named repository not found</li>
+<li>Uses repository's <code>getDigest()</code> method</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get all repository digests:</p>
+<div class="highlight"><pre><span></span><code>${repodigests}
+# Returns: &quot;a1b2c3d4e5f6...,f6e5d4c3b2a1...&quot;
+</code></pre></div>
+
+<p>Specific repositories:</p>
+<div class="highlight"><pre><span></span><code>${repodigests;Maven Central;Local}
+</code></pre></div>
+
+<p>Check for changes:</p>
+<div class="highlight"><pre><span></span><code>repo.state=${repodigests}
+</code></pre></div>
+
+<p>Conditional on digest:</p>
+<div class="highlight"><pre><span></span><code>${if;${repodigests;Release};has-digest;no-digest}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Detecting repository changes</li>
+<li>Build cache invalidation</li>
+<li>Repository state tracking</li>
+<li>Dependency change detection</li>
+<li>Build reproducibility</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Requires repository plugin support for digests</li>
+<li>Returns hex-encoded digest strings</li>
+<li>Comma-separated for multiple repos</li>
+<li>Silently skips unsupported repositories</li>
+<li>Errors on missing named repositories</li>
+<li>See also: <code>${repos}</code> for repository names</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

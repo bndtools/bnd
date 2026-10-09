@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Repositories View</title>
+<link rel="stylesheet" href="../../help.css">
+</head>
+<body>
+<h1>Repositories View</h1>
+<p><img src="https://bndtools.org/images/repositories-view.png" style="max-width:100%" class="view"></p>
+<p>Bndtools uses <em>repositories</em> to supply dependencies to be used at build-time and at runtime. </p>
+<p>A repository is essentially a collection of bundles, optionally with some kind of index. </p>
+<p>It may be located anywhere: in the workspace, somewhere else on the local file system, or on a remote server.</p>
+<p>Bndtools uses repositories in the following ways:</p>
+<ul>
+<li>To look up bundles specified on the Build Path by Bundle Symbolic Name (BSN) and version</li>
+<li>To resolve the Run Requirements list (see <a href="https://bnd.bndtools.org/chapters/250-resolving.html#resolving-in-bndtools">Resolving Dependencies</a>)</li>
+<li>To look up bundles specified in the Run Bundles list by BSN and version</li>
+</ul>
+<p>Repositories are implemented as <a href="https://bnd.bndtools.org/chapters/870-plugins.html">bnd plug-ins</a>, and can be configured by editing the Plugins sections of the workspace configuration file (<em>Bndtools</em> menu » <em>Open main bnd config</em>).
+Repositories can be <a href="https://bnd.bndtools.org/chapters/870-plugins.html#tagging-of-repository-plugins">tagged</a> to control how they are used for resolving dependencies.</p>
+<p><img src="https://bndtools.org/images/concepts/repositories01.png" style="max-width:100%"></p>
+<p>Since repositories are implemented as plug-ins, it is theoretically possible to support almost any kind of repository, by developing a new plug-in type; though of course it is more convenient to use an existing repository plug-in.</p>
+<p>The special repo <code>bnd-cache</code> is a <a href="https://bnd.bndtools.org/chapters/150-build.html#the-cnfcache-directory">mini cache repo</a> that is expanded in the <code>cnf</code> directory to cache some intermediate files.</p>
+<h2 id="indexed-repositories">Indexed Repositories</h2>
+<p>Bndtools supports a collection of repositories based on an <em>index</em> file that reports the content of the repository along with the capabilities and requirements of each resource listed. There are multiple available formats for the index:</p>
+<ul>
+<li>OBR, named after the <em>OSGi Bundle Repository</em> pseudo-standard. This format is obsolete but still used by some parts of the OSGi ecosystem.</li>
+<li>R5, named after OSGi Release 5 which introduced a true specification for OSGi Repositories. The format of this index is described in the OSGi Release 5 Enterprise specification, section 132.5.</li>
+</ul>
+<p>The advantage of using indexed repositories is that they can be used for automatic Resolution in the bndrun editor.</p>
+<h3 id="maven-central-mavenbndrepository">Maven Central (MavenBndRepository)</h3>
+<p>This repository is one of "indexed" repositories, therefore <code>index</code> property points to <code>central.maven</code> file that contains <code>GAV coordinates</code> to libraries located in Maven Central.</p>
+<p><code>central.maven</code> file doesn't fill itself automatically. Think of this repository like an empty <code>&lt;dependencies&gt;</code> section in maven. In order to fill it you need to add <a href="https://bnd.bndtools.org/plugins/maven.html#coordinates--terminology">GAVs</a> (one per line) to it.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code># List repository contents using GAV coordinates
+org.apache.camel:camel-core:2.23.1
+</code></pre></div>
+
+<ul>
+<li><a href="https://bnd.bndtools.org/plugins/maven.html">See the configuration properties and examples in the bnd manual</a></li>
+</ul>
+<h3 id="osgirepositories-fixed-index-repositories">OSGiRepositories / Fixed Index Repositories</h3>
+<p>The OSGiRepository can use index files compatible to the <a href="https://osgi.org/specification/osgi.cmpn/7.0.0/service.repository.html#i3247820">OSGi Repository Service Specification</a>. A OSGiRepository cannot be modified from within bnd or Bndtools.</p>
+<ul>
+<li><a href="https://bnd.bndtools.org/plugins/osgirepo.html">See the configuration properties and examples in the bnd manual</a></li>
+</ul>
+<h3 id="local-indexed-repository">Local Indexed Repository</h3>
+<p>This repository maintains a local filesystem directory of bundles. The repository is editable from within bnd/Bndtools and the index file is regenerated automatically when bundles are deployed into it.</p>
+<ul>
+<li><a href="https://bnd.bndtools.org/plugins/localindexrepo.html">See the configuration properties and examples in the bnd manual</a></li>
+</ul>
+<h3 id="file-repository">File Repository</h3>
+<p>This type of repository is based on a very simple file system directory structure.</p>
+<ul>
+<li><a href="https://bnd.bndtools.org/plugins/filerepo.html">See the configuration properties and examples in the bnd manual</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>js (';' JAVASCRIPT )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>js (';' JAVASCRIPT )*</h1>
+<h2 id="summary">Summary</h2>
+<p>Deprecated: Javascript script engine removed in Java 15. This macro might not work anymore and might be removed in future versions.</p>
+<p>The <code>js</code> macro executes one or more JavaScript expressions using the Java ScriptEngine and returns the value of the last expression or any output produced.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${js;&lt;expression&gt;[;&lt;expression&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>expression</code> - One or more JavaScript expressions to execute</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Executes all expressions in sequence</li>
+<li>Returns the value of the last expression</li>
+<li>If no return value, returns stdout output</li>
+<li>Has access to <code>domain</code> object (Processor instance)</li>
+<li>Persistent context across macro invocations</li>
+<li>Can load JavaScript from <code>javascript</code> property</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Simple calculation:</p>
+<div class="highlight"><pre><span></span><code>${js;2 + 2}
+# Returns: &quot;4&quot;
+</code></pre></div>
+
+<p>String manipulation:</p>
+<div class="highlight"><pre><span></span><code>${js;&quot;hello&quot;.toUpperCase()}
+# Returns: &quot;HELLO&quot;
+</code></pre></div>
+
+<p>Multiple expressions:</p>
+<div class="highlight"><pre><span></span><code>${js;var x = 10;x * 2}
+# Returns: &quot;20&quot;
+</code></pre></div>
+
+<p>Access properties:</p>
+<div class="highlight"><pre><span></span><code>${js;domain.getProperty(&quot;version&quot;)}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Complex calculations</li>
+<li>String transformations</li>
+<li>Conditional logic too complex for macros</li>
+<li>Property manipulation</li>
+<li>Dynamic value generation</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses Java's ScriptEngine (Nashorn/GraalVM)</li>
+<li>Context persists between calls</li>
+<li><code>domain</code> object provides access to bnd</li>
+<li>JavaScript property can define initialization code</li>
+<li>Errors reported to build</li>
+<li><strong>Warning</strong>: Adds JavaScript engine dependency</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

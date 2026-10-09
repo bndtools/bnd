@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>propertiesdir</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>propertiesdir</h1>
+<hr />
+<p>layout: default
+title:  propertiesdir 
+class:  Processor
+summary: Get the directory containing the current properties file</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>propertiesdir</code> macro returns the absolute path to the directory containing the current properties file being processed.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${propertiesdir}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters and will error if arguments are provided.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns absolute path to the directory containing the properties file</li>
+<li>Returns empty string if no properties file is set</li>
+<li>Generates error if called with arguments</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get properties directory:</p>
+<div class="highlight"><pre><span></span><code>Config-Directory: ${propertiesdir}
+</code></pre></div>
+
+<p>Reference sibling files:</p>
+<div class="highlight"><pre><span></span><code>license.file=${propertiesdir}/LICENSE.txt
+</code></pre></div>
+
+<p>Relative resources:</p>
+<div class="highlight"><pre><span></span><code>resources=${propertiesdir}/resources
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Referencing files relative to config</li>
+<li>Loading resources near bnd files</li>
+<li>Path construction</li>
+<li>Configuration organization</li>
+<li>Related file discovery</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns absolute path to directory only</li>
+<li>Returns empty string if no properties file</li>
+<li>Cannot take arguments</li>
+<li>See also: <code>${propertiesname}</code> for filename</li>
+<li>See also: <code>${thisfile}</code> for full path</li>
+<li>See also: <code>${basedir}</code> for project root</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

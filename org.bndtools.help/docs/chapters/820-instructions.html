@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Instruction Reference</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Instruction Reference</h1>
+<p>A bnd instruction is a property that starts with a minus sign ('-'). An instruction instructs bndlib to do something, in general providing parameters to the code. All instructions in bndlib are listed later in this page.</p>
+<p>All instructions are listed on the <a href="/chapters/825-instructions-ref.html">Instruction index</a></p>
+<h2 id="syntax">Syntax</h2>
+<p>Almost all bndlib instructions follow the general OSGi syntax. However, the bndlib syntax is in general a bit more relaxed, for example you can use either single quotes (''') or double quotes ('"') while OSGi only allows double quotes. Dangling comma's and some other not exactly correct headers are accepted by bndlib without complaining. Values without quotes are accepted as long as they cannot confuse the general syntax. For example, a value like 1.20 does not have to be quoted since the period ('.') cannot confuse the parser on that place, however, a value like [1.3,4) must be quoted since it contains a comma.</p>
+<p>In this mannual we adhere to the same conventions as the OSGi specification. This is mostly reflected in the names for the terminals in the syntax specifications. As a reminder we repeat the syntax rules and common terminals:</p>
+<ul>
+<li><code>*</code> – Repetition of the previous element zero or more times, e.g. <code>( ',' element ) *</code></li>
+<li><code>+</code> – Repetition one or more times</li>
+<li><code>?</code> – Previous element is optional</li>
+<li><code>( ... )</code> – Grouping</li>
+<li>'...' – Literal</li>
+<li><code>|</code> – Or</li>
+<li><code>[...]</code> – Set (one of)</li>
+<li><code>..</code> – Range</li>
+<li><code>&lt;...&gt;</code> – Externally defined token, followed with a description</li>
+<li><code>~</code> – Not, negation</li>
+</ul>
+<p>The following terminals are pre-defined:</p>
+<div class="highlight"><pre><span></span><code>ws               ::= &lt;see Character.isWhitespace&gt; 
+digit            ::= [0..9]
+alpha            ::= [a..zA..Z]
+alphanum         ::= alpha | digit
+token            ::= ( alphanum | &#39;_&#39; | &#39;-&#39; )+
+number           ::= digit+
+jletter          ::= &lt;see [JSL][1] for JavaLetter&gt;
+jletterordigit   ::= &lt;See [JLS][1] for JavaLetterOrDigit &gt;
+qname            ::= &lt;See [JLS][1] for fully qualified class name &gt;
+identifier       ::= jletter jletterordigit *
+extended         ::= ( alphanum | &#39;_&#39; | &#39;-&#39; | &#39;.&#39; )+
+quoted-string-d  ::= &#39;&quot;&#39; ( ~[&quot;\#x0D#x0A#x00] | &#39;\&quot;&#39;|&#39;\&#39;)* &#39;&quot;&#39;
+quoted-string-s  ::= &#39;&#39;&#39; ( ~[&#39;\#x0D#x0A#x00] | &#39;\&#39;&#39;|&#39;\&#39;)* &#39;&#39;&#39;
+quoted-string    ::= quoted-string-s | quoted-string-d  
+special-chars    ::= ~[&quot;\#x0D#x0A#x00:=;,&lt;See [JLS][1] for whitespace&gt;]
+path             ::= special-chars+ | quoted-string
+value            ::= quoted-string | path
+argument         ::= extended  | quoted-string
+parameter        ::= directive | attribute
+directive        ::= extended &#39;:=&#39; argument
+attribute        ::= extended &#39;=&#39; argument
+parameters       ::= parameter ( &#39;,&#39; parameter ) *
+unique-name      ::= identifier ( &#39;.&#39; identifier )*
+symbolic-name    ::= token(&#39;.&#39;token)* 
+package-name     ::= unique-name
+
+version          ::= major( &#39;.&#39; minor ( &#39;.&#39; micro ( &#39;.&#39; qualifier )? )? )?
+major            ::= number 
+minor            ::= number
+micro            ::= number
+qualifier        ::= ( alphanum | &#39;_&#39; | &#39;-&#39; )+
+
+version-range    ::= interval | atleast
+interval         ::= ( &#39;[&#39; | &#39;(&#39; ) floor &#39;,&#39; ceiling ( &#39;]&#39; | &#39;)&#39; )
+atleast          ::= version
+floor            ::= version
+ceiling          ::= version
+</code></pre></div>
+
+<p>White spaces between terminals are ignored unless specifically noted. The only exception is the directive, a directive must be connected to the colon (':'). That is, bndlib stores attributes and directives in the same map and distinguishes them by the fact that directives end in a colon and attributes do not. For example, using a directive like <code>foo; path := https://www.xyz.com</code> will not work correctly because the <code>path :</code> is not a valid attribute nor directive name. Any value that contains a space, a tab, a comma, colon, semicolon, equal sign or any other character that is part of a terminal in the grammar must be quoted. </p>
+<p>Almost all bndlib instructions follow the general OSGi syntax for a header. </p>
+<div class="highlight"><pre><span></span><code>-instruction     ::= parameters
+parameters       ::= clause ( &#39;,&#39; clause ) *
+clause           ::= path ( &#39;;&#39; path ) *
+                          ( &#39;;&#39; parameter ) *
+</code></pre></div>
+
+<p>There are a number of short-cuts that are regularly used in bnd commands:</p>
+<div class="highlight"><pre><span></span><code>list             ::= value ( &#39;,&#39; value ) *
+url              ::= &lt;URL&gt;
+file-path        ::= &lt;file path, using / as separator&gt;
+</code></pre></div>
+
+<h2 id="merged-instructions">Merged Instructions</h2>
+<p>Most instructions that accept multiple clauses are <em>merged instructions</em>. A merged instruction is an instruction which is specified by its prefix but which will merge any property that starts with this prefix followed by a period ('.'). For example, the <em>base instruction</em> <code>-plugin</code> instruction accepts <code>-plugin.git</code> as well. The reason for this merging is that allows to append the base instruction with instructions from other files. For example, the bnd file in the <code>cnf/ext</code> directory are automatically included in the properties of the workspace. Since there can be many files, there would be a need to coordinate the using of a singleton base instruction. As always, singletons suck and in this case we solved it with merged instructions.</p>
+<p>Some instructions put, sometimes very subtle, semantics on their ordering. To prevent different results from run to run, we make order the merge properties by placing the base instruction in front and then followed by the values from the other keys in lexically sorted order. For example, <code>-a</code>, <code>-a.x</code>, and <code>-a.Z</code>, and <code>-a.1</code> will concatenate the clauses in the order <code>-a,-a.1,-a.Z,-a.x</code>. </p>
+<p>Each of the constituents of the merged properties can be empty, this is properly handled by bndlib and will not create a an empty clause as would easily happen when the same thing was done with macros. Empty clauses can help when there is an optionality that depends on some condition. </p>
+<p>As an example, lets set the <code>-buildpath</code> instruction:</p>
+<div class="highlight"><pre><span></span><code>-buildpath: com.example.foo;version=1.2
+
+-buildpath.extra: ${if;${debug};com.example.foo.debug\;version=1.2}
+</code></pre></div>
+
+<p>This will result in a buildpath of (when debug is not false) of: <code>com.example.foo;version=1.2, com.example.foo.debug;version=1.2</code>.</p>
+<h2 id="decorated-instructions">Decorated Instructions</h2>
+<p>Instructions can also be <em>decorated</em>. A <em>decorator</em> is a header that ends with <code>+</code> or <code>++</code>. A header like <code>-runbundles</code> is first <em>merged</em> and then <em>decorated</em>. </p>
+<p>In this case, <code>-runbundles</code> is the <em>stem</em>. First, the total header is assembled by <em>merging</em> the property that has that stem. If there are properties that match stem + <code>+.*</code> or <code>++.*</code>, then these properties are used to decorate the merged property. Notice that for the decorator the root key includes the <code>+</code> sign, the suffixes must come after the <code>+</code> sign. For example, for the header <code>foo</code>, the decorator would be <code>foo+</code> and that would match a key like <code>foo+.bar</code>.</p>
+<p>The decorator is a Parameters, it consists of a key and a set of attributes. The decorator key is usually a glob expressions. </p>
+<p>After the header is merged, the key of each entry is matched against all globs in the decorator following the order of the decorator. When the first match is found, the attributes of the decorator clause that matches are stored with the attributes of the Parameter entry, overriding any attribute with the same attribute key. A Parameter entry key can only match one decorator glob expression.</p>
+<p>For example, <code>-runbundles a</code> and <code>-runbundles+ *;startlevel=20</code> will result in the content <code>a;startlevel=20</code>.</p>
+<p>If the name of the decorator clause attribute starts with <code>!</code>, then the attribute, using the attribute name after removing the leading <code>!</code>, is removed from the Parameter entry. If the name of the decorator clause attribute starts with <code>~</code>, then the decorator clause attribute value will not overwrite an existing value of the Parameter entry attribute, using the attribute name after removing the leading <code>~</code>.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code> -foo       a, b, c;skip=true, d
+ -foo+      b;skip=true,c;skip=false
+ -foo+.d    d;skip=true
+</code></pre></div>
+
+<p>In this case, the first entry matched is <code>b</code> and it is matched against the second entry in the <code>-foo</code> instruction. Since the decorator has the <code>skip=true</code> attribute, it is carried over to the instruction. The result is therefore:</p>
+<div class="highlight"><pre><span></span><code>a, b;skip=true; c;skip=false, d;skip=true
+</code></pre></div>
+
+<p>If the decoration ends with 2 plus signs, for example <code>-foo++</code>, then the literals in the decoration headers will be added to the result if they are not matched to any key in the source header. If the decoration ends with a single <code>+</code> sign, literals that do not match are ignored.</p>
+<ul>
+<li>Decoration is not used for all instructions. It should be indicated on the instruction page if it is applied.</li>
+<li>There is a macro <a href="/macros/decorated.html"><code>decorated</code></a> that can be used to apply decoration to any property key</li>
+</ul>
+<h2 id="selector">SELECTOR</h2>
+<p>If a value in an instruction has a <em>scope</em> then you will be able to use a <em>selector</em>. A scope is a well defined, finite, set. For example, if you use the '-exportcontents' instruction you can specify the packages that can be exported. Since you can only export the packages that are inside your bundle, the scope is the set of package names that were collected so far.</p>
+<p>The syntax for a selector is:</p>
+<div class="highlight"><pre><span></span><code>selector ::= &#39;!&#39; ? 
+             &#39;=&#39; ?  
+                  &#39;*&#39; | ( &#39;.&#39; | &#39;?&#39; | &#39;|&#39; | &#39;$&#39; | . | other ) * 
+             ( &#39;.*&#39; ) ? 
+             ( &#39;:i&#39; | &#39;:o&#39; | &#39;:io&#39; ) ?
+</code></pre></div>
+
+<p>A selector is an expression that is matched against all members of the scope. For example, <code>com.example.*</code> will match any package name that starts with <code>com.example</code>, for example <code>com.example.foo</code>, as well as <code>com.example</code> itself. The syntax used to describe the wildcarding is based on a globbing kind model, however, the selector is translated into a regular expression according to some simple rules.</p>
+<p>The replacement rules to build the regular expression are as follows:</p>
+<ul>
+<li><code>*</code> – Is replaced with <code>.*</code>, matching any number of characters, triggers wildcard match.</li>
+<li><code>?</code> - Is replaced with <code>.?</code>, matching any character, triggers wildcard match.</li>
+<li><code>|</code> – Is inserted as is, triggers wildcard match.</li>
+<li><code>$</code> – Escaped to <code>\$</code>.</li>
+<li><code>.</code> – The dot is treated as a package segment separator. It is escaped with <code>\.</code>. However, if the match ends with <code>.*</code>, the replacement will be <code>(\..*)?</code>.  This triggers a wildcard match.</li>
+</ul>
+<p>If you want to go ballistic with regular expressions, then you can go ahead. As long as the wildcards are triggered by one of the defined characters, the replaced string will be used as a regular expression. </p>
+<p>If the selector ends with <code>:i</code> then a case insensitive match is requested, this will ignore any case differences.
+If the selector ends with <code>:o</code> then the selector is marked optional. This means that when Bnd might warn about unused selectors, it will not warn that an optional selector is unused.
+You can specify both flags by ending the selector with <code>:io</code>.</p>
+<p>A selector can be prefixed with an exclamation mark, this indicates that a match must be treated as a removal operation. To understand removal, it is necessary to realize that the selectors are not declarative, the order of the selectors is relevant.</p>
+<p>When bndlib has a scope, it will iterator over each element in the scope and then for element it will iterator over each selector. If there is a match on the scope member then it is always removed from the scope, it will not be matched against later selectors. If the selector starts with an exclamation mark then the member is removed. but it is not treated as a result. Ergo, the exclamation mark allows you to remove members before they are actually matched.</p>
+<p>For example, you want to match all implementation packages (i.e. they have <code>impl</code> in their name) except when they start with <code>com.example</code>. This can be achieved with:</p>
+<div class="highlight"><pre><span></span><code>!com.example.*impl*, *.impl.*
+</code></pre></div>
+
+<p>Last, and also least, you can prefix the selector with an equal sign ('=') (after the exclamation mark if one is present). This will signal a literal match with the string, no globbing will be done.</p>
+<p>The way the period ('.') is treated is kind of special. The reason is that people expect that the selector <code>com.example.*</code> actually includes the package <code>com.example</code> itself. In bndlib this has always been the case although the OSGi Alliance later decided to not follow this pattern when there was a need for the globbing of packages.</p>
+<p>In this example, the first selector will remove any match and ignore it, the second selector now only sees scope members that are fitting in the earlier pattern. </p>
+<p>Selectors are used in virtually any place where there is a reasonable scope. It is a very powerful feature. However, it is also easy to go overboard. If you find you need to use this feature excessively then you are likely overdoing it.</p>
+<h2 id="file">FILE</h2>
+<p>One of the most painful thing in making bndlib run anywhere is handling of files. Even though Java has a decent abstraction of the file system, problems with spaces in file names and backslashes in the wrong place have caused an uneven amount of bugs. Ok, this partially because most bndlib developers tend to use Macs, still no excuse and quite embarrassing.</p>
+<p>Since bnd files need to be portable across environments we've chosen to use the Unix file separator, the slash (or solidus '/') for more reasons than I can reasonably sum up here (what was Bill smoking when he picked the reverse solidus for file separator!). In bndlib, all file paths (ok, should) always go through a single method that actually parses it and turns it into a Java File object. This allows us to support a number of features in a portable way. The syntax of a file path is therefore:</p>
+<div class="highlight"><pre><span></span><code>file      ::=  ( &#39;~/&#39; | &#39;/&#39; )?  (  ~[&#39;/&#39;]+ &#39;/&#39; ) * ~[&#39;/&#39;] *
+</code></pre></div>
+
+<p>If a file path starts with:</p>
+<ul>
+<li>A slash ('/') then we go to the root of the current directory's file system. Sorry, there is no way for a windows user to specify another file system since this would break portability.</li>
+<li>'~/', then the remainder of the file path is relative to the user's home directory as defined by Java. To keep your workspace portable, make sure you do not store any information there that might break the build for others. However, this can be useful to store passwords etc.</li>
+<li>Anything else, then the path is relative. It depends in the context what the used root is of the path. In general, if there is a local file that creates this path, then the parent directory of this file is the root. Otherwise, if this path is used in relation a workspace, project, build, or bndrun then the <em>base</em> of each of these entities is used as the root. In other cases it is the actual working directory of the process. </li>
+</ul>
+<p>You can use the '..' operator for a segment in the file path to indicate a parent directory. It is highly advised to always use relative addressing to keep your workspace portable. However, there are a number of macros that can be used as anchors:</p>
+<ul>
+<li><code>${p}</code>, `${project} – The directory of the current project</li>
+<li><code>${workspace}</code> – The directory of the current workspace</li>
+<li><code>${build} – The directory of the</code>cnf` directory.</li>
+</ul>
+<h2 id="filespec">FILESPEC</h2>
+<p>A <code>FILESPEC</code> defines a set of files relative to a starting point. It can be identical to a FILE for a single file but it has some special syntax to recurse directories. For example, the FILESPEC <code>foo/bar/**/spec/*.ts</code> finds all files that end in <code>spec/*.ts</code> somewhere below the <code>foo/bar</code> directory.</p>
+<p>The syntax is as follows:</p>
+<div class="highlight"><pre><span></span><code>FILESPEC  ::= filespec ( &#39;,&#39; filespec )*
+filespec  ::= ( segment &#39;/&#39; ) filematch
+segment   ::= &#39;**&#39; | GLOB
+filematch ::= &#39;**&#39; | &#39;**&#39; GLOB | GLOB
+</code></pre></div>
+
+<p>If a segment is <code>**</code> then it will match any directory to any depth. Otherwise it must be a GLOB expression, which can also be a literal. The last segment is the <code>filematch</code>. This is a GLOB expression on a file name. As a convenience, if it is <code>**</code>, any file will match in any directory and if it starts with something like <code>**.ts</code> then it will also recurse and match on <code>*.ts</code>. That is, the following rules apply to the <code>filematch</code>:</p>
+<div class="highlight"><pre><span></span><code>prefix/**              prefix/**/*              
+prefix/**.ts           prefix/**/*.ts
+</code></pre></div>
+
+<h2 id="path">PATH</h2>
+<p>A PATH is a <em>repository specification</em>. It is a specification for a number of JARs and/or bundles from a repository (well, most of the time). A PATH has the following syntax:</p>
+<div class="highlight"><pre><span></span><code>PATH      ::= target ( &#39;,&#39; target ) *
+target    ::= ( entry | FILE &#39;;&#39; &#39;version&#39; &#39;=&#39; &#39;file&#39; )
+              ( &#39;;&#39; PARAMETERS ) *
+entry     ::= symbolic-name ( &#39;;&#39; version ) ? 
+version   ::= &#39;version&#39; &#39;=&#39; 
+              ( RANGE | &#39;latest&#39; | &#39;project&#39;)
+</code></pre></div>
+
+<p>A PATH defines a number of bundles with its <em>entries</em>. Each entry is either a FILE or a symbolic-name. If only a symbolic name is specified, the default will be the import range from 0.0.0. This selects the whole repository for the given symbolic name. Outside the default, the repository entry can be specified in the following ways:</p>
+<ul>
+<li>RANGE – A version range limits the entries selected from the active repositories.</li>
+<li><code>latest</code> – Use the project's output or, if the project does not exists, get the bundle with the highest version from the repositories.</li>
+<li><code>project</code> – Mandate the use of the project's output</li>
+</ul>
+<h2 id="glob">GLOB</h2>
+<p>A <em>glob</em> is a pattern that can be matched against a candidate to see if it <em>matches</em>. To match multiple candidates with
+one pattern, the pattern is allowed to contain <em>wildcard</em> characters. A wildcard character is a stand in for zero or 
+more other characters. For example, a glob like <code>*.xml</code> matches any name that ends with <code>.xml</code>, the asterisk <code>*</code> stands 
+in for zero or more characters. Therefore, it matches <code>foo.xml</code>, <code>xml.xml.xml</code>, but also just <code>.xml</code>. The other 
+wildchar is the question mark (<code>?</code>) which matches exactly one character. For example, <code>???.xml</code> matches <code>abc.xml</code> but not <code>a.xml</code> 
+or <code>.xml</code>.</p>
+<p>Sometimes it is necessary to match against a number of strings. The vertical bar (<code>|</code>) can separate these strings. For
+example, <code>abc|def|ghi</code> matches any of <code>abc</code>, <code>def</code>, or <code>ghi</code>.</p>
+<p>It is also possible to <em>group</em> strings inside the pattern using parentheses. For example, <code>foo(a|b)bar</code> matches <code>fooabar</code> 
+or <code>foobbar</code>.</p>
+<p>The glob also supports character classes with the square brackets <code>[</code> and <code>]</code>. Characters between the square brackets
+literally match to any character at that position. These character classes also form a group. For example, <code>foo[abc]bar</code> matches
+<code>fooabar</code>, <code>foobbar</code>, or <code>foocbar</code>.</p>
+<p>Groups can be repeated using a question mark (cardinality 0..1), the asterisk (cardinality 0..n), or the plus sign (cardinality 1..n). For example, <code>(a)*</code> 
+matches <code>aaaa</code> but also the empty string. If the standard <em>cardinalities</em> do not suffice, then a group can be suffixed by a 
+cardinality specification using the curly braces (<code>{</code> and <code>}</code>). Inside the curly braces the lower bound and the optional upper
+bound can be specified. If no upper bound is specified then the lower bound is also the upper bound. 
+For example, <code>(?i)([0-9A-F][0-9A-F]){20}</code> matches a 40 digit SHA digest in hex regardless of case.</p>
+<p>There are some special characters that get special treatment:</p>
+<div class="highlight"><pre><span></span><code>special ::= &#39;{&#39; | &#39;}&#39; | &#39;|&#39; | &#39;+&#39; | &#39;*&#39; | &#39;?&#39; | &#39;(&#39; | &#39;)&#39; | &#39;[&#39; | &#39;]&#39;
+</code></pre></div>
+
+<p>These characters can be escaped with a reverse solidus (<code>\</code>) to override their special meaning, they will then be matched literally. To
+escape a long string,  it is possible to place <code>\Q</code> at the beginning of a block that needs to be escaped and <code>\E</code> at the end. 
+For example, <code>foo\Q*****\Ebar</code></p>
+<p>Some examples:</p>
+<table>
+<thead>
+<tr>
+<th>Glob</th>
+<th>Regular Expression</th>
+<th>Matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>abc.ts</code></td>
+<td><code>abc\.ts</code></td>
+<td><code>abc.ts</code></td>
+</tr>
+<tr>
+<td><code>*.ts</code></td>
+<td><code>.*\.ts</code></td>
+<td><code>abc.ts, def.ts</code></td>
+</tr>
+<tr>
+<td><code>foo***bar</code></td>
+<td><code>foo.*.*.*bar</code></td>
+<td><code>foobar, fooXbar, fooXXXXbar</code></td>
+</tr>
+<tr>
+<td><code>foo(A|B|C)*bar</code></td>
+<td><code>foo(A|B|C)*bar</code></td>
+<td><code>fooAbar, fooBBBAbar,fooCbar</code></td>
+</tr>
+<tr>
+<td><code>foo\{\}bar</code></td>
+<td><code>foo\{\}bar</code></td>
+<td><code>foo{}bar</code></td>
+</tr>
+<tr>
+<td><code>xx(?i)xx</code></td>
+<td><code>xx(?i)xx</code></td>
+<td><code>xxXx</code>, <code>xxXX</code>, <code>xxxx</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="special-cases">Special Cases</h2>
+<p>Some instruction use the GLOB but provide some convenience. For example, the package selectors of Export-Package et. al. 
+detect a case like <code>com.example.*</code> and turn it into a regular expression that matches <code>com.example.foo</code> but also matches 
+<code>com.example</code>. This is generally explained in the instruction.  </p>
+<h2 id="mapping-a-glob-to-a-regular-expression">Mapping a Glob to a Regular Expression</h2>
+<p>This section defines how globs are mapped to regular expressions. Although the globs are quite intuitive to use, 
+they do expose all regular expression capabilities. A strong advice is to keep it simple. The mapping itself
+is actually non-trivial and takes a number of heuristics that can easily go wrong. Basically, if you need this
+section you're likely doing something that is too complex. </p>
+<p>For backward compatibility reasons, we support the unix like glob style for or'ing like <code>{a,b,c}</code>. However, it is
+recommended to use the form using the vertical bar since it is more flexible and closer to regular expressions. </p>
+<p>A glob is mapped to a regular expression character by character. During this traversal the following states are kept:</p>
+<ul>
+<li><code>SIMPLE</code> – Basic simple glob form. This is the default. </li>
+<li><code>CURLIES</code>– Inside a curly braces group that is not a cardinality specification. Curly braces can be nested.</li>
+<li><code>QUOTED</code> – Inside a <code>\Q...\E</code> block (cannot be nested) </li>
+<li><code>BRACKETS</code> – Inside a character group enclosed by square brackets (cannot be nested).</li>
+</ul>
+<p>Character sets:</p>
+<div class="highlight"><pre><span></span><code>escaped     ::= `.` | `$` | `^` | `@` | `%`
+special     ::= `?` | `*` | `+`
+end         ::= &#39;)&#39; | &#39;]&#39; | &#39;}&#39;
+start       ::= &#39;(&#39;
+</code></pre></div>
+
+<p>Escaped characters are escaped in SIMPLE mode and CURLIES mode. In QUOTED or BRACKETS mode no escaping is done. For example 
+<code>^$</code> becomes <code>\^\$</code> matching literally <code>^$</code>. However, <code>[^$]</code> becomes <code>[^$]</code>, matching anything but a dollar sign. In QUOTED
+and BRACKETS mode, also the <code>special</code>, <code>end</code>, and <code>start</code> sets are directly inserted without any special handling.</p>
+<p>In the SIMPLE and CURLIES mode the <code>special</code> characters require special handling. For these remaining mappings it is important 
+to realize that there are <em>groups</em>. There are parenthesized groups, bracketed group, and curly braces groups. For 
+example, <code>(a|b)</code>, <code>[abcd]</code>, or <code>{a,b,c}</code> respectively. If curly braces are used after a group then it is a quantifier and <em>not</em> considered a group. That is, <code>{a,b}</code> is
+considered a group but <code>[a,b]{1,2}</code> then the <code>{1,2}</code> is a quantifier and not a group.</p>
+<p>So when a <code>special</code> character is preceded with a group, it is inserted without any special processing. If it is not
+preceded then the following rules apply:</p>
+<ul>
+<li><code>*</code> – mapped to <code>.*</code>, this matches any number of characters</li>
+<li><code>?</code> – mapped to <code>.</code>, this matches one character</li>
+<li><code>+</code> – mapped to <code>\+</code>, matches a plus sign!</li>
+</ul>
+<p>Some examples:</p>
+<table>
+<thead>
+<tr>
+<th>Glob</th>
+<th>Regular Expression</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td><code>.*</code></td>
+</tr>
+<tr>
+<td><code>(a)*</code></td>
+<td><code>(a)*</code></td>
+</tr>
+<tr>
+<td><code>[abc]+</code></td>
+<td><code>[abc]+</code></td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td><code>\.</code></td>
+</tr>
+<tr>
+<td><code>[.*+|]</code></td>
+<td><code>[.*+|]</code></td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td><code>\+</code></td>
+</tr>
+<tr>
+<td><code>(x|y)+</code></td>
+<td><code>(x|y)+</code></td>
+</tr>
+<tr>
+<td><code>{x,y}</code></td>
+<td><code>(?:x|y)</code></td>
+</tr>
+<tr>
+<td><code>{[xa],y}</code></td>
+<td><code>(?:[xa]|y)</code></td>
+</tr>
+<tr>
+<td><code>(?:foo)</code></td>
+<td><code>(?:foo)</code></td>
+</tr>
+<tr>
+<td><code>{foo}</code></td>
+<td><code>(?:foo)</code></td>
+</tr>
+<tr>
+<td><code>[\p{Lower}]</code></td>
+<td><code>[\p{Lower}]</code></td>
+</tr>
+<tr>
+<td><code>[a-z&amp;&amp;[^bc]]</code></td>
+<td><code>[a-z&amp;&amp;[^bc]]</code></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

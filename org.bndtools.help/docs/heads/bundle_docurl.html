@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-DocURL STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-DocURL STRING</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-DocURL: http://www.aQute.biz/Code/Bnd</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_docurl.md -->
+<h1 id="bundle-docurl">Bundle-DocURL</h1>
+<p>The <code>Bundle-DocURL</code> header specifies a URL that points to documentation for the bundle. This can be a website, wiki page, or any other resource that provides more information about the bundle's usage, features, or configuration.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-DocURL: https://docs.example.com/my-bundle
+</code></pre></div>
+
+<p>Providing this header is optional but highly recommended for discoverability and support.</p>
+<div class="highlight"><pre><span></span><code>/*
+ * Bundle-DocURL header
+ */
+private void doBundleDocURL(BundleDocURL annotation) {
+    add(Constants.BUNDLE_DOCURL, annotation.value());
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-ClassPath ::= entry ( ',' entry )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-ClassPath ::= entry ( ',' entry )*</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-ClassPath: /lib/libnewgen.so, .</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_classpath.md -->
+<h1 id="bundle-classpath">Bundle-ClassPath</h1>
+<p>The <code>Bundle-ClassPath</code> header defines the internal class path for the bundle. It is a comma-separated list of JAR file paths or directories (inside the bundle) that contain classes and resources. The special entry <code>.</code> refers to the root of the bundle JAR and is the default if the header is not specified.</p>
+<p>All files or directories listed in the <code>Bundle-ClassPath</code> must be present in the bundle. You can use the <code>Include-Resource</code> instruction to include additional JARs or directories. In most cases, it is recommended to avoid using <code>Bundle-ClassPath</code> unless necessary, as it can complicate class loading. Instead, use the <code>@</code> option in <code>Include-Resource</code> to unroll JARs into the main bundle.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-ClassPath: ., lib/extra.jar
+</code></pre></div>
+
+<p>This header is important for advanced scenarios where you need to include additional classpath entries inside your bundle.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

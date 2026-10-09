@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Service-Component ::= RESOURCE ( ',' RESOURCE )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Service-Component ::= RESOURCE ( ',' RESOURCE )</h1>
+<ul>
+<li>
+<p>Example: <code>Service-Component=com.acme.Foo?;activate='start'</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/service_component.md -->
+<h1 id="service-component">Service-Component</h1>
+<p>The <code>Service-Component</code> header lists XML files that describe Declarative Services (DS) components in the bundle. These XML documents must be present in the bundle and are used by the OSGi framework to register and manage components at runtime.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Service-Component: OSGI-INF/components.xml
+</code></pre></div>
+
+<p>This header is required for bundles that use OSGi Declarative Services.</p>
+<div class="highlight"><pre><span></span><code>/**
+ * Analyze the class space for any classes that have an OSGi annotation for DS.
+ */
+public class DSAnnotations implements AnalyzerPlugin {
+
+    public boolean analyzeJar(Analyzer analyzer) throws Exception {
+        Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS));
+        if (header.size() == 0)
+            return false;
+
+        Instructions instructions = new Instructions(header);
+        Collection&lt;Clazz&gt; list = analyzer.getClassspace().values();
+        String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
+        List&lt;String&gt; names = new ArrayList&lt;String&gt;();
+        if (sc != null &amp;&amp; sc.trim().length() &gt; 0)
+            names.add(sc);
+
+        for (Clazz c: list) {
+            for (Instruction instruction : instructions.keySet()) {
+
+                if (instruction.matches(c.getFQN())) {
+                    if (instruction.isNegated())
+                        break;
+                    ComponentDef definition = AnnotationReader.getDefinition(c, analyzer);
+                    if (definition != null) {
+                        definition.sortReferences();
+                        definition.prepare(analyzer);
+                        String name = &quot;OSGI-INF/&quot; + definition.name + &quot;.xml&quot;;
+                        names.add(name);
+                        analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
+                    }
+                }
+            }
+        }
+        sc = Processor.append(names.toArray(new String[names.size()]));
+        analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;DSAnnotations&quot;;
+    }
+}
+
+            package aQute.bnd.make.component;
+
+        import java.io.*;
+        import java.util.*;
+        import java.util.Map.Entry;
+
+        import aQute.bnd.annotation.component.*;
+        import aQute.bnd.component.*;
+        import aQute.bnd.header.*;
+        import aQute.bnd.make.metatype.*;
+        import aQute.bnd.osgi.*;
+        import aQute.bnd.osgi.Clazz.QUERY;
+        import aQute.bnd.osgi.Descriptors.TypeRef;
+        import aQute.bnd.service.*;
+        import aQute.lib.tag.*;
+
+        /**
+         * This class is an analyzer plugin. It looks at the properties and tries to
+         * find out if the Service-Component header contains the bnd shortut syntax. If
+         * not, the header is copied to the output, if it does, an XML file is created
+         * and added to the JAR and the header is modified appropriately.
+         */
+        public class ServiceComponent implements AnalyzerPlugin {
+
+            public boolean analyzeJar(Analyzer analyzer) throws Exception {
+
+                ComponentMaker m = new ComponentMaker(analyzer);
+
+                Map&lt;String,Map&lt;String,String&gt;&gt; l = m.doServiceComponent();
+
+                analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l));
+
+                analyzer.getInfo(m, Constants.SERVICE_COMPONENT + &quot;: &quot;);
+                m.close();
+
+                return false;
+            }
+
+            private static class ComponentMaker extends Processor {
+                Analyzer    analyzer;
+
+                ComponentMaker(Analyzer analyzer) {
+                    super(analyzer);
+                    this.analyzer = analyzer;
+                }
+
+                /**
+                 * Iterate over the Service Component entries. There are two cases:
+                 * &lt;ol&gt;
+                 * &lt;li&gt;An XML file reference&lt;/li&gt;
+                 * &lt;li&gt;A FQN/wildcard with a set of attributes&lt;/li&gt;
+                 * &lt;/ol&gt;
+                 * An XML reference is immediately expanded, an FQN/wildcard is more
+                 * complicated and is delegated to
+                 * {@link #componentEntry(Map, String, Map)}.
+                 * 
+                 * @throws Exception
+                 */
+                Map&lt;String,Map&lt;String,String&gt;&gt; doServiceComponent() throws Exception {
+                    Map&lt;String,Map&lt;String,String&gt;&gt; serviceComponents = newMap();
+                    String header = getProperty(SERVICE_COMPONENT);
+                    Parameters sc = parseHeader(header);
+
+                    for (Entry&lt;String,Attrs&gt; entry : sc.entrySet()) {
+                        String name = entry.getKey();
+                        Map&lt;String,String&gt; info = entry.getValue();
+
+                        try {
+                            if (name.indexOf(&#39;/&#39;) &gt;= 0 || name.endsWith(&quot;.xml&quot;)) {
+                                // Normal service component, we do not process it
+                                serviceComponents.put(name, EMPTY);
+                            } else {
+                                componentEntry(serviceComponents, name, info);
+                            }
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            error(&quot;Invalid &quot; + Constants.SERVICE_COMPONENT + &quot; header: %s %s, throws %s&quot;, name, info, e);
+                            throw e;
+                        }
+                    }
+                    return serviceComponents;
+                }
+
+                /**
+                 * Parse an entry in the Service-Component header. This header supports
+                 * the following types:
+                 * &lt;ol&gt;
+                 * &lt;li&gt;An FQN + attributes describing a component&lt;/li&gt;
+                 * &lt;li&gt;A wildcard expression for finding annotated components.&lt;/li&gt;
+                 * &lt;/ol&gt;
+                 * The problem is the distinction between an FQN and a wildcard because
+                 * an FQN can also be used as a wildcard. If the info specifies
+                 * {@link Constants#NOANNOTATIONS} then wildcards are an error and the
+                 * component must be fully described by the info. Otherwise the
+                 * FQN/wildcard is expanded into a list of classes with annotations. If
+                 * this list is empty, the FQN case is interpreted as a complete
+                 * component definition. For the wildcard case, it is checked if any
+                 * matching classes for the wildcard have been compiled for a class file
+                 * format that does not support annotations, this can be a problem with
+                 * JSR14 who silently ignores annotations. An error is reported in such
+                 * a case.
+                 * 
+                 * @param serviceComponents
+                 * @param name
+                 * @param info
+                 * @throws Exception
+                 * @throws IOException
+                 */
+                private void componentEntry(Map&lt;String,Map&lt;String,String&gt;&gt; serviceComponents, String name,
+                        Map&lt;String,String&gt; info) throws Exception, IOException {
+
+                    boolean annotations = !Processor.isTrue(info.get(NOANNOTATIONS));
+                    boolean fqn = Verifier.isFQN(name);
+
+                    if (annotations) {
+
+                        // Annotations possible!
+
+                        Collection&lt;Clazz&gt; annotatedComponents = analyzer.getClasses(&quot;&quot;, QUERY.ANNOTATED.toString(),
+                                Component.class.getName(), //
+                                QUERY.NAMED.toString(), name //
+                                );
+
+                        if (fqn) {
+                            if (annotatedComponents.isEmpty()) {
+
+                                // No annotations, fully specified in header
+
+                                createComponentResource(serviceComponents, name, info);
+                            } else {
+
+                                // We had a FQN so expect only one
+
+                                for (Clazz c : annotatedComponents) {
+                                    annotated(serviceComponents, c, info);
+                                }
+                            }
+                        } else {
+
+                            // We did not have an FQN, so expect the use of wildcards
+
+                            if (annotatedComponents.isEmpty())
+                                checkAnnotationsFeasible(name);
+                            else
+                                for (Clazz c : annotatedComponents) {
+                                    annotated(serviceComponents, c, info);
+                                }
+                        }
+                    } else {
+                        // No annotations
+                        if (fqn)
+                            createComponentResource(serviceComponents, name, info);
+                        else
+                            error(&quot;Set to %s but entry %s is not an FQN &quot;, NOANNOTATIONS, name);
+
+                    }
+                }
+
+                /**
+                 * Check if annotations are actually feasible looking at the class
+                 * format. If the class format does not provide annotations then it is
+                 * no use specifying annotated components.
+                 * 
+                 * @param name
+                 * @return
+                 * @throws Exception
+                 */
+                private Collection&lt;Clazz&gt; checkAnnotationsFeasible(String name) throws Exception {
+                    Collection&lt;Clazz&gt; not = analyzer.getClasses(&quot;&quot;, QUERY.NAMED.toString(), name //
+                            );
+
+                    if (not.isEmpty()) {
+                        if (&quot;*&quot;.equals(name))
+                            return not;
+                        error(&quot;Specified %s but could not find any class matching this pattern&quot;, name);
+                    }
+
+                    for (Clazz c : not) {
+                        if (c.getFormat().hasAnnotations())
+                            return not;
+                    }
+
+                    warning(&quot;Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target &lt; 1.5. Annotations were introduced in Java 1.5&quot;,
+                            name);
+
+                    return not;
+                }
+
+                void annotated(Map&lt;String,Map&lt;String,String&gt;&gt; components, Clazz c, Map&lt;String,String&gt; info) throws Exception {
+                    // Get the component definition
+                    // from the annotations
+                    Map&lt;String,String&gt; map = ComponentAnnotationReader.getDefinition(c, this);
+
+                    // Pick the name, the annotation can override
+                    // the name.
+                    String localname = map.get(COMPONENT_NAME);
+                    if (localname == null)
+                        localname = c.getFQN();
+
+                    // Override the component info without manifest
+                    // entries. We merge the properties though.
+
+                    String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES), map.remove(COMPONENT_PROPERTIES));
+                    if (merged != null &amp;&amp; merged.length() &gt; 0)
+                        map.put(COMPONENT_PROPERTIES, merged);
+                    map.putAll(info);
+                    createComponentResource(components, localname, map);
+                }
+
+                private void createComponentResource(Map&lt;String,Map&lt;String,String&gt;&gt; components, String name,
+                        Map&lt;String,String&gt; info) throws Exception {
+
+                    // We can override the name in the parameters
+                    if (info.containsKey(COMPONENT_NAME))
+                        name = info.get(COMPONENT_NAME);
+
+                    // Assume the impl==name, but allow override
+                    String impl = name;
+                    if (info.containsKey(COMPONENT_IMPLEMENTATION))
+                        impl = info.get(COMPONENT_IMPLEMENTATION);
+
+                    TypeRef implRef = analyzer.getTypeRefFromFQN(impl);
+                    // Check if such a class exists
+                    analyzer.referTo(implRef);
+
+                    boolean designate = designate(name, info.get(COMPONENT_DESIGNATE), false)
+                            || designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
+
+                    // If we had a designate, we want a default configuration policy of
+                    // require.
+                    if (designate &amp;&amp; info.get(COMPONENT_CONFIGURATION_POLICY) == null)
+                        info.put(COMPONENT_CONFIGURATION_POLICY, &quot;require&quot;);
+
+                    // We have a definition, so make an XML resources
+                    Resource resource = createComponentResource(name, impl, info);
+                    analyzer.getJar().putResource(&quot;OSGI-INF/&quot; + name + &quot;.xml&quot;, resource);
+
+                    components.put(&quot;OSGI-INF/&quot; + name + &quot;.xml&quot;, EMPTY);
+
+                }
+
+                /**
+                 * Create a Metatype and Designate record out of the given
+                 * configurations.
+                 * 
+                 * @param name
+                 * @param config
+                 * @throws Exception 
+                 */
+                private boolean designate(String name, String config, boolean factory) throws Exception {
+                    if (config == null)
+                        return false;
+
+                    for (String c : Processor.split(config)) {
+                        TypeRef ref = analyzer.getTypeRefFromFQN(c);
+                        Clazz clazz = analyzer.findClass(ref);
+                        if (clazz != null) {
+                            analyzer.referTo(ref);
+                            MetaTypeReader r = new MetaTypeReader(clazz, analyzer);
+                            r.setDesignate(name, factory);
+                            String rname = &quot;OSGI-INF/metatype/&quot; + name + &quot;.xml&quot;;
+
+                            analyzer.getJar().putResource(rname, r);
+                        } else {
+                            analyzer.error(&quot;Cannot find designated configuration class %s for component %s&quot;, c, name);
+                        }
+                    }
+                    return true;
+                }
+
+                /**
+                 * Create the resource for a DS component.
+                 * 
+                 * @param list
+                 * @param name
+                 * @param info
+                 * @throws UnsupportedEncodingException
+                 */
+                Resource createComponentResource(String name, String impl, Map&lt;String, String&gt; info)
+                        throws Exception {
+                    HeaderReader hr = new HeaderReader(analyzer);
+                    Tag tag = hr.createComponentTag(name, impl, info);
+                    hr.close();
+                    return new TagResource(tag);
+                }
+            }
+
+        }
+
+
+
+
+
+
+                private void verifyComponent() {
+    String serviceComponent = main.get(Constants.SERVICE_COMPONENT);
+    if (serviceComponent != null) {
+        Parameters map = parseHeader(serviceComponent);
+        for (String component : map.keySet()) {
+            if (component.indexOf(&quot;*&quot;) &lt; 0 &amp;&amp; !dot.exists(component)) {
+                error(Constants.SERVICE_COMPONENT + &quot; entry can not be located in JAR: &quot; + component);
+            } else {
+                // validate component ...
+            }
+        }
+    }
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>
