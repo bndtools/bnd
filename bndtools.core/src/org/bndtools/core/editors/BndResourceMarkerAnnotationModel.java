@@ -1,6 +1,5 @@
 package org.bndtools.core.editors;
 
-import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
@@ -16,7 +15,7 @@ public class BndResourceMarkerAnnotationModel extends ResourceMarkerAnnotationMo
 	protected MarkerAnnotation createMarkerAnnotation(IMarker marker) {
 		MarkerAnnotation annotation = super.createMarkerAnnotation(marker);
 
-		boolean fixable = marker.getAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, false);
+		boolean fixable = new BndMarkerQuickAssistProcessor().canFix(annotation);
 		annotation.setQuickFixable(fixable);
 
 		return annotation;

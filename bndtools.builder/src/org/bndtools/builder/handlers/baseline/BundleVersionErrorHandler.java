@@ -10,11 +10,12 @@ import java.util.regex.Pattern;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
+import org.bndtools.builder.handlers.BndHeaderQuickFix;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ui.IMarkerResolution;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
@@ -74,17 +75,21 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
 	}
 
 	@Override
+	public List<IMarkerResolution> getResolutions(IMarker marker) {
+		return new ArrayList<>(createFixes(marker));
+	}
+
+	@Override
 	public List<ICompletionProposal> getProposals(IMarker marker) {
-		List<ICompletionProposal> result = new ArrayList<>();
+		return new ArrayList<>(createFixes(marker));
+	}
 
+	private List<BndHeaderQuickFix> createFixes(IMarker marker) {
 		String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
-		int start = marker.getAttribute(IMarker.CHAR_START, 0);
-		int end = marker.getAttribute(IMarker.CHAR_END, 0);
-		CompletionProposal proposal = new CompletionProposal(Constants.BUNDLE_VERSION + ": " + suggestedVersion, start,
-			end - start, end, null, "Change bundle version to " + suggestedVersion, null, null);
-		result.add(proposal);
-
-		return result;
+		if (suggestedVersion == null || !BndHeaderQuickFix.hasHeader(marker, Constants.BUNDLE_VERSION))
+			return List.of();
+		return List.of(new BndHeaderQuickFix(Constants.BUNDLE_VERSION, suggestedVersion,
+			"Change bundle version to " + suggestedVersion));
 	}
 
 }
