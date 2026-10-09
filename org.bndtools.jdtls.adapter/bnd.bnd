@@ -1,0 +1,34 @@
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+Bundle-SymbolicName: org.bndtools.jdtls.adapter;singleton:=true
+Bundle-Version: 7.5.0.${tstamp}
+Bundle-Description: Native bnd project importer for Eclipse JDT LS
+
+-buildpath: \
+    ${env;JDT_LS_CORE_JAR};version=file,\
+    org.eclipse.core.resources,\
+    org.eclipse.core.runtime,\
+    org.eclipse.equinox.common,\
+    org.eclipse.core.jobs,\
+    org.eclipse.jdt.core,\
+    org.eclipse.jdt.launching,\
+    org.eclipse.debug.core,\
+    org.bndtools.jdtls;version=latest,\
+    biz.aQute.bndlib;version=latest,\
+    biz.aQute.repository;version=latest,\
+    biz.aQute.resolve;version=latest,\
+    biz.aQute.bnd.util;version=latest,\
+    osgi.core,\
+    org.osgi.service.repository;version=latest,\
+    org.osgi.util.function;version=latest,\
+    org.osgi.util.promise;version=latest,\
+    org.tukaani.xz,\
+    slf4j.api;version=latest
+
+Export-Package:
+Private-Package: org.bndtools.jdtls.adapter, aQute.bnd.annotation.*, aQute.bnd.repository.*, aQute.maven.*, aQute.p2.*
+-conditionalpackage: aQute.*, biz.aQute.*, org.bndtools.jdtls.*, org.osgi.util.*, org.osgi.service.*, org.osgi.resource.*, org.osgi.dto.*, org.tukaani.*
+-includeresource: plugin.xml
+Require-Bundle: org.eclipse.jdt.ls.core;bundle-version="[1.61,2)"
+Import-Package: !aQute.*, !org.eclipse.jdt.ls.core.*, org.osgi.framework;version="[1.8,2)", *
+-exportcontents:
