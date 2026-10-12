@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>removeall ';' LIST ';' LIST</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>removeall ';' LIST ';' LIST</h1>
+<h2 id="summary">Summary</h2>
+<p>Remove all elements from the first list that are present in the second list, returning the filtered result.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${removeall;&lt;list1&gt;[;&lt;list2&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>list1</strong>: Source list from which elements will be removed</li>
+<li><strong>list2</strong>: (Optional) List of elements to remove from list1</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>If only one list is provided, returns an empty string</li>
+<li>If two lists are provided, returns list1 with all elements from list2 removed</li>
+<li>Performs exact string matching (not pattern matching)</li>
+<li>Order of remaining elements is preserved from list1</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Remove specific packages
+all-packages = com.example.api, com.example.impl, com.example.test
+test-packages = com.example.test
+production-packages = ${removeall;${all-packages};${test-packages}}
+# Returns: com.example.api,com.example.impl
+
+# Remove dependencies
+all-deps = foo.jar, bar.jar, baz.jar, test.jar
+test-deps = test.jar
+runtime-deps = ${removeall;${all-deps};${test-deps}}
+# Returns: foo.jar,bar.jar,baz.jar
+
+# Remove multiple items
+items = a, b, c, d, e
+to-remove = b, d
+result = ${removeall;${items};${to-remove}}
+# Returns: a,c,e
+
+# No second list - returns empty
+${removeall;foo,bar,baz}
+# Returns: (empty)
+
+# Remove from build path
+full-buildpath = ${buildpath}, ${testpath}
+exclude-items = junit, mockito
+-buildpath: ${removeall;${full-buildpath};${exclude-items}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Package Exclusion</strong>: Remove specific packages from export or import lists</li>
+<li><strong>Dependency Management</strong>: Exclude certain dependencies from build paths</li>
+<li><strong>List Filtering</strong>: Remove known unwanted elements from a list</li>
+<li><strong>Configuration</strong>: Filter out test or development-only items from production builds</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses exact string matching, not regular expressions</li>
+<li>For pattern-based filtering, use <a href="reject.html">reject</a> or <a href="filterout.html">filterout</a></li>
+<li>Elements are compared as complete strings</li>
+<li>If an element in list2 doesn't exist in list1, it's simply ignored</li>
+<li>Returns empty string if only one argument is provided</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="retainall.html">retainall</a> - Keep only elements present in another list (opposite operation)</li>
+<li><a href="reject.html">reject</a> / <a href="filterout.html">filterout</a> - Remove elements matching a regex pattern</li>
+<li><a href="filter.html">filter</a> / <a href="select.html">select</a> - Keep elements matching a regex pattern</li>
+<li><a href="uniq.html">uniq</a> - Remove duplicate elements</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

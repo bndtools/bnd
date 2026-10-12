@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runpath REPO-ENTRY ( ',' REPO-ENTRY )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runpath REPO-ENTRY ( ',' REPO-ENTRY )</h1>
+<ul>
+<li>
+<p>Example: <code>-runpath=org.eclipse.osgi;version=3.5</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="directives">Directives</h3>
+<ul>
+<li><code>version</code> Specifies the range in the repository, project or file.</li>
+<li>
+<p>Example: <code>version=project</code></p>
+</li>
+<li>
+<p>Values: <code>project,type</code></p>
+</li>
+<li>
+<p>Pattern: <code>project|type|((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runpath.md -->
+<p>An OSGi application will have a set of bundles and an environment created by the framework and any additional JARs on the class path. The <code>-runpath</code> instruction sets these additional bundles. These JARs can actually export packages and provide capabilities that the launcher will automatically add to the system capabilities. The resolver will do the same. Any packages exported by bundles or provided capabilities on the <code>-runpath</code> are automatically added to the system capabilities.</p>
+<p>The <code>-runpath</code> instruction allows you to specify additional JARs that should be included on the class path of the remote VM when running an OSGi application. These JARs can export packages and provide capabilities that are automatically added to the system capabilities, making them available to the resolver and the launcher.</p>
+<p>This is particularly useful for including frameworks or other dependencies that are not part of the main set of bundles but are required for the application to function correctly.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-runpath: \
+    com.foo.bar;version=1, \
+    file.jar; version=file
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>isfile (';' FILE )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>isfile (';' FILE )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>isfile</code> macro checks whether all specified file paths are regular files (not directories or special files). It returns "true" only if all paths exist and are regular files; otherwise, it returns "false".</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${isfile;&lt;path&gt;[;&lt;path&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>path</code> - One or more file paths to check (can be absolute or relative)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Converts each path to an absolute path</li>
+<li>Checks if each path exists and is a regular file</li>
+<li>Returns "true" only if ALL paths are regular files</li>
+<li>Returns "false" if any path is not a file, is a directory, or doesn't exist</li>
+<li>Issues a warning if no paths are provided</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Check a single file:</p>
+<div class="highlight"><pre><span></span><code>${isfile;build.gradle}
+# Returns: &quot;true&quot; if build.gradle exists and is a file
+</code></pre></div>
+
+<p>Check multiple files:</p>
+<div class="highlight"><pre><span></span><code>${isfile;pom.xml;build.gradle;settings.gradle}
+# Returns: &quot;true&quot; only if all three are files
+</code></pre></div>
+
+<p>Use in conditional logic:</p>
+<div class="highlight"><pre><span></span><code>${if;${isfile;custom.bnd};${cat;custom.bnd};default-settings}
+</code></pre></div>
+
+<p>Validate required files:</p>
+<div class="highlight"><pre><span></span><code>${if;${isfile;LICENSE;README.md};files-present;${error;Missing required files}}
+</code></pre></div>
+
+<p>Check file existence before processing:</p>
+<div class="highlight"><pre><span></span><code>config=${if;${isfile;config.properties};${cat;config.properties};{}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Validating that required files exist</li>
+<li>Conditional logic based on file presence</li>
+<li>Build prerequisite checking</li>
+<li>File existence verification before reading</li>
+<li>Distinguishing between files and directories</li>
+<li>Checking multiple file dependencies</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns "false" (not error) if paths don't exist</li>
+<li>All paths must be regular files for "true" result</li>
+<li>Returns string "true" or "false", not boolean</li>
+<li>Paths are resolved to absolute paths before checking</li>
+<li>Directories, symbolic links, and special files return "false"</li>
+<li>See also: <code>${isdir}</code> for checking if paths are directories</li>
+<li>Useful with <code>${if}</code> macro for conditional behavior</li>
+<li>Generates a warning if called without arguments</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

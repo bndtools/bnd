@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-sub FILE-SPEC ( ',' FILE-SPEC )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-sub FILE-SPEC ( ',' FILE-SPEC )*</h1>
+<ul>
+<li>
+<p>Example: <code>-sub=com.acme.*.bnd</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/sub.md -->
+<p>You can enable <strong>sub-bundles</strong> with the <code>-sub</code> instruction, to build a set of <code>.bnd</code> files that use the <code>bnd.bnd</code> file as a basis. The list of sub-<code>.bnd</code> files can be specified with wildcards.</p>
+<h2 id="example">Example</h2>
+<p>Assume a bundle <code>com.example</code> with a main <code>bnd.bnd</code> file:</p>
+<p><code>-sub *.bnd</code></p>
+<p>And besides the following files:</p>
+<ul>
+<li><code>sub.bundle1.bnd</code></li>
+<li><code>sub.bundle2.bnd</code></li>
+</ul>
+<p>This will process every other <code>.bnd</code> file as a <code>sub-bundle</code> and will create a <code>.jar</code> file for it:</p>
+<ul>
+<li><code>generated/com.example.sub.bundle1.jar</code></li>
+<li><code>generated/com.example.sub.bundle2.jar</code></li>
+</ul>
+<p>The <code>Bundle Symbolic Name</code> for each sub bundle will be the name of the <code>project</code> + <code>.</code> + <code>file name prefix of the sub bundle</code>. </p>
+<p>Sub bundles are mostly treated as independent projects. They are part of the repositories and release process.</p>
+<p>The content of the sub <code>.bnd</code> files is as usual (see also <a href="/chapters/160-jars.html">Generating JARs</a>).</p>
+<h2 id="-buildpath-and-classpath-with-sub-bundles">-buildpath and -classpath with sub-bundles</h2>
+<p>The <a href="/instructions/buildpath.html"><code>-buildpath</code></a> is a project instruction. This means that it must be placed in the main <code>bnd.bnd</code> file, not in the sub-<code>.bnd</code> file. A project can only have a single <code>-buildpath</code>.</p>
+<p>Thus, in the sub bundle <code>.bnd</code>-files you have to use <a href="https://bnd.bndtools.org/instructions/classpath.html"><code>-classpath</code></a> instead. </p>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>-classpath: \
+    ${repo;org.apache.poi:poi;latest},\
+</code></pre></div>
+
+<h2 id="use-cases">Use cases</h2>
+<h3 id="gogo-commands">Gogo Commands</h3>
+<p>A case where this approach is useful is, when you provide an implementation and want to separate the Gogo commands from the main code. In that case you create a <strong>main provider</strong> bundle and a <strong>Gogo bundle</strong>.</p>
+<p>In most cases it is best to have one project generate one bundle. However, sometimes it creates a lot of overhead and you’d like to be able to provide multiple bundles in a project since they share so much information.</p>
+<h3 id="wrapping-jar-files">Wrapping JAR files</h3>
+<p>Another use case is when you need to <a href="/chapters/390-wrapping.html">wrap <code>.jar</code> files</a>, e.g. to convert non-OSGi bundles into OSGi-Bundles by adding meta-data to the Manifest. 
+A practise to do so could be to have a single Wrapper-bundle where you do all your wrapping of external dependencies. The advantage is, that you don't clutter up your workspace with lots of tiny Bundle-wrapping projects. With sub-bundles you can keep all your wrapped jars in one single project.</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runee EE</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runee EE</h1>
+<ul>
+<li>
+<p>Example: <code>-runee=JavaSE-1.8</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runee.md -->
+<p>The <code>-runee</code> instruction adds the capabilities of an <em>execution environment</em> to the system capabilities. Every Java edition has a set of standard packages and OSGi has also defined a number of execution environments that define which packages can be found. The <code>-runee</code> allows these capabilities to be defined by using the name of the execution environment. Additionally, this instruction also adds an <code>osgi.ee</code> requirement with the given name and version. You can use the following execution environment names:</p>
+<div class="highlight"><pre><span></span><code>OSGi/Minimum-1.0
+OSGi/Minimum-1.1 
+OSGi/Minimum-1.2
+JRE-1.1
+J2SE-1.2
+J2SE-1.3
+J2SE-1.4
+J2SE-1.5
+JavaSE-1.6
+JavaSE-1.7
+JavaSE/compact1-1.8
+JavaSE/compact2-1.8
+JavaSE/compact3-1.8
+JavaSE-1.8
+JavaSE-9
+</code></pre></div>
+
+<p>An example:</p>
+<div class="highlight"><pre><span></span><code>-runee: JavaSE-1.8
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

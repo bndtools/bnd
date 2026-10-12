@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runblacklist requirement (',' requirement)</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runblacklist requirement (',' requirement)</h1>
+<ul>
+<li>
+<p>Example: <code>-runblacklist=osgi.identity;filter:='(osgi.identity=&lt;bsn&gt;)', ...</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runblacklist.md -->
+<p>The blacklist is a set of requirements. These requirements are used to get a set of resources from the repositories that match any of these requirements. This set is then removed from any result from the repositories, effectively making it impossible to use.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-runblacklist: \
+    osgi.identity;filter:=&#39;(osgi.identity=com.foo.bad.bundle)&#39;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

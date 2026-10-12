@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-resolve (manual|auto|beforelaunch|batch|cache)</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-resolve (manual|auto|beforelaunch|batch|cache)</h1>
+<ul>
+<li>
+<p>Example: <code>-resolve: '-resolve manual</code></p>
+</li>
+<li>
+<p>Values: <code>manual,auto,beforelaunch,batch,cache,never</code></p>
+</li>
+<li>
+<p>Pattern: <code>(manual|auto|beforelaunch|batch)</code></p>
+</li>
+</ul>
+<h3 id="directives">Directives</h3>
+<ul>
+<li><code>manual</code> Resolve is manually with the Resolve button</li>
+<li>
+<p>Values: <code>manual</code></p>
+</li>
+<li>
+<p>Pattern: <code>\Qmanual\E</code></p>
+</li>
+<li>
+<p><code>auto</code> A resolve will take place before saving</p>
+</li>
+<li>
+<p>Values: <code>auto</code></p>
+</li>
+<li>
+<p>Pattern: <code>\Qauto\E</code></p>
+</li>
+<li>
+<p><code>beforelaunch</code> A resolve will take place before launching</p>
+</li>
+<li>
+<p>Values: <code>beforelaunch</code></p>
+</li>
+<li>
+<p>Pattern: <code>\Qbeforelaunch\E</code></p>
+</li>
+<li>
+<p><code>batch</code> A resolve will take place before launching when in batch mode (e.g. Gradle) but not in IDE mode (e.g. Eclipse)</p>
+</li>
+<li>
+<p>Values: <code>batch</code></p>
+</li>
+<li>
+<p>Pattern: <code>\Qbatch\E</code></p>
+</li>
+<li>
+<p><code>cache</code> Resolve when the runbundles are needed unless there is a cache file that is newer than the bndrun/project &amp; workspace. The cache file has the same name as the project/bndrun file but starts with a '.'</p>
+</li>
+<li>
+<p>Values: <code>cache</code></p>
+</li>
+<li>
+<p>Pattern: <code>\Qcache\E</code></p>
+</li>
+<li>
+<p><code>never</code> A Resolve will never take place. Manually resolve will result in error.</p>
+</li>
+<li>
+<p>Values: <code>never</code></p>
+</li>
+<li>
+<p>Pattern: <code>\Qnever\E</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/resolve.md -->
+<p>The bnd workspace can use a <em>resolver</em> to calculate the content of the <code>-runbundles</code> instruction based on a set of <em>initial requirements</em>. The bndtools GUI can manually resolve the initial requirements but through the <code>-resolve</code> instruction it is possible to calculate the <code>-runbundles</code> when the file is saved or just before the <code>-runbundles</code> are used in the launch.</p>
+<p>The values are:</p>
+<ul>
+<li><code>manual</code> – It is up to the user to resolve the initial requirements</li>
+<li><code>auto</code> – Whenever the initial requirements are saved, the resolver will be used to set new <code>-runbundles</code></li>
+<li><code>beforelaunch</code> – Calculate the <code>-runbundles</code> on demand. This ignores the value of the <code>-runbundles</code> and runs the resolver. The results of the resolver are cached. This cache works by creating a checksum over all the properties of the project.</li>
+<li><code>batch</code> – When running in batch mode, the run bundles will be resolved. In all other modes this will only resolve when the <code>-runbundles</code> are empty.</li>
+<li><code>cache</code> – Will use a cache file in the workspace cache. If that file is stale relative to the workspace or project or it does not exist, then the bnd(run) file will be resolved and the result is stored in the cache file.</li>
+<li><code>never</code> – If anybody tries to resolve , the process will throw an <code>UnsupportedOperationException</code>. This is intended for manually curated runbundles or where a base file is resolved and other files include them an add some additional instructions. The Excepetion is meant as a clear warning to any developer accidentally resolving the <code>-runbundles</code>.</li>
+</ul>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre><span></span><code>-resolve beforelaunch
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

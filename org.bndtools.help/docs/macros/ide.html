@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ide ';' ( 'javac.target' | 'javac.source' )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>ide ';' ( 'javac.target' | 'javac.source' )</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>ide</code> macro reads Java compiler source and target version settings from the Eclipse IDE's project preferences. This allows bnd builds to use the same Java version settings configured in the IDE.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${ide;&lt;setting&gt;[;&lt;default&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>setting</code> - The IDE setting to retrieve:</li>
+<li><code>javac.target</code> - The Java target bytecode version</li>
+<li><code>javac.source</code> - The Java source compatibility version</li>
+<li><code>default</code> (optional) - Default value if the setting is not found</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Reads from <code>.settings/org.eclipse.jdt.core.prefs</code> in the project directory</li>
+<li>Lazy loads the preferences file on first use</li>
+<li>Maps setting names to Eclipse JDT compiler properties</li>
+<li>Returns the value or default if setting is not found</li>
+<li>Generates an error if the preferences file doesn't exist</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get target bytecode version:</p>
+<div class="highlight"><pre><span></span><code>javac.target=${ide;javac.target}
+# Returns: &quot;1.8&quot; (for Java 8) or &quot;11&quot; (for Java 11), etc.
+</code></pre></div>
+
+<p>Get source compatibility version:</p>
+<div class="highlight"><pre><span></span><code>javac.source=${ide;javac.source}
+</code></pre></div>
+
+<p>Use with default:</p>
+<div class="highlight"><pre><span></span><code>source.level=${ide;javac.source;1.8}
+target.level=${ide;javac.target;1.8}
+</code></pre></div>
+
+<p>Configure bundle based on IDE settings:</p>
+<div class="highlight"><pre><span></span><code>Bundle-RequiredExecutionEnvironment: JavaSE-${ide;javac.target}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Synchronizing build settings with IDE configuration</li>
+<li>Ensuring consistent Java version across IDE and command-line builds</li>
+<li>Reading IDE preferences without duplicating configuration</li>
+<li>Portable projects that work across different development environments</li>
+<li>Maintaining consistency in multi-developer projects</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Requires Eclipse JDT project structure (<code>.settings/org.eclipse.jdt.core.prefs</code>)</li>
+<li>The file is automatically created/managed by Eclipse IDE</li>
+<li>Only supports <code>javac.target</code> and <code>javac.source</code> settings</li>
+<li>Generates an error if the preferences file is missing</li>
+<li>Values are read from Eclipse's compiler settings</li>
+<li>Common values: "1.8", "11", "17", "21", etc.</li>
+<li>Other IDEs (IntelliJ, VS Code) may not create this file</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Java OSGi Service</title>
+<link rel="stylesheet" href="../../help.css">
+</head>
+<body>
+<h1>Java OSGi Service</h1>
+<h2 id="java-osgi-service-api-impl-consumer">Java OSGi Service (api, impl, consumer)</h2>
+<p>This template is based on the idea of <a href="https://bndtools.org/tutorial.html">this tutorial</a> and will create three bundles for a typical OSGi service scenario:</p>
+<ul>
+<li>api bundle - contains the interface of a service</li>
+<li>impl bundle - contains the implementation class (<code>@Component</code>) of the service interface</li>
+<li>consumer bundle - contains an example of a class which consumes the service without relying on the implementation directly but letting the OSGi Framework inject it by <code>@Reference</code></li>
+</ul>
+<p><strong>Requirements</strong>: </p>
+<ul>
+<li>bndtools Eclipse-Plugin has been installed</li>
+<li>a new <a href="https://bndtools.org/workspace.html">Bnd Workspace</a> has been created (e.g. using the bndtools.workspace.min template)</li>
+</ul>
+<h3 id="1-open-the-wizard-select-file-new-other">1. Open the wizard, select File-&gt;New-&gt;Other...</h3>
+<p><img src="https://bndtools.org/images/templates/template-osgi-service1.png" style="max-width:100%"></p>
+<h3 id="2-then-select-osgi-services-java-osgi-service-api-impl-consumer-and-next">2. Then select OSGi Services -&gt; Java OSGi Service (api, impl, consumer) and Next&gt;</h3>
+<p><img src="https://bndtools.org/images/templates/template-osgi-service2.png" style="max-width:100%"></p>
+<h3 id="3-fill-in-desired-values-for-the-project-name-and-the-service-name-fields">3. Fill in desired values for the Project Name and the Service Name fields</h3>
+<p><img src="https://bndtools.org/images/templates/template-osgi-service3.png" style="max-width:100%"></p>
+<h3 id="4-click-finish">4. Click Finish</h3>
+<p><img src="https://bndtools.org/images/templates/template-osgi-service4.png" style="max-width:100%"></p>
+<p>There are three projects created: org.myorg.test.hello (api), org.myorg.test.hello.impl, and org.myorg.test.hello.consumer.</p>
+<h3 id="5-rundebug-the-project">5. Run/Debug the project</h3>
+<p>Included in the generated <code>org.myorg.test.hello</code> project is a <code>Hello.bndrun</code> file that can be used to launch a framework, register the HelloServiceImpl, inject (via SCR) into the HelloServiceConsumer and have the HelloServiceConsumer call the service.</p>
+<p><img src="https://bndtools.org/images/templates/template-osgi-service5.png" style="max-width:100%"></p>
+<h3 id="6-resolving-dependencies">6. Resolving dependencies</h3>
+<p>Click <code>Resolve</code> and then <code>Update</code> to let bndtools figure out the bundles to run (-runbundles).</p>
+<p><img src="https://bndtools.org/images/templates/template-osgi-service6.png" style="max-width:100%"></p>
+<h3 id="7-run-the-project">7. Run the project</h3>
+<p><img src="https://bndtools.org/images/templates/template-osgi-service7.png" style="max-width:100%"></p>
+<p>Then click on Run OSGi (or Debug OSGi). Results in the service method being called and the console output.</p>
+<h3 id="next-steps">Next steps</h3>
+<p>Now you have a good starting point to develop your service. 
+In an existing project you probably do not need the generated consumer bundle if you already have other bundles consuming the service.</p>
+</body>
+</html>

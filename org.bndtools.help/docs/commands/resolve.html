@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>resolve</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>resolve</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   resolve [options]  &lt;&lt;path&gt;...&gt;
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -b --bundles ]</code> Print out the bundles</li>
+<li><code>[ -d --dot ]</code> Create a dependency file</li>
+<li><code>[ -e --exclude &lt;string;&gt; ]</code> Exclude files by pattern</li>
+<li><code>[ -f --files ]</code> Print out the bundle files</li>
+<li><code>[ -o --optionals ]</code> Show the optionals</li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+<li><code>[ -q --quiet ]</code> Quiet</li>
+<li><code>[ -r --runorder &lt;runorder&gt; ]</code> Override the -runorder</li>
+<li><code>[ -u --urls ]</code> Print out the bundle urls</li>
+<li><code>[ -v --verbose ]</code> prints more processing information</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Use the following workspace</li>
+<li><code>[ -W --write ]</code> Write -runbundles instruction back to the file</li>
+<li><code>[ -x --xchange ]</code> Fail on changes</li>
+</ul>
+<h2 id="available-sub-commands">Available sub-commands</h2>
+<ul>
+<li><code>dot</code> - Create a dot file </li>
+<li><code>repos</code> -   </li>
+<li><code>resolve</code> - Resolve a bndrun file </li>
+<li><code>validate</code> - Resolve a repository index against a base to determine if the index is 'complete' </li>
+</ul>
+<h3 id="dot">dot</h3>
+<p>Create a dot file</p>
+<h4 id="synopsis_1">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   dot [options]  &lt;bndrun-file&gt;
+</code></pre></div>
+
+<h5 id="options_1">Options:</h5>
+<ul>
+<li><code>[ -o --output &lt;string&gt; ]</code> Send to file</li>
+<li><code>[ -q --quiet ]</code> Quiet</li>
+<li><code>[ -r --runorder &lt;runorder&gt; ]</code> Override the -runorder</li>
+</ul>
+<h3 id="repos">repos</h3>
+<h4 id="synopsis_2">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   repos [options]  ...
+</code></pre></div>
+
+<h5 id="options_2">Options:</h5>
+<ul>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> </li>
+</ul>
+<h3 id="resolve">resolve</h3>
+<p>Resolve a bndrun file</p>
+<h4 id="synopsis_3">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   resolve [options]  &lt;&lt;path&gt;...&gt;
+</code></pre></div>
+
+<h5 id="options_3">Options:</h5>
+<ul>
+<li><code>[ -b --bundles ]</code> Print out the bundles</li>
+<li><code>[ -d --dot ]</code> Create a dependency file</li>
+<li><code>[ -e --exclude &lt;string;&gt; ]</code> Exclude files by pattern</li>
+<li><code>[ -f --files ]</code> Print out the bundle files</li>
+<li><code>[ -o --optionals ]</code> Show the optionals</li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+<li><code>[ -q --quiet ]</code> Quiet</li>
+<li><code>[ -r --runorder &lt;runorder&gt; ]</code> Override the -runorder</li>
+<li><code>[ -u --urls ]</code> Print out the bundle urls</li>
+<li><code>[ -v --verbose ]</code> prints more processing information</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Use the following workspace</li>
+<li><code>[ -W --write ]</code> Write -runbundles instruction back to the file</li>
+<li><code>[ -x --xchange ]</code> Fail on changes</li>
+</ul>
+<h3 id="validate">validate</h3>
+<p>Validate an OBR file by trying to resolve each entry against itself</p>
+<h4 id="synopsis_4">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   validate [options]  &lt;[index-path]&gt;
+</code></pre></div>
+
+<h5 id="options_4">Options:</h5>
+<ul>
+<li><code>[ -a --all ]</code> Include all output details</li>
+<li><code>[ -c --capabilities &lt;parameters&gt; ]</code> Specify a set of capabilities provided by the base</li>
+<li><code>[ -C --core &lt;osgi_core&gt; ]</code> Specify the framework version used as part of the base, [R4_0_1 R4_2_1 R4_3_0 R4_3_1 R5_0_0 R6_0_0 R7_0_0 R8_0_0]</li>
+<li><code>[ -e --ee &lt;ee&gt; ]</code> Specify the execution environment used as part of the base, default is JavaSE_1_8</li>
+<li><code>[ -f --failedshow ]</code> Show resolution failed errors</li>
+<li><code>[ -p --packages &lt;parameters&gt; ]</code> Specify a set of packages provided by the base</li>
+<li><code>[ -s --system &lt;string&gt; ]</code> Specify a system file used as the base (more commonly referred to as a 'distro')</li>
+<li><code>[ -u --unused ]</code> Show any unused entries. This will only try to resolve the workspace entries and then list the entries in the repos that are not used</li>
+<li><code>[ -x --xref ]</code> List cross reference: mimssing-req -&gt; resources*</li>
+</ul>
+</body>
+</html>

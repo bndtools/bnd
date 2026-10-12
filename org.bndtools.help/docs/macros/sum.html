@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sum (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>sum (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>sum</code> macro calculates the sum of all numeric values provided in one or more lists. Each element is parsed as a double-precision floating-point number.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${sum;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of numeric values</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Parses all elements as double-precision numbers</li>
+<li>Calculates the sum of all values</li>
+<li>Returns the total as a string</li>
+<li>Throws exception if any value is not numeric</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Sum a simple list:</p>
+<div class="highlight"><pre><span></span><code>${sum;1,2,3,4,5}
+# Returns: &quot;15&quot;
+</code></pre></div>
+
+<p>Sum multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${sum;10,20;30,40}
+# Returns: &quot;100&quot;
+</code></pre></div>
+
+<p>Sum decimal values:</p>
+<div class="highlight"><pre><span></span><code>${sum;1.5,2.5,3.5}
+# Returns: &quot;7.5&quot;
+</code></pre></div>
+
+<p>Calculate total from properties:</p>
+<div class="highlight"><pre><span></span><code>total=${sum;${value1};${value2};${value3}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Calculating totals and aggregates</li>
+<li>Summing metric values</li>
+<li>Computing combined sizes or counts</li>
+<li>Mathematical calculations in builds</li>
+<li>Aggregating numeric configuration</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>All values must be numeric</li>
+<li>Returns double-precision result</li>
+<li>See also: <code>${average}</code> for mean calculation</li>
+<li>See also: <code>${max}</code> and <code>${min}</code> for extremes</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

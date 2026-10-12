@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>format ';' STRING (';' ANY )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>format ';' STRING (';' ANY )*</h1>
+<h2 id="summary">Summary</h2>
+<p>Format a string using printf-style format specifiers with provided arguments, similar to Java's <code>String.format()</code>.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${format;&lt;format-string&gt;[;&lt;argument&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>format-string</strong>: A format string with printf-style format specifiers (e.g., <code>%s</code>, <code>%d</code>, <code>%f</code>, <code>%tF</code>)</li>
+<li><strong>argument...</strong>: Zero or more arguments to substitute into the format string</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>The macro:
+1. Processes the format string using Java's <code>Formatter</code> syntax
+2. Uses <code>Locale.ROOT</code> for build reproducibility
+3. Automatically converts string arguments to appropriate types based on format specifiers
+4. Expands arguments that look like macros (starting with <code>${</code>)
+5. Supports conditional formatting with <code>%{&lt;condition&gt;;&lt;true&gt;;&lt;false&gt;}</code></p>
+<h3 id="conditional-syntax">Conditional Syntax</h3>
+<div class="highlight"><pre><span></span><code>%{&lt;condition&gt;;&lt;true-value&gt;;&lt;false-value&gt;}
+</code></pre></div>
+
+<p>Where <code>&lt;condition&gt;</code> is evaluated as truthy (non-empty and not "false").</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Basic string formatting
+${format;Bundle-Version %s;1.0.0}
+# Returns: Bundle-Version 1.0.0
+
+# Multiple arguments
+${format;%s-%s-%s;com;example;bundle}
+# Returns: com-example-bundle
+
+# Number formatting
+${format;Port number: %d;8080}
+# Returns: Port number: 8080
+
+# Decimal formatting
+${format;Progress: %.2f%%;75.5}
+# Returns: Progress: 75.50%
+
+# Date/time formatting
+${format;%tF;${tstamp}}
+# Returns: 2024-01-15 (ISO date format)
+
+${format;%tY-%tm-%td;${tstamp}}
+# Returns: 2024-01-15 (custom date format)
+
+# Conditional formatting
+${format;%{${debug}};DEBUG-MODE;RELEASE-MODE}
+# Returns: DEBUG-MODE if ${debug} is set, otherwise RELEASE-MODE
+
+# Width and padding
+${format;ID: %05d;42}
+# Returns: ID: 00042
+
+# Combining with other macros
+${format;Built on %tF at %tT;${now};${now}}
+# Returns: Built on 2024-01-15 at 14:30:45
+</code></pre></div>
+
+<h2 id="format-specifiers">Format Specifiers</h2>
+<p>Common format specifiers include:</p>
+<ul>
+<li><code>%s</code> - String</li>
+<li><code>%d</code> - Decimal integer</li>
+<li><code>%f</code> - Floating point</li>
+<li><code>%x</code> - Hexadecimal</li>
+<li><code>%o</code> - Octal</li>
+<li><code>%b</code> - Boolean</li>
+<li><code>%tF</code> - ISO date (yyyy-MM-dd)</li>
+<li><code>%tT</code> - Time (HH:mm:ss)</li>
+<li><code>%tY</code>, <code>%tm</code>, <code>%td</code> - Year, month, day components</li>
+</ul>
+<p>See Java's <code>Formatter</code> documentation for complete format specifier syntax.</p>
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Version Strings</strong>: Create formatted version identifiers</li>
+<li><strong>Manifest Headers</strong>: Generate complex manifest header values</li>
+<li><strong>Date/Time Stamps</strong>: Format timestamps in various formats</li>
+<li><strong>Numeric IDs</strong>: Format numbers with padding or specific precision</li>
+<li><strong>Conditional Text</strong>: Generate different text based on build properties</li>
+<li><strong>Reproducible Builds</strong>: Format values consistently using Locale.ROOT</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses <code>Locale.ROOT</code> for consistent, reproducible formatting across environments</li>
+<li>Follows Java's <code>String.format()</code> and <code>Formatter</code> syntax</li>
+<li>Arguments are automatically converted to appropriate types</li>
+<li>Arguments that start with <code>${</code> are expanded as macros first</li>
+<li>Conditional syntax <code>%{...}</code> is bnd-specific (not standard Java)</li>
+<li>For date/time formatting, combine with <a href="tstamp.html">tstamp</a> or <a href="now.html">now</a></li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="tstamp.html">tstamp</a> - Get timestamp in milliseconds</li>
+<li><a href="now.html">now</a> - Get current date/time</li>
+<li><a href="long2date.html">long2date</a> - Convert timestamp to formatted date</li>
+<li><a href="if.html">if</a> - Conditional macro (simpler alternative for boolean conditions)</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>apply ';' MACRO (';' LIST)*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>apply ';' MACRO (';' LIST)*</h1>
+<h2 id="summary">Summary</h2>
+<p>Convert comma-separated lists into semicolon-separated macro arguments, effectively "applying" list elements as individual macro parameters.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${apply;&lt;macro-name&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>macro-name</strong>: Name of the macro to invoke (without <code>${}</code>)</li>
+<li><strong>list...</strong>: Zero or more comma-separated lists whose elements become macro arguments</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>The macro:
+1. Takes the specified macro name
+2. Splits all provided lists into individual elements (using comma separation)
+3. Constructs a new macro invocation with elements as semicolon-separated arguments
+4. Expands the constructed macro</p>
+<p>This is useful when you have arguments in a comma-separated list but need to pass them as separate parameters to a macro.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Basic example - convert list to macro arguments
+args = com.example.foo, 3.12, HIGHEST
+${apply;repo;${args}}
+# Expands to: ${repo;com.example.foo;3.12;HIGHEST}
+
+# Apply multiple lists
+list1 = a, b
+list2 = c, d
+${apply;mymacro;${list1};${list2}}
+# Expands to: ${mymacro;a;b;c;d}
+
+# Use with filter macro
+packages = com.example.*, org.sample.*, com.test.*
+pattern = com\..*
+${apply;filter;${packages};${pattern}}
+# Expands to: ${filter;com.example.*,org.sample.*,com.test.*;com\..*}
+
+# Repository lookup with dynamic arguments
+repo-args = my.bundle, 1.0.0, HIGHEST
+bundle-path = ${apply;repo;${repo-args}}
+
+# Use with format macro
+format-string = %s-%s-%s
+values = group, artifact, version
+${apply;format;${format-string};${values}}
+# Expands to: ${format;%s-%s-%s;group;artifact;version}
+
+# Complex example with multiple lists
+deps1 = foo, bar
+deps2 = baz
+${apply;join;,;${deps1};${deps2}}
+# Expands to: ${join;,;foo;bar;baz}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Dynamic Macro Calls</strong>: Build macro invocations from list-based configuration</li>
+<li><strong>Repository Queries</strong>: Pass artifact coordinates as a list</li>
+<li><strong>Parameter Transformation</strong>: Convert comma-separated to semicolon-separated</li>
+<li><strong>Configuration Flexibility</strong>: Store macro arguments in properties as lists</li>
+<li><strong>Macro Composition</strong>: Combine multiple lists into a single macro call</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The macro name is specified without <code>${}</code> delimiters</li>
+<li>Lists are split on commas (respects quoted strings)</li>
+<li>All list elements become separate arguments to the target macro</li>
+<li>The resulting macro is immediately expanded</li>
+<li>Multiple lists are concatenated in order</li>
+<li>Empty lists contribute no arguments</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="template.html">template</a> - More sophisticated list-to-macro transformation</li>
+<li><a href="foreach.html">foreach</a> - Iterate over list elements</li>
+<li><a href="join.html">join</a> - Join list elements with a delimiter</li>
+<li><a href="list.html">list</a> - Merge property lists</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>global ';' KEY ( ';' DEFAULT )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>global ';' KEY ( ';' DEFAULT )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>global</code> macro provides access to user-specific settings stored in the <code>~/.bnd/settings.json</code> file. This allows builds to use machine-specific configuration like credentials, API tokens, or user preferences without storing them in project files.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${global;&lt;key&gt;[;&lt;default&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>key</code> - The setting name to retrieve from settings.json</li>
+<li><code>default</code> (optional) - Default value to return if the setting is not found</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Reads from the user's <code>~/.bnd/settings.json</code> file in their home directory</li>
+<li>Returns the value for the specified key</li>
+<li>Returns the default value if provided and key is not found</li>
+<li>Returns null if key is not found and no default is provided</li>
+<li>Special keys:</li>
+<li><code>key.public</code> - Returns the user's public key as hex string</li>
+<li><code>key.private</code> - Returns the user's private key as hex string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Access a custom setting:</p>
+<div class="highlight"><pre><span></span><code>maven.user=${global;maven.username}
+</code></pre></div>
+
+<p>Use with default value:</p>
+<div class="highlight"><pre><span></span><code>api.key=${global;example.api.key;default-key}
+</code></pre></div>
+
+<p>Access credentials:</p>
+<div class="highlight"><pre><span></span><code>-connection: ${global;nexus.url}; \
+             uid=${global;nexus.username}; \
+             pwd=${global;nexus.password}
+</code></pre></div>
+
+<p>Get public key:</p>
+<div class="highlight"><pre><span></span><code>signing.key=${global;key.public}
+</code></pre></div>
+
+<p>Conditional on global setting:</p>
+<div class="highlight"><pre><span></span><code>${if;${global;enable.feature};enabled;disabled}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Storing user-specific credentials outside project files</li>
+<li>Machine-specific configuration (different per developer)</li>
+<li>API tokens and authentication information</li>
+<li>User preferences for build behavior</li>
+<li>Private repository credentials</li>
+<li>Signing keys and certificates</li>
+<li>Environment-specific URLs and endpoints</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Settings are stored in JSON format in <code>~/.bnd/settings.json</code></li>
+<li>The settings file is per-user, not per-project</li>
+<li>Keeps sensitive information out of version control</li>
+<li>Returns null (not empty string) when key is missing and no default</li>
+<li>The special <code>key.public</code> and <code>key.private</code> keys access cryptographic keys</li>
+<li>Settings can be edited directly in the JSON file</li>
+<li>Useful for CI/CD where different machines need different configurations</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

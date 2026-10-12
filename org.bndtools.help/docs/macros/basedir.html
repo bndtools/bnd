@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>basedir</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>basedir</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>basedir</code> macro returns the absolute path to the base directory of the current processor (project, workspace, or build context). This is the root directory from which relative paths are resolved.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${basedir}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the absolute path to the base directory</li>
+<li>The base directory is the root context for resolving relative file paths</li>
+<li>Throws an exception if no base directory has been set (rare edge case)</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get the current project's base directory:</p>
+<div class="highlight"><pre><span></span><code>project.root=${basedir}
+</code></pre></div>
+
+<p>Build a path relative to the base directory:</p>
+<div class="highlight"><pre><span></span><code>resources.dir=${basedir}/src/main/resources
+</code></pre></div>
+
+<p>Reference files using the base directory:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Icon: ${basedir}/icon.png
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Building absolute paths to project resources</li>
+<li>Referencing files in build configurations</li>
+<li>Creating platform-independent path references</li>
+<li>Debugging path resolution issues</li>
+<li>Documentation and logging of project locations</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The base directory is typically the project directory for bnd projects</li>
+<li>In workspace contexts, it may be the workspace root</li>
+<li>The path separator used in the returned path is platform-specific</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

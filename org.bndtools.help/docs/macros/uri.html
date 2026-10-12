@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>uri ';' URI (';' URI)?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>uri ';' URI (';' URI)?</h1>
+<h2 id="summary">Summary</h2>
+<p>Resolve a URI against a base URI, handling relative URIs and file scheme URIs appropriately.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${uri;&lt;uri&gt;[;&lt;base-uri&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>uri</strong>: URI to resolve (can be relative or absolute)</li>
+<li><strong>base-uri</strong>: (Optional) Base URI to resolve against. Defaults to the processor's base URI.</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>The macro resolves URIs based on these rules:
+1. If the URI is absolute (has a scheme like <code>http:</code>, <code>https:</code>) <strong>and not</strong> a <code>file:</code> scheme, returns it unchanged
+2. If the URI is relative or uses the <code>file:</code> scheme:
+   - Resolves it against the specified base URI (if provided)
+   - Or resolves it against the processor's base URI (project or workspace root)
+3. Returns the resolved URI</p>
+<p>The base URI depends on context when not explicitly provided:
+- In a project's <code>bnd.bnd</code>: Project directory URI
+- In a workspace's <code>cnf/build.bnd</code>: Workspace directory URI</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Current directory URI
+${uri;.}
+# In project: file:///workspace/my.project/
+# In workspace: file:///workspace/
+
+# Resolve relative path
+${uri;src/main/resources}
+# Returns: file:///project/base/src/main/resources
+
+# Resolve against custom base
+${uri;config/settings.xml;file:///opt/app/}
+# Returns: file:///opt/app/config/settings.xml
+
+# Absolute HTTP URI (returned unchanged)
+${uri;https://example.com/resource}
+# Returns: https://example.com/resource
+
+# File URI (resolved against base)
+${uri;file:./local/path}
+# Returns: file:///project/base/local/path
+
+# Parent directory reference
+${uri;../config}
+# Resolved relative to base
+
+# Use in configuration
+Bundle-DocURL: ${uri;docs/index.html;${Bundle-Site}}
+
+# Reference workspace files
+config-location = ${uri;cnf/config.properties}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>URI Resolution</strong>: Convert relative URIs to absolute</li>
+<li><strong>Configuration</strong>: Resolve configuration file locations</li>
+<li><strong>Documentation</strong>: Create proper URIs for documentation references</li>
+<li><strong>Resource Linking</strong>: Link to external or internal resources</li>
+<li><strong>Cross-Platform</strong>: Generate platform-independent URIs</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Absolute URIs (except <code>file:</code>) are returned unchanged</li>
+<li>Relative URIs and <code>file:</code> scheme URIs are resolved against base</li>
+<li>Default base is the processor's base (project or workspace root)</li>
+<li>Handles <code>.</code> (current) and <code>..</code> (parent) directory references</li>
+<li>Result is a proper URI with appropriate scheme</li>
+<li>For file-specific URI conversion, see <a href="fileuri.html">fileuri</a></li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="fileuri.html">fileuri</a> - Convert file paths to file URIs</li>
+<li><a href="path.html">path</a> - Convert to absolute file paths</li>
+<li><a href="basedir.html">basedir</a> - Get the base directory path</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

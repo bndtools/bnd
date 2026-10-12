@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-dependson SELECTORS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-dependson SELECTORS</h1>
+<ul>
+<li>
+<p>Example: <code>-dependson=org.acme.cm</code></p>
+</li>
+<li>
+<p>Values: <code>${projects}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/dependson.md -->
+<p>Projects referenced by <a href="buildpath.html">-buildpath</a> are always built first but sometimes
+you need to specify projects to be build first which are not referenced by <code>-buildpath</code>.
+You can specify those additional projects using <code>-dependson</code>.</p>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre><span></span><code>-dependson: projA, projB
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

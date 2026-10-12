@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>propertiesname</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>propertiesname</h1>
+<hr />
+<p>layout: default
+title:  propertiesname 
+class:  Project
+summary: Get the filename of the current properties file</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>propertiesname</code> macro returns the filename (without path) of the properties file being processed. This is typically <code>bnd.bnd</code> for projects or workspace configuration files.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${propertiesname}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the filename of the current properties file</li>
+<li>Returns empty string if no properties file is set</li>
+<li>Returns only the filename, not the full path</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get current file name:</p>
+<div class="highlight"><pre><span></span><code>Current-File: ${propertiesname}
+# Returns: &quot;bnd.bnd&quot; or &quot;my.bndrun&quot;, etc.
+</code></pre></div>
+
+<p>Use in logging:</p>
+<div class="highlight"><pre><span></span><code>Build-Info: Built from ${propertiesname}
+</code></pre></div>
+
+<p>Conditional based on file:</p>
+<div class="highlight"><pre><span></span><code>${if;${equals;${propertiesname};test.bnd};test-mode;normal-mode}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Identifying which configuration file is being processed</li>
+<li>Logging and debugging</li>
+<li>Conditional configuration based on file name</li>
+<li>Documentation generation</li>
+<li>Build metadata</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns only the filename, not the directory path</li>
+<li>Returns empty string if no properties file</li>
+<li>Typically "bnd.bnd" for projects</li>
+<li>See also: <code>${propertiesdir}</code> for the directory path</li>
+<li>See also: <code>${basedir}</code> for the project base directory</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

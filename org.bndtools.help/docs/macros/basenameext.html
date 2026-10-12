@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>basenameext ';' PATH ( ';' EXTENSION )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>basenameext ';' PATH ( ';' EXTENSION )</h1>
+<p>Returns the basename of the specified path optionally minus a specified extension. This is the last segment of the path. If an extension is specified, the basename is examined for a <code>.</code> separating the extension from the rest of the file name. If the extension of the basename matches the specified extension, this extension is removed from the basename before it is returned. The extension, if specified, may optionally start with <code>.</code>.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># returns &#39;abcdef.def&#39;
+${basenameext;abcdef.def}
+${basenameext;/foo.bar/abcdef.def}
+${basenameext;abcdef.def;bar}
+${basenameext;/foo.bar/abcdef.def;bar}
+
+# returns &#39;abcdef&#39;
+${basenameext;abcdef.def;def}
+${basenameext;/foo.bar/abcdef.def;def}
+${basenameext;abcdef.def;.def}
+${basenameext;/foo.bar/abcdef.def;.def}
+</code></pre></div>
+</body>
+</html>

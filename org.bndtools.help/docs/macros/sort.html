@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sort (';' LIST )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>sort (';' LIST )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>sort</code> macro combines one or more lists and sorts their contents alphabetically (lexicographically). The sorting is case-sensitive with uppercase letters before lowercase.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${sort;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists to sort</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists</li>
+<li>Sorts elements alphabetically</li>
+<li>Case-sensitive sorting (A-Z before a-z)</li>
+<li>Returns comma-separated sorted list</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Sort a simple list:</p>
+<div class="highlight"><pre><span></span><code>${sort;cherry,apple,banana}
+# Returns: &quot;apple,banana,cherry&quot;
+</code></pre></div>
+
+<p>Sort with mixed case:</p>
+<div class="highlight"><pre><span></span><code>${sort;Zebra,apple,Ant,banana}
+# Returns: &quot;Ant,Zebra,apple,banana&quot;
+</code></pre></div>
+
+<p>Sort multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${sort;red,green;blue,yellow}
+# Returns: &quot;blue,green,red,yellow&quot;
+</code></pre></div>
+
+<p>Sort and filter:</p>
+<div class="highlight"><pre><span></span><code>${sort;${filter;${packages};com\.example\..*}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Organizing lists alphabetically</li>
+<li>Creating ordered reports</li>
+<li>Sorting package or class names</li>
+<li>Normalizing list order for comparison</li>
+<li>Generating sorted documentation</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Case-sensitive lexicographic sorting</li>
+<li>Uppercase letters sort before lowercase</li>
+<li>For numeric sorting, use <code>${nsort}</code></li>
+<li>See also: <code>${nsort}</code> for numeric sorting</li>
+<li>See also: <code>${reverse}</code> to reverse order</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

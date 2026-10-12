@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>imports</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>imports</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>imports</code> macro returns a comma-separated list of packages that will be imported by the current bundle. The list can be optionally filtered by providing filter arguments.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${imports}
+${imports;&lt;filter&gt;...}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>filter</code> (optional) - One or more filter patterns to select specific imported packages</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns all packages in the bundle's Import-Package header</li>
+<li>Packages are listed in a comma-separated format</li>
+<li>Optional filter arguments can narrow down the result</li>
+<li>Available during bundle analysis phase</li>
+<li>Includes both explicitly declared and automatically detected imports</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get all imported packages:</p>
+<div class="highlight"><pre><span></span><code>imported.pkgs=${imports}
+# Returns: &quot;org.osgi.framework,javax.servlet,org.slf4j,...&quot;
+</code></pre></div>
+
+<p>Document imported packages:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Description: Depends on ${imports}
+</code></pre></div>
+
+<p>Count imported packages:</p>
+<div class="highlight"><pre><span></span><code>import.count=${size;${imports}}
+</code></pre></div>
+
+<p>Use in conditional logic:</p>
+<div class="highlight"><pre><span></span><code>${if;${imports};has-imports;no-imports}
+</code></pre></div>
+
+<p>Check for specific imports:</p>
+<div class="highlight"><pre><span></span><code>has.servlet=${if;${filter;${imports};javax\.servlet.*};yes;no}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Documenting bundle dependencies</li>
+<li>Validating import configurations</li>
+<li>Analyzing package dependencies</li>
+<li>Computing bundle coupling metrics</li>
+<li>Conditional logic based on what's imported</li>
+<li>Dependency verification in builds</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only includes packages in the Import-Package manifest header</li>
+<li>Includes both required and optional imports</li>
+<li>Packages listed here will be resolved at runtime by OSGi</li>
+<li>The list reflects analyzed/calculated imports, not just explicit declarations</li>
+<li>bnd automatically calculates imports by scanning bytecode</li>
+<li>See also: <code>${exports}</code> for exported packages</li>
+<li>See also: <code>${exporters}</code> to find which JARs provide packages</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bndtools Explorer</title>
+<link rel="stylesheet" href="../../help.css">
+</head>
+<body>
+<h1>Bndtools Explorer</h1>
+<p>The Bndtools Package Explorer is an extension of the <a href="https://help.eclipse.org/photon/index.jsp?topic=%2Forg.eclipse.jdt.doc.user%2Ftasks%2Ftasks-74.htm">Eclipse Package Explorer</a>. The explorer provides an overview of the projects and their contents. It is extended with a search bar for projects and some extra filters. You can make simple searches or use the <a href="https://bnd.bndtools.org/chapters/820-instructions.html#glob">bnd globbing</a>. That is, you can use wildcards (<code>example*bar</code>) but also multiple searches in one, for example, <code>foo|bar</code> to find multiple projects.</p>
+<p>Icons are used extensively to mark the projects in the explorer. They are either used as direct icons for an object (e.g. a bnd.bnd file) or are used to decorate existing icons. For example, if a package is exported or not. The following image shows all icons in their context.</p>
+<p><img src="https://bndtools.org/images/bndtoolsexplorer.png" alt="Bndtools Explorer" style='max-width:100%' class="view"/></p>
+<h2 id="pseudo-targets">Pseudo Targets</h2>
+<p>You can filter on the following additional targets:</p>
+<ul>
+<li><code>:error</code> – Will select a project that has errors</li>
+<li><code>:warning</code> – Will select a project that has warnings</li>
+</ul>
+<p><img src="https://bndtools.org/assets/img/bndtools-explorer-pseudo.gif" alt="pseudo targets" style='max-width:100%' class="view"/></p>
+<p>Note that you can combine the pseudo targets with the <code>'|'</code> operator, e.g. <code>:e|lib</code>.</p>
+<h2 id="all-green">All Green</h2>
+<p>The All Green field shows the aggregate status of the workspace. If there is any project with an error, it will be red. If there are no errors, but a project has warnings it will be orange. In all other cases it is green.</p>
+<h2 id="refresh">Refresh</h2>
+<p>The refresh button will refresh all projects from the workspace and will then reload the workspace. This will reinitialize all the repositories and tend to rebuild all projects.</p>
+<h2 id="pinning">Pinning</h2>
+<p>You can <em>pin</em> a project. A pinned project will always be visible.</p>
+<h2 id="icons">Icons</h2>
+<p>Bndtools adds the following icons in the Package Explorer:</p>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bnd-project</td>
+<td>Contains all the project configuration. The project configuration inherits properties from <code>cnf/build.bnd</code> and any bnd files in <code>cnf/ext/</code></td>
+</tr>
+<tr>
+<td>*.bnd file</td>
+<td>A general bnd file. This is either a bnd file in the <code>cnf</code> directory to configure the workspace or it can be a sub bundle when in a project. Bndtools contains a special editor for the bnd files. This type of file is generally used in an inheritance hierarchy.</td>
+</tr>
+<tr>
+<td>*.bndrun file</td>
+<td>Describes a launch configuration. The required bundles can be indicated with <em>initial requirements</em> that the Bndtools resolver can turn into a list of bundles. An extensive editor is available to edit the launch configuration. A project can contain many bndrun files.</td>
+</tr>
+<tr>
+<td>build.bnd</td>
+<td>This is the <em>master configuration</em> file of the workspace. When Bndtools starts, bnd first reads the bnd files in the <code>cnf/ext/</code> directory, and then the <code>cnf/build.bnd</code> file. Any property or header set in this file is available to any project. There is only one such file in a workspace and it is also used as the <em>marker</em> file for a workspace.</td>
+</tr>
+<tr>
+<td>Bnd Bundle Path</td>
+<td><code>Bnd Bundle Path</code> – This is an <em>Eclipse Library container</em> for Bndtools. The children of the container are specified in the project's <code>bnd.bnd</code> file in the <code>-buildpath</code> and <code>-testpath</code> instructions.</td>
+</tr>
+<tr>
+<td>Dependency with source</td>
+<td>A <code>Bnd Bundle Path</code> dependency with source code attached. If the icon is darker then it is a test dependency.</td>
+</tr>
+<tr>
+<td>Dependency</td>
+<td>A <code>Bnd Bundle Path</code> dependency without source code attached. If the icon is darker then it is a test dependency.</td>
+</tr>
+<tr>
+<td>Test Dependency</td>
+<td>A <code>Bnd Bundle Path</code> dependency without source code attached that is only used for test code.</td>
+</tr>
+<tr>
+<td>Component class</td>
+<td>A class that is a DS component. The general icon for a component is an eco friendly green LED.</td>
+</tr>
+<tr>
+<td>Component package</td>
+<td>A package that contains DS components</td>
+</tr>
+<tr>
+<td>src folder</td>
+<td>The source folder classes that are part of the bundle</td>
+</tr>
+<tr>
+<td>test folder</td>
+<td>The source folder for test code.</td>
+</tr>
+<tr>
+<td>Private package</td>
+<td>A private package in a bundle. This package is included but not exported.</td>
+</tr>
+<tr>
+<td>Exported package</td>
+<td>An exported package of a bundle. If the package has a version it will also be displayed.</td>
+</tr>
+<tr>
+<td>Excluded package</td>
+<td>A package that is <strong>not</strong> included in any bundle. This is rare and not a good practice so it is generally a warning sign.</td>
+</tr>
+</tbody>
+</table>
+<p>If you're looking for other icons, the <a href="http://help.eclipse.org/kepler/index.jsp?topic=%2Forg.eclipse.jdt.doc.user%2Freference%2Fref-icons.htm">Eclipse Help</a> shows a further reference of all icons.</p>
+</body>
+</html>

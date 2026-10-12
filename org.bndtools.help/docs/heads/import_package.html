@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Import-Package ::= import ( ',' import )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Import-Package ::= import ( ',' import )*</h1>
+<ul>
+<li>
+<p>Example: <code>Import-Package: !com.exotic.*, com.acme.foo;vendor=ACME, *</code></p>
+</li>
+<li>
+<p>Values: <code>${exported_packages}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>-remove-attribute:</code> Remove the given attributes from matching imported packages.</li>
+<li>
+<p>Example: <code>-remove-attribute:=foo.*</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>resolution:</code> Indicates that the packages must be resolved if the value is mandatory, which is the default. If mandatory packages cannot be resolved, then the bundle must fail to resolve. A value of optional indicates that the packages are optional.</p>
+</li>
+<li>
+<p>Example: <code>resolution:=optional</code></p>
+</li>
+<li>
+<p>Values: <code>mandatory,optional</code></p>
+</li>
+<li>
+<p>Pattern: <code>mandatory|optional</code></p>
+</li>
+<li>
+<p><code>version</code> A version range to select the version of an export definition. The default value is 0.0.0.</p>
+</li>
+<li>
+<p>Example: <code>version="[1.2,3.0)"</code></p>
+</li>
+<li>
+<p>Pattern: <code>((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?</code></p>
+</li>
+<li>
+<p><code>bundle-symbolic-name</code> The bundle symbolic name of the exporting bundle.</p>
+</li>
+<li>
+<p>Example: <code>bundle-symbolic-name=com.acme.foo.daffy</code></p>
+</li>
+<li>
+<p>Pattern: <code>[-\w]+(:?\.[-\w]+)*</code></p>
+</li>
+<li>
+<p><code>bundle-version</code> A version range to select the bundle version of the exporting bundle. The default value is 0.0.0.</p>
+</li>
+<li>
+<p>Example: <code>bundle-version=1.3</code></p>
+</li>
+<li>
+<p>Pattern: <code>((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/import_package.md -->
+<h1 id="import-package">Import-Package</h1>
+<p>The <code>Import-Package</code> header lists the Java packages that the bundle requires from other bundles. By default, bnd will import all referred packages, but you can use patterns and negations to control which packages are imported.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: !com.example.internal.*, *
+</code></pre></div>
+
+<p>This example imports all referred packages except those starting with <code>com.example.internal</code>. You can also add explicit imports for packages not directly referred to by your code.</p>
+<p>bnd will attempt to find the exported version of imported packages and will use the exported version unless a specific version or range is specified. This header is important for managing dependencies between bundles.</p>
+<p>The <code>Import-Package</code> header lists the packages that are required by the contained packages. The default for this header is <code>*</code>, resulting in importing all referred packages. This header therefore rarely has to be specified. However, in certain cases there is an unwanted import. The import is caused by code that the author knows can never be reached. This import can be removed by using a negating pattern. A pattern is inserted in the import as an extra import when it contains no wildcards and there is no referral to that package. This can be used to add an import statement for a package that is not referred to by your code but is still needed, for example, because the class is loaded by name.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: !org.apache.commons.log4j, com.acme.*,\
+ com.foo.extra
+</code></pre></div>
+
+<p>During processing, bnd will attempt to find the exported version of imported packages. If no version or version range is specified on the import instruction, the exported version will then be used though the micro part and the qualifier are dropped. That is, when the exporter is <code>1.2.3.build123</code>, then the import version will be 1.2. If a specific version (range) is specified, this will override any found version. This default an be overridden with the <a href="../instructions/consumer_policy.html">-consumerpolicy</a> or <a href="../instructions/provider_policy.html">-providerpolicy</a> instruction (also see <a href="../chapters/170-versioning.html">Versioning</a>).</p>
+<p>If an explicit version is given, then <code>${@}</code> can be used to substitute the found version in a range. In those cases, the <a href="../macros/range.html">range</a> macro can be very useful to calculate ranges and drop specific parts of the version. For example:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: org.osgi.framework;version=&quot;[1.3,2.0)&quot;
+Import-Package: org.osgi.framework;version=&quot;${@}&quot;
+Import-Package: org.osgi.framework;version=&quot;${range;[==,=+);${@}}&quot;
+</code></pre></div>
+
+<p>You can reference the <code>Bundle-SymbolicName</code> and <code>Bundle-Version</code> of the exporter on the classpath by using the <code>${@bundlesymbolicname}</code> and <code>${@bundleversion}</code> values. In those cases, the <a href="../macros/range.html">range</a> macro can be very useful to calculate ranges and drop specific parts of the bundle version. For example:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: org.eclipse.jdt.ui;bundle-symbolic-name=&quot;${@bundlesymbolicname}&quot;;\
+ bundle-version=&quot;${range;[==,+);${@bundleversion}}&quot;
+</code></pre></div>
+
+<p>Packages with directive <code>resolution:=dynamic</code> will be removed from <code>Import-Package</code> and added to the <code>DynamicImport-Package</code> header after being processed like any other <code>Import-Package</code> entry. For example:</p>
+<div class="highlight"><pre><span></span><code>Import-Package: org.slf4j.*;resolution:=dynamic, *
+</code></pre></div>
+
+<p>If an imported package uses mandatory attributes, then bnd will attempt to add those attributes to the import statement. However, in certain (bizarre!) cases this is not wanted. It is therefore possible to remove an attribute from the import clause. This is done with the <code>-remove-attribute</code> directive or by setting the value of an attribute to <code>!</code>. The parameter of the <code>-remove-attribute</code> directive is an instruction and can use the standard options with <code>!</code>, <code>*</code>, <code>?</code>, etc.</p>
+<div class="highlight"><pre><span></span><code>Import-Package: org.eclipse.core.runtime;-remove-attribute:=&quot;common&quot;,*
+</code></pre></div>
+
+<p>Or</p>
+<div class="highlight"><pre><span></span><code>Import-Package: org.eclipse.core.runtime;common=!,*
+</code></pre></div>
+
+<p>Directives that are not part of the OSGi specification will give a warning unless they are prefixed with <code>x-</code>.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

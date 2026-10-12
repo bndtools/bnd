@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>workspace</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>workspace</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>workspace</code> macro returns the absolute file path to the current bnd workspace directory.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${workspace}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns absolute path to workspace root</li>
+<li>The workspace is the directory containing <code>cnf/</code></li>
+<li>Path uses OS-specific separators</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get workspace path:</p>
+<div class="highlight"><pre><span></span><code>Workspace-Location: ${workspace}
+</code></pre></div>
+
+<p>Reference workspace files:</p>
+<div class="highlight"><pre><span></span><code>config.file=${workspace}/cnf/build.bnd
+</code></pre></div>
+
+<p>Relative to workspace:</p>
+<div class="highlight"><pre><span></span><code>${if;${startswith;${basedir};${workspace}};in-workspace;external}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Referencing workspace-level files</li>
+<li>Configuration paths</li>
+<li>Build metadata</li>
+<li>Multi-project coordination</li>
+<li>Workspace-relative paths</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns absolute path</li>
+<li>Points to workspace root (contains <code>cnf/</code>)</li>
+<li>See also: <code>${basedir}</code> for project directory</li>
+<li>See also: <code>${propertiesdir}</code> for config file directory</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

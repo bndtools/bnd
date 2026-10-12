@@ -23,6 +23,7 @@ Bundle-SymbolicName: org.bndtools.p2
     org.bndtools.versioncontrol.ignores.plugin.git, \
     org.bndtools.templating, \
     org.bndtools.templating.gitrepo, \
+    org.bndtools.help, \
     biz.aQute.bnd.embedded-repo, \
     biz.aQute.bnd.maven, \
     biz.aQute.bnd.util, \

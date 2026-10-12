@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>filterout ';' LIST ';' REGEX</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>filterout ';' LIST ';' REGEX</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>filterout</code> macro filters a list to exclude entries that match a specified regular expression pattern. This is the inverse of <code>${filter}</code> - entries that match the pattern are removed from the result.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${filterout;&lt;list&gt;;&lt;regex&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - A comma or semicolon-separated list of values</li>
+<li><code>regex</code> - A Java regular expression pattern to match against</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Splits the input list into individual entries</li>
+<li>Compiles the regex pattern</li>
+<li>Tests each entry against the pattern using full match semantics</li>
+<li>Removes entries that match the pattern (keeps non-matching ones)</li>
+<li>Returns the filtered list as a comma-separated string</li>
+<li>Empty result if all entries match (all excluded)</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Exclude test files:</p>
+<div class="highlight"><pre><span></span><code>${filterout;Main.java,Test.java,TestUtil.java;.*Test.*}
+# Returns: &quot;Main.java&quot;
+</code></pre></div>
+
+<p>Exclude snapshot versions:</p>
+<div class="highlight"><pre><span></span><code>${filterout;1.0.0,2.0.0-SNAPSHOT,3.0.0;.*SNAPSHOT.*}
+# Returns: &quot;1.0.0,3.0.0&quot;
+</code></pre></div>
+
+<p>Exclude specific packages:</p>
+<div class="highlight"><pre><span></span><code>${filterout;com.example.api,com.example.impl,com.example.test;.*\.test}
+# Returns: &quot;com.example.api,com.example.impl&quot;
+</code></pre></div>
+
+<p>Exclude by prefix:</p>
+<div class="highlight"><pre><span></span><code>${filterout;prod-bundle,test-bundle,dev-bundle;test-.*|dev-.*}
+# Returns: &quot;prod-bundle&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Removing test files from production builds</li>
+<li>Excluding snapshot versions from release lists</li>
+<li>Filtering out unwanted packages or dependencies</li>
+<li>Cleaning up file lists</li>
+<li>Removing debug or development artifacts</li>
+<li>Excluding internal implementation packages</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses Java regular expression syntax</li>
+<li>The pattern must match the <em>entire</em> entry (full match, not substring)</li>
+<li>Case-sensitive by default (use <code>(?i)</code> for case-insensitive matching)</li>
+<li>Inverse operation of <code>${filter}</code> - keeps entries that DON'T match</li>
+<li>See also: <code>${reject}</code> which is an alias for <code>${filterout}</code></li>
+<li>See also: <code>${filter}</code> (or <code>${select}</code>) for inclusive filtering</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-nosubstitution</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-nosubstitution</h1>
+<ul>
+<li>
+<p>Example: <code>-nosubstitution=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/nosubstitution.md -->
+<p>See <a href="/chapters/170-versioning.html#substitution">Subsitution</a> to learn more about package Substition (a key aspect of OSGi allowing that a package can be both exported and imported).</p>
+<p>Note, that package substitution behaviour is enabled by default in bnd for backward-compatibilty. But recommended to disable for most cases these days via <code>-nosubstitution:true</code>.</p>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre><span></span><code>-nosubstitution:true
+-exportcontents: *
+Import-Package: *
+</code></pre></div>
+
+<p>This ensures that no <code>Import-Package</code> is calculated for any package in <code>Export-Package</code>. This is equivalent to <code>Export-Package: *;-noimport:=true</code> or <code>-exportcontents: *;-noimport:=true</code>.</p>
+<p>The advantage is that <code>-nosubstitution:true</code> is a global switch, thus a developer cannot forget to add <code>-noimport:=true</code> in case of a more fine-grained <code>Export-Package</code> declaration with multiple packages. </p>
+<h2 id="why-is-it-useful">Why is it useful?</h2>
+<p>It is useful for library authors who <strong>never</strong> want to have any exported packages in <code>Import-Package</code>.
+Often, library authors who are just using bnd to generate OSGi metadata in their build scripts (e.g. via maven or gradle plugins) but are otherwise unfamiliar with bnd and OSGi, need a simple way to disable this substitution behavior, because it can lead to surprising resolution results (or failures) after deployment (because other bundles providing the same package are pulled in). This is often undesirable in a pure "library" use-case.</p>
+<p>This instruction helps making bnd / OSGi adoption easier for library projects just wanting to provide OSGi metadata.</p>
+<p><br /><br /></p>
+</body>
+</html>

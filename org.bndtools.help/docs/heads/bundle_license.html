@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-License ::= '<<[EXTERNAL]>>' | ( license ( ',' license ) * )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-License ::= '<<[EXTERNAL]>>' | ( license ( ',' license ) * )</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-License: http://www.opensource.org/licenses/jabberpl.php</code></p>
+</li>
+<li>
+<p>Values: <code>http://www.apache.org/licenses/LICENSE-2.0,&lt;&lt;EXTERNAL&gt;&gt;</code></p>
+</li>
+<li>
+<p>Pattern: <code>(.*|&lt;&lt;EXTERNAL&gt;&gt;)</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>description</code> Human readable description of the license.</li>
+<li>
+<p>Example: <code>description="Describe the license here"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>link</code> </p>
+</li>
+<li>
+<p>Example: ``</p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_license.md -->
+<h1 id="bundle-license">Bundle-License</h1>
+<p>The <code>Bundle-License</code> header provides machine-readable license information for the bundle. It can list one or more licenses, separated by commas, and may include additional attributes such as a description or a link to the license text.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-License: Apache-2.0;description=&#39;Apache License, Version 2.0&#39;;link=&#39;https://www.apache.org/licenses/LICENSE-2.0&#39;
+</code></pre></div>
+
+<p>This header is optional but recommended for clarity and compliance. It helps users and tools understand the licensing terms of the bundle.</p>
+<div class="highlight"><pre><span></span><code>    /*
+ * Bundle-License header
+ */
+private void doLicense(BundleLicense annotation) {
+    StringBuilder sb = new StringBuilder(annotation.name());
+    if (!annotation.description().equals(&quot;&quot;))
+        sb.append(&quot;;description=&#39;&quot;).append(annotation.description().replaceAll(&quot;&#39;&quot;, &quot;\\&#39;&quot;)).append(&quot;&#39;&quot;);
+    if (!annotation.link().equals(&quot;&quot;))
+        sb.append(&quot;;link=&#39;&quot;).append(annotation.link().replaceAll(&quot;&#39;&quot;, &quot;\\&#39;&quot;)).append(&quot;&#39;&quot;);
+    add(Constants.BUNDLE_LICENSE, sb.toString());
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

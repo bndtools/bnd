@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runframework ( 'none' | 'services' | ANY )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runframework ( 'none' | 'services' | ANY )?</h1>
+<ul>
+<li>
+<p>Example: <code>-runfw: none</code></p>
+</li>
+<li>
+<p>Values: <code>(none | services | ANY)</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runframework.md -->
+<p>The <code>-runframework</code> instruction sets the type of framework to run when launching an OSGi application. If set to <code>none</code>, an internal dummy framework is used. If set to <code>services</code> or any other value, the Java META-INF/services mechanism is used to locate the <code>FrameworkFactory</code> implementation.</p>
+<p>Note: The name of this instruction is somewhat confusing due to historical reasons. In most cases, you should use the <code>-runfw</code> instruction to specify the actual framework JAR. The <code>-runframework</code> instruction is only needed if you want to control the framework discovery mechanism or use a dummy framework for testing purposes.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>
