@@ -29,6 +29,11 @@ public interface Constants {
 	String	COMMAND_REPOSITORIES_PUT		= "bnd.repositories.put";
 	String	COMMAND_REPOSITORIES_DOWNLOAD	= "bnd.repositories.fetch";
 	String	COMMAND_WORKSPACE_OFFLINE		= "bnd.workspace.offline";
+	String COMMAND_WIZARD_LIST = "bnd.wizard.templates.list";
+	String COMMAND_WIZARD_CREATE = "bnd.wizard.create";
+	String COMMAND_WIZARD_PLAN = "bnd.wizard.plan";
+	String COMMAND_WIZARD_APPLY = "bnd.wizard.apply";
+	String COMMAND_WIZARD_DISPOSE = "bnd.wizard.plan.dispose";
 
 	// Notifications
 	String	NOTIFICATION_STATUS			= "bnd/status";
