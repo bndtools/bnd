@@ -39,6 +39,7 @@ public class BndWorkspaceService implements WorkspaceService {
 	private final BndWorkspaceManager	workspaceManager;
 	private final BndLaunchService		launchService;
 	private final BndRepositoriesService	repositoriesService;
+	private final BndWizardService wizardService = new BndWizardService();
 	private LanguageClient				client;
 	private BndTextDocumentService documents;
 	private boolean effectivePropertiesTrusted;
@@ -56,6 +57,7 @@ public class BndWorkspaceService implements WorkspaceService {
 
 	public void shutdown() {
 		launchService.shutdown();
+		wizardService.close();
 	}
 
 	public void setClient(LanguageClient client) {
@@ -70,6 +72,16 @@ public class BndWorkspaceService implements WorkspaceService {
 
 			try {
 				switch (command) {
+					case Constants.COMMAND_WIZARD_LIST :
+						return wizardService.list(repositoriesRequest(args));
+					case Constants.COMMAND_WIZARD_CREATE :
+						return wizardService.create(repositoriesRequest(args));
+					case Constants.COMMAND_WIZARD_PLAN :
+						return wizardService.plan(repositoriesRequest(args));
+					case Constants.COMMAND_WIZARD_APPLY :
+						return wizardService.apply(repositoriesRequest(args));
+					case Constants.COMMAND_WIZARD_DISPOSE :
+						return wizardService.dispose(repositoriesRequest(args));
 					case Constants.COMMAND_EFFECTIVE_PROPERTIES :
 						return executeEffectiveProperties(args);
 						case Constants.COMMAND_RESOLUTION_ANALYZE :
@@ -384,6 +396,7 @@ public class BndWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
+		workspaceManager.closeMissingWorkspaces();
 		for (FileEvent event : params.getChanges()) {
 			File file = getFileFromUri(event.getUri());
 			if (file != null) {
