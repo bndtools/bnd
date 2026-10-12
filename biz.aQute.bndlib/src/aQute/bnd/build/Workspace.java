@@ -140,6 +140,10 @@ public class Workspace extends Processor {
 		final Memoize<Parameters>								gestalt;
 
 		WorkspaceData() {
+			this(true);
+		}
+
+		WorkspaceData(boolean startRemoteServer) {
 			repositories = Memoize.supplier(Workspace.this::initRepositories);
 			libraryHandler = CloseableMemoize.closeableSupplier(() -> new LibraryHandler(Workspace.this));
 			classIndex = CloseableMemoize.closeableSupplier(() -> new WorkspaceClassIndex(Workspace.this));
@@ -151,7 +155,7 @@ public class Workspace extends Processor {
 				return gestalt;
 			});
 			RemoteWorkspaceServer s = null;
-			if (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE))) {
+			if (startRemoteServer && (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE)))) {
 				try {
 					s = new RemoteWorkspaceServer(Workspace.this);
 				} catch (IOException e) {
@@ -1104,7 +1108,7 @@ public class Workspace extends Processor {
 	public void close() {
 		notifier.closing(this);
 		WorkspaceData oldData = data;
-		data = new WorkspaceData();
+		data = new WorkspaceData(false);
 		IO.close(oldData);
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(getBase());
