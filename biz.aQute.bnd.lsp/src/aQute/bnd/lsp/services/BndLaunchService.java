@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
@@ -165,8 +166,17 @@ public class BndLaunchService {
 			IO.absolutePath(cwd), java, project.getProperty(Constants.RUNEE), project.getName(), warnings, List.copyOf(sources));
 	}
 
-	private static void build(Project project, boolean bndrun) throws Exception {
-		Collection<Project> dependencies = project.getDependson();
+	static void build(Project project, boolean bndrun) throws Exception {
+		Collection<Project> dependencies = new LinkedHashSet<>(project.getDependson());
+		if (bndrun) {
+			for (Container bundle : project.getRunbundles()) {
+				Project bundledProject = bundle.getProject();
+				if (bundledProject != null && bundledProject != project) {
+					dependencies.addAll(bundledProject.getDependson());
+					dependencies.add(bundledProject);
+				}
+			}
+		}
 		for (Project dependency : dependencies) {
 			dependency.build();
 			if (!dependency.isOk()) {

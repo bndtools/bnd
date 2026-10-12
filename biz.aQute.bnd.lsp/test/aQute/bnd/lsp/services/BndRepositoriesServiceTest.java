@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -13,6 +16,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.FileChangeType;
+import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.InitializeParams;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,6 +27,7 @@ import aQute.bnd.lsp.BndLanguageServer;
 import aQute.bnd.lsp.Constants;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
 
 class BndRepositoriesServiceTest {
 	@TempDir
@@ -60,6 +67,59 @@ class BndRepositoriesServiceTest {
 	@SuppressWarnings("unchecked")
 	private static <T> T field(Object result, String key) {
 		return (T) ((Map<String, Object>) result).get(key);
+	}
+
+	@Test
+	void closesDeletedWorkspacesAndTheirRemoteRegistration() throws Exception {
+		String uri = workspace();
+		Path build = temporary.resolve("cnf/build.bnd");
+		Files.writeString(build, "-remoteworkspace: true\n");
+		BndWorkspaceManager manager = new BndWorkspaceManager();
+		BndWorkspaceService service = new BndWorkspaceService(manager);
+		try {
+			var original = manager.getWorkspaceForUri(uri);
+			original.getRepositories();
+			File ports = temporary.resolve("cnf/cache/remotews").toFile();
+			assertThat(ports).isDirectory();
+			File[] registrations = ports.listFiles();
+			assertThat(registrations).hasSize(1);
+			int port = Integer.parseInt(registrations[0].getName());
+			try (Socket connection = new Socket(InetAddress.getLoopbackAddress(), port)) {
+				assertThat(connection.isConnected()).isTrue();
+			}
+
+			IO.delete(temporary.toFile());
+			service.didChangeWatchedFiles(new DidChangeWatchedFilesParams(
+				List.of(new FileEvent(build.toUri().toString(), FileChangeType.Deleted))));
+			assertThat(manager.getWorkspaceForUri(uri)).isNull();
+			assertThatThrownBy(() -> {
+				try (Socket connection = new Socket(InetAddress.getLoopbackAddress(), port)) {}
+			}).isInstanceOf(IOException.class);
+			assertThat(temporary).doesNotExist();
+
+			workspace();
+			assertThat(manager.getWorkspaceForUri(uri)).isNotSameAs(original);
+		} finally {
+			service.shutdown();
+			manager.shutdown();
+		}
+	}
+
+	@Test
+	void closesWorkspaceWhenOnlyItsBuildFileIsDeleted() throws Exception {
+		String uri = workspace();
+		BndWorkspaceManager manager = new BndWorkspaceManager();
+		try {
+			var original = manager.getWorkspaceForUri(uri);
+			assertThat(original).isNotNull();
+			Files.delete(temporary.resolve("cnf/build.bnd"));
+			manager.refreshWorkspace(temporary.toFile());
+			assertThat(manager.getWorkspaceForUri(uri)).isNull();
+			workspace();
+			assertThat(manager.getWorkspaceForUri(uri)).isNotSameAs(original);
+		} finally {
+			manager.shutdown();
+		}
 	}
 
 	@Test

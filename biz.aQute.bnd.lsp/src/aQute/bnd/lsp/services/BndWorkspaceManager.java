@@ -82,6 +82,7 @@ public class BndWorkspaceManager {
 	}
 
 	public Workspace getWorkspaceForFile(File file) {
+		closeMissingWorkspaces();
 		if (file == null)
 			return null;
 
@@ -194,6 +195,28 @@ public class BndWorkspaceManager {
 		} catch (Exception e) {
 			logger.debug("Macro expansion error: {}", macroExpression, e);
 			return null;
+		}
+	}
+
+	public void closeMissingWorkspaces() {
+		for (File root : workspaces.keySet()) {
+			if (new File(root, "cnf/build.bnd").isFile())
+				continue;
+			ReentrantLock lock = locks.computeIfAbsent(root, key -> new ReentrantLock());
+			lock.lock();
+			try {
+				if (new File(root, "cnf/build.bnd").isFile())
+					continue;
+				Workspace workspace = workspaces.remove(root);
+				if (workspace != null) {
+					workspace.close();
+					logger.info("Closed deleted bnd workspace at {}", root);
+				}
+			} catch (Exception e) {
+				logger.warn("Failed to close deleted bnd workspace at {}", root, e);
+			} finally {
+				lock.unlock();
+			}
 		}
 	}
 
