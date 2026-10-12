@@ -20,6 +20,7 @@ Bundle-Description: Language Server Protocol (LSP) Server for bnd
 	aQute.libg,\
 	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
+	biz.aQute.bnd.embedded-repo;version=latest,\
 	biz.aQute.repository;version=latest,\
 	biz.aQute.resolve;version=latest,\
 	org.eclipse.lsp4j;version=1.0.0,\
@@ -41,6 +42,7 @@ Bundle-Description: Language Server Protocol (LSP) Server for bnd
 	${workspace}/LICENSE, \
 	@${repo;biz.aQute.bnd.util;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bnd.embedded-repo;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
 	@${repo;org.eclipse.lsp4j;1.0.0}!/!META-INF/*, \

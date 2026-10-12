@@ -98,7 +98,8 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 			Constants.COMMAND_REPOSITORIES_SEARCH, Constants.COMMAND_REPOSITORIES_ACTIONS,
 			Constants.COMMAND_REPOSITORIES_RUN_ACTION, Constants.COMMAND_REPOSITORIES_REFRESH,
 			Constants.COMMAND_REPOSITORIES_PUT, Constants.COMMAND_REPOSITORIES_DOWNLOAD,
-			Constants.COMMAND_WORKSPACE_OFFLINE));
+			Constants.COMMAND_WORKSPACE_OFFLINE, Constants.COMMAND_WIZARD_LIST, Constants.COMMAND_WIZARD_PLAN,
+			Constants.COMMAND_WIZARD_APPLY, Constants.COMMAND_WIZARD_DISPOSE, Constants.COMMAND_WIZARD_CREATE));
 		capabilities.setExecuteCommandProvider(cmdOptions);
 
 		return CompletableFuture.completedFuture(new InitializeResult(capabilities));

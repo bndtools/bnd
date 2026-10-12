@@ -3,6 +3,7 @@ package aQute.bnd.lsp.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.lsp.Constants;
 
@@ -103,6 +105,26 @@ class BndLaunchServiceTest {
 			assertThat(project.getName()).isEqualTo("p");
 		} finally {
 			manager.shutdown();
+		}
+	}
+
+	@Test
+	void buildIncludesWorkspaceProjectsUsedAsRunBundles() throws Exception {
+		Path projectDir = workspace();
+		Files.writeString(projectDir.resolve("bnd.bnd"),
+			"Bundle-SymbolicName: p\nBundle-Version: 1.0.0\n-includeresource: sample.txt;literal=sample\n");
+		Path runFile = temporary.resolve("app.bndrun");
+		Files.writeString(runFile, "-runbundles: p;version=snapshot\n");
+		try (Workspace ws = new Workspace(temporary.toFile()); Run run = Run.createRun(ws, runFile.toFile())) {
+			var runbundles = run.getRunbundles();
+			assertThat(runbundles).as("runbundles=%s, projects=%s, errors=%s", run.getProperty("-runbundles"),
+				ws.getAllProjects(), run.getErrors()).isNotEmpty();
+			File bundle = runbundles.iterator().next().getFile();
+			assertThat(bundle).doesNotExist();
+
+			BndLaunchService.build(run, true);
+
+			assertThat(bundle).isFile();
 		}
 	}
 
