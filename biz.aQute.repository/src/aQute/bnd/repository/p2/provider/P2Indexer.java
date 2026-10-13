@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -30,11 +31,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
@@ -49,6 +52,7 @@ import aQute.libg.cryptography.MD5;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.packed.Unpack200;
+import aQute.p2.provider.EclipsePlatform;
 import aQute.p2.provider.Feature;
 import aQute.p2.provider.P2Impl;
 import aQute.p2.provider.TargetImpl;
@@ -128,7 +132,10 @@ class P2Indexer implements Closeable {
 		URI url = contentCapability.url();
 
 		final File source = client.getCacheFileFor(url);
-		final File link = new File(location, bsn + "-" + version + ".jar");
+		// Features may share bsn+version with a bundle; use a distinct link
+		// name to avoid overwriting the bundle in the cache (and vice versa)
+		boolean isFeature = ResourceUtils.hasType(resource, ECLIPSE_FEATURE_CAPABILITY);
+		final File link = new File(location, bsn + "-" + version + (isFeature ? ".feature.jar" : ".jar"));
 
 		IO.createSymbolicLinkOrCopy(link, source);
 
@@ -221,12 +228,38 @@ class P2Indexer implements Closeable {
 		if (index.isFile()) {
 			try (XMLResourceParser xp = new XMLResourceParser(index.toURI())) {
 				List<Resource> resources = xp.parse();
-				if (urlHash.equals(xp.name())) {
+				if (urlHash.equals(xp.name()) && !requiresReindex(resources)) {
 					return new ResourcesRepository(resources);
 				}
 			}
 		}
 		return save(readRepository());
+	}
+
+	/**
+	 * Detect indexes written before feature requirements carried the
+	 * {@link Feature#RELATION_ATTRIBUTE} provenance marker. Such stale caches
+	 * are re-indexed once so feature expansion can distinguish members
+	 * (plugins/includes) from mere dependencies (requires).
+	 */
+	private boolean requiresReindex(List<Resource> resources) {
+		for (Resource resource : resources) {
+			if (!ResourceUtils.hasType(resource, ECLIPSE_FEATURE_CAPABILITY))
+				continue;
+
+			List<Requirement> requirements = resource.getRequirements(IdentityNamespace.IDENTITY_NAMESPACE);
+			if (requirements.isEmpty())
+				continue;
+
+			boolean marked = requirements.stream()
+				.anyMatch(req -> req.getAttributes()
+					.containsKey(Feature.RELATION_ATTRIBUTE));
+			if (!marked) {
+				logger.info("p2 index {} lacks feature relation markers, re-indexing", indexFile);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private ResourcesRepository readRepository() throws Exception {
@@ -382,7 +415,29 @@ class P2Indexer implements Closeable {
 		// Add content capability for the artifact (bundle or feature JAR)
 		rb.addFile(file, artifact.uri);
 
+		if (artifact.classifier != aQute.p2.api.Classifier.FEATURE)
+			addPlatformFilter(rb, file);
+
 		return rb.build();
+	}
+
+	/**
+	 * A bundle for a specific platform (e.g. an SWT fragment) declares it in
+	 * Eclipse-PlatformFilter; the resolver needs it to exclude other platforms.
+	 */
+	private void addPlatformFilter(ResourceBuilder rb, File file) {
+		try (Jar jar = new Jar(file)) {
+			Manifest manifest = jar.getManifest();
+			if (manifest == null)
+				return;
+
+			CapReqBuilder platform = EclipsePlatform.requirement(manifest.getMainAttributes()
+				.getValue(EclipsePlatform.FILTER_HEADER));
+			if (platform != null)
+				rb.addRequirement(platform);
+		} catch (Exception e) {
+			logger.debug("{}: cannot read {} of {}", name, EclipsePlatform.FILTER_HEADER, file, e);
+		}
 	}
 
 	private ResourcesRepository save(ResourcesRepository repository) throws IOException, Exception {

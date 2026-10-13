@@ -40,8 +40,15 @@ public class DebugReporter {
 	void report() {
 		doRepos();
 		doBlackList();
+		doPlatform();
 		doSystemResource();
 		doProviders();
+	}
+
+	private void doPlatform() {
+		header("TARGET PLATFORM");
+		out.printf("%s%n", context.getPlatform() == null ? "any" : context.getPlatform());
+		nl();
 	}
 
 	private void doProviders() {
