@@ -19,6 +19,7 @@ import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -95,6 +96,44 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 	final Set<String>					loadingTemplateIndexes	= new HashSet<>();
 	final Map<String, List<TemplateInfo>>	templateIndexes			= new HashMap<>();
 
+	final IPropertyChangeListener			indexPrefListener		= e -> {
+																		if (BndPreferences.PREF_WORKSPACE_TEMPLATE_INDEXES
+																			.equals(e.getProperty()))
+																			syncIndexesWithPreferences();
+																	};
+
+	void syncIndexesWithPreferences() {
+		Job.create("sync template indexes", mon -> {
+			Set<String> wanted = new BndPreferences().getWorkspaceTemplateIndexes()
+				.stream()
+				.map(u -> URI.create(u)
+					.normalize()
+					.toString())
+				.collect(Collectors.toCollection(java.util.LinkedHashSet::new));
+			synchronized (templateIndexes) {
+				for (String known : new ArrayList<>(templateIndexes.keySet())) {
+					if (!wanted.contains(known)) {
+						templates.removeAll(templateIndexes.remove(known));
+					}
+				}
+				for (String uri : wanted) {
+					if (templateIndexes.containsKey(uri) || loadingTemplateIndexes.contains(uri))
+						continue;
+					try {
+						List<TemplateInfo> indexTemplates = templates.read(URI.create(uri)
+							.toURL())
+							.unwrap();
+						indexTemplates.forEach(templates::add);
+						templateIndexes.put(uri, indexTemplates);
+					} catch (Exception ex) {
+						log.error("failed to read index {}", uri, ex);
+					}
+				}
+			}
+			ui.write(() -> model.templates = templates.getAvailableTemplates());
+		}).schedule();
+	}
+
 	final static Image				verified			= Icons.image("icons/tick.png", false);
 	final static Image				verifiedGreyedOut	= new Image(Display.getDefault(), verified, SWT.IMAGE_DISABLE);
 
@@ -147,6 +186,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		} else {
 			model.updateWorkspace(true);
 		}
+
+		new BndPreferences().addPropertyChangeListener(indexPrefListener);
 
 		try {
 			Job job = Job.create("load index", mon -> {
@@ -237,6 +278,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 	@Override
 	public void dispose() {
+		new BndPreferences().removePropertyChangeListener(indexPrefListener);
 		saveDialogSettings();
 		super.dispose();
 	}

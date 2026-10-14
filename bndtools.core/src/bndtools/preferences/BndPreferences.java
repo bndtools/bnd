@@ -47,7 +47,7 @@ public class BndPreferences {
 	private static final String		PREF_BUILDBEFORELAUNCH			= "buildBeforeLaunch";
 	private static final String		PREF_ENABLE_TEMPLATE_REPO		= "enableTemplateRepo";
 	private static final String		PREF_TEMPLATE_REPO_URI_LIST		= "templateRepoUriList";
-	private static final String		PREF_WORKSPACE_TEMPLATE_INDEXES	= "workspaceTemplateIndexes";
+	public static final String		PREF_WORKSPACE_TEMPLATE_INDEXES	= "workspaceTemplateIndexes";
 	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
 	private static final String		PREF_PARALLEL					= "parallel";
 	private static final String		PREF_REBUILD_TRIGGER_POLICY		= "rebuildTriggerPolicy";
