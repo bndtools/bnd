@@ -85,6 +85,10 @@ public class P2Repository extends BaseRepository
 				location = indexFile.getParentFile();
 			}
 
+			String cache = config.cache();
+			if (cache != null)
+				location = workspace.getFile(cache);
+
 			return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
