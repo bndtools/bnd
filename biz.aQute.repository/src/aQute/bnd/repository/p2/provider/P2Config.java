@@ -26,7 +26,7 @@ public interface P2Config {
 	 * The location to store the index file and downloaded bundles. A location ending
 	 * in {@code /} is a directory in which {@code index.xml.gz} is stored. Otherwise,
 	 * the location specifies the complete index filename and bundles are stored in
-	 * its parent directory.
+	 * its parent directory unless {@link #cache()} is set.
 	 */
 	String location();
 
@@ -34,9 +34,20 @@ public interface P2Config {
 	 * The location to store the index file and downloaded bundles with a default
 	 * passed. A location ending in {@code /} is a directory in which
 	 * {@code index.xml.gz} is stored. Otherwise, the location specifies the complete
-	 * index filename and bundles are stored in its parent directory.
+	 * index filename and bundles are stored in its parent directory unless
+	 * {@link #cache()} is set.
 	 */
 	String location(String string);
+
+	/**
+	 * The optional directory for downloaded bundle links or copies, independent of
+	 * the index location. Relative paths are resolved against the workspace root.
+	 *
+	 * @return the cache directory, or {@code null} to use the index directory
+	 */
+	default String cache() {
+		return null;
+	}
 
 	/**
 	 * @return a comma separated list of tags.

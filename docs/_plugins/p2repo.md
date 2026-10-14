@@ -18,7 +18,8 @@ It can take the following configuration properties:
 | ----------------- | --------- | ---------- | --------------- |
 | `name`           | `NAME`    | p2 + `url` | The name of the repository. |
 | `url`            | `URI`     |            | The URL to either the P2 repository (a directory) or an Eclipse target platform definition file. |
-| `location`       | `STRING`  | `cnf/cache/p2-<name>/` | The location to store the index and downloaded bundles. A value ending in `/` is a directory and stores the index as `index.xml.gz`; an existing directory is also treated as a directory. Otherwise, the value specifies the complete index filename and bundles are stored in its parent directory. |
+| `location`       | `STRING`  | `cnf/cache/p2-<name>/` | The location to store the index. A value ending in `/` is a directory and stores the index as `index.xml.gz`; an existing directory is also treated as a directory. Otherwise, the value specifies the complete index filename. Unless `cache` is set, bundle links or copies are stored in the index directory. |
+| `cache`          | `STRING`  | Index directory | Optional directory for bundle links or copies, independent of the index location. Applies to both directory and filename locations. Relative paths are resolved against the workspace root; absolute paths are also supported. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 
 ## Example
@@ -39,6 +40,21 @@ To select the index filename explicitly:
 	name = EMF; \
 	location = cnf/cache/emf-index.xml.gz
 ```
+
+To keep an explicitly named index separate from the bundle cache:
+
+```
+-plugin.p2: \
+	aQute.bnd.repository.p2.provider.P2Repository; \
+	url = https://download.eclipse.org/modeling/emf/emf/builds/release/2.21; \
+	name = EMF; \
+	location = cnf/ext/emf-index.xml.gz; \
+	cache = cnf/cache/p2-EMF
+```
+
+Omitting `cache` preserves the existing behavior. Setting it does not move or delete
+previously cached files, or change the shared HTTP download cache (normally
+`~/.bnd/urlcache`).
 
 ## Tagging
 
