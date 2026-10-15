@@ -19,6 +19,8 @@ For example:
 		osgi.enroute.twitter.bootstrap.webresource;version='[3.3.5,3.3.6)',\
 		osgi.enroute.web.simple.provider;version='[2.1.0,2.1.1)'
 
+An entry can also reference an Eclipse feature, which expands to the bundles of the feature for the target platform, see [-buildpath](buildpath.html#eclipse-features).
+
 ## Start Levels
 
 Some launchers support startlevels and the `-runbundles` instruction therefore has a `startlevel` attribute. This attribute

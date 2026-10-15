@@ -54,6 +54,9 @@
 	org.apiguardian:apiguardian-api,\
 	org.opentest4j,\
 	org.apache.servicemix.bundles.junit,\
+	org.eclipse.swtbot.swt.finder,\
+	org.eclipse.swtbot.eclipse.finder,\
+	org.hamcrest,\
 	junit-platform-commons,\
 	junit-platform-engine,\
 	junit-jupiter-api,\

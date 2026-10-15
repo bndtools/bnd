@@ -787,6 +787,28 @@ public class CapReqBuilder {
 		return builder;
 	}
 
+	/**
+	 * Create a synthetic requirement on an {@code osgi.identity} capability,
+	 * optionally restricted to an identity type, e.g.
+	 * {@code org.eclipse.update.feature}, and an exact version.
+	 *
+	 * @param name the identity name, never {@code null}
+	 * @param type the identity type or {@code null} for any type
+	 * @param version the exact version or {@code null} for any version
+	 * @return the requirement {@code (&(osgi.identity=name)(type=type)(version=version))}
+	 */
+	public static Requirement createIdentityRequirement(String name, String type, String version) {
+		FilterBuilder filter = new FilterBuilder().eq(IdentityNamespace.IDENTITY_NAMESPACE, name);
+		if (type != null) {
+			filter.eq(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, type);
+		}
+		if (version != null) {
+			filter.eq(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		}
+		return new RequirementBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addFilter(filter)
+			.synthetic();
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(256);

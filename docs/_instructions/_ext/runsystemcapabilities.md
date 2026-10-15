@@ -28,4 +28,12 @@ Although resolver analyses the `-runpath` (and thus `-runfw`) for system capabil
 
 - Pattern: `.*`
 
+## Eclipse Platform
+
+For the `Eclipse-PlatformFilter` of Eclipse bundles the resolver provides the platform of the [-runproperties](runproperties.html) (`osgi.os`, `osgi.ws` and `osgi.arch`) as capability in the `eclipse.platform` namespace. A capability in this namespace defined here replaces it:
+
+```
+-runsystemcapabilities=eclipse.platform; osgi.os=win32; osgi.ws=win32; osgi.arch=x86_64
+```
+
 
