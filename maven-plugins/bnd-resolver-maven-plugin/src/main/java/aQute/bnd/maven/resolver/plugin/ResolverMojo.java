@@ -4,8 +4,6 @@ import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
 import java.io.Writer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -146,10 +144,7 @@ public class ResolverMojo extends AbstractMojo {
 					File outputRunFile = new File(outputBndrunDir, runFile.getName());
 					try (Writer writer = IO.writer(outputRunFile)) {
 						UTF8Properties props = new UTF8Properties();
-						// Use a relative path from the output file's parent directory to the input file
-						// This makes the generated file portable across different machines/CI environments
-						String relativePath = getRelativePath(outputBndrunDir, runFile);
-						props.setProperty(Constants.INCLUDE, String.format("\"~%s\"", escape(relativePath)));
+						props.setProperty(Constants.INCLUDE, String.format("\"~%s\"", escape(IO.absolutePath(runFile))));
 						props.store(writer, null);
 					}
 					runFile = outputRunFile;
@@ -180,21 +175,6 @@ public class ResolverMojo extends AbstractMojo {
 			}
 			return 0;
 		};
-	}
-
-	/**
-	 * Calculate a relative path from one directory to a file.
-	 *
-	 * @param from the base directory
-	 * @param to the target file
-	 * @return a relative path using forward slashes
-	 */
-	private String getRelativePath(File from, File to) {
-		Path fromPath = Paths.get(from.getAbsolutePath());
-		Path toPath = Paths.get(to.getAbsolutePath());
-		Path relative = fromPath.relativize(toPath);
-		// Use forward slashes for portability (Unix-style paths work on all platforms in bnd)
-		return relative.toString().replace('\\', '/');
 	}
 
 	private String escape(String input) {
