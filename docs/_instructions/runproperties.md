@@ -18,6 +18,10 @@ The `-runproperties` instruction allows you to define system properties that wil
 
 This is useful for setting environment-specific options or overriding default values without modifying your application's code.
 
+The properties `osgi.os`, `osgi.ws` and `osgi.arch` also define the platform that a resolve and the Eclipse features on the [-runrequires] and the container paths target.
+
+[-runrequires]: runrequires.html
+
 
 <hr />
 TODO Needs review - AI Generated content
