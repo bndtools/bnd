@@ -5,6 +5,8 @@ import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
 import java.io.Writer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 import aQute.bnd.build.Project;
@@ -226,12 +228,30 @@ public class Resolve extends AbstractBndrun {
 		if (!Objects.equals(outputBndrunFile, bndrunFile)) {
 			try (Writer writer = IO.writer(outputBndrunFile)) {
 				UTF8Properties props = new UTF8Properties();
-				props.setProperty(Constants.INCLUDE, String.format("\"~%s\"", escape(IO.absolutePath(bndrunFile))));
+				// Use a relative path from the output file's parent directory to the input file
+				// This makes the generated file portable across different machines/CI environments
+				String relativePath = getRelativePath(outputBndrunFile.getParentFile(), bndrunFile);
+				props.setProperty(Constants.INCLUDE, String.format("\"~%s\"", escape(relativePath)));
 				props.store(writer, null);
 			}
 			bndrunFile = outputBndrunFile;
 		}
 		return super.createBndrun(workspace, bndrunFile);
+	}
+
+	/**
+	 * Calculate a relative path from one directory to a file.
+	 *
+	 * @param from the base directory
+	 * @param to the target file
+	 * @return a relative path using forward slashes
+	 */
+	private String getRelativePath(File from, File to) {
+		Path fromPath = Paths.get(from.getAbsolutePath());
+		Path toPath = Paths.get(to.getAbsolutePath());
+		Path relative = fromPath.relativize(toPath);
+		// Use forward slashes for portability (Unix-style paths work on all platforms in bnd)
+		return relative.toString().replace('\\', '/');
 	}
 
 	private String escape(String input) {
