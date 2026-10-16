@@ -493,6 +493,30 @@ class TemplateFragmentsTest {
 
 	}
 
+	@Test
+	void testRemoveUpdate(@TempDir
+	File target) throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			File a = makeJar("remove.zip", """
+				-includeresource workspace-master/cnf/build.bnd;literal="# a\\n"
+				""");
+			List<TemplateInfo> infos = tfs.read("-workspace-templates " + a.toURI() + ";name=a;description=A")
+				.unwrap();
+
+			try (TemplateUpdater updater = tfs.updater(target, infos)) {
+				File build = IO.getFile(target, "cnf/build.bnd");
+				List.copyOf(updater.updaters()
+					.get(build))
+					.forEach(updater::remove);
+				updater.commit();
+
+				assertThat(updater.updaters()).doesNotContainKey(build);
+				assertThat(build).doesNotExist();
+			}
+		}
+	}
+
 	private static Workspace getworkSpace() throws Exception {
 		File f = IO.getFile(wsDir, "cnf/build.bnd");
 		f.getParentFile()
