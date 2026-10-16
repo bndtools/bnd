@@ -413,9 +413,6 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				}
 			});
 
-			TableViewerColumn checkboxColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
-			checkboxColumn.setLabelProvider(new ColumnLabelProvider());
-
 			TableViewerColumn indexColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
 			indexColumn.getColumn()
 				.setText("#");
@@ -521,7 +518,6 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					return super.getToolTipText(element);
 				}
 			});
-			tableLayout.addColumnData(new ColumnPixelData(20, false));
 			int maxIndexWidth = Math.max(32, 18 + String.valueOf(Math.max(1, model.templates.size())).length() * 8);
 			tableLayout.addColumnData(new ColumnPixelData(maxIndexWidth, false));
 			tableLayout.addColumnData(new ColumnPixelData(120, false));
