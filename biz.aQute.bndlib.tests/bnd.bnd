@@ -45,4 +45,6 @@
 	${mockito}
 
 -runtrace: true
--buildpath: org.osgi.resource
+-buildpath: \
+	org.osgi.resource,\
+	org.objectweb.asm

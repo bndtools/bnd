@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IDocument;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.PropertyConflict;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -74,7 +73,7 @@ public class IncludeConflictDetector {
 			IMarker marker = target.createMarker(MARKER_TYPE);
 			Map<String, Object> attribs = attributes(conflict, location, processor);
 			marker.setAttributes(attribs);
-			marker.setAttribute(IMarker.MESSAGE, (String) attribs.get(IMarker.MESSAGE));
+			marker.setAttribute(IMarker.MESSAGE, attribs.get(IMarker.MESSAGE));
 			marker.setAttribute(IMarker.SEVERITY, severity);
 			marker.setAttribute(ATTR_OWNER, owner);
 		}

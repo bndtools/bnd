@@ -1,13 +1,13 @@
 package bndtools.core.test.wizards.newworkspace;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Pattern;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizard;
