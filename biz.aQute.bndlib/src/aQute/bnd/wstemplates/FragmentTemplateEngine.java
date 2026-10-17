@@ -280,7 +280,7 @@ public class FragmentTemplateEngine {
 		 * Remove an update
 		 */
 		public TemplateUpdater remove(Update update) {
-			updates.remove(update.to, update);
+			updates.removeValue(update.to, update);
 			return this;
 		}
 
