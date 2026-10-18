@@ -399,6 +399,24 @@ class BndEditModelAccessor {
 		return result;
 	}
 
+	static String getInheritedScalarValue(BndEditModel model, String key) {
+		if (model.getDocumentProperties().containsKey(key) || model.getTypedProperty(key) != null)
+			return null;
+		Processor owner = model.getOwner();
+		return owner != null ? owner.getProperty(key) : null;
+	}
+
+	static Optional<String> getScalarPropertyProvenance(BndEditModel model, String key) {
+		Processor owner = model.getOwner();
+		if (owner == null)
+			return Optional.empty();
+		return PropertyKey.findVisible(owner.getMergePropertyKeys(key))
+			.stream()
+			.filter(property -> property.key().equals(key))
+			.findFirst()
+			.flatMap(PropertyKey::getProvenance);
+	}
+
 	// ---- Local key resolution -----------------------------------------------
 
 	/**
