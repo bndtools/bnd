@@ -68,6 +68,7 @@ public class BndTextDocumentService implements TextDocumentService {
 	private final BndCompletionProvider				completionProvider;
 	private final BndSemanticTokensProvider			semanticTokensProvider;
 	private final BndDiagnosticsProvider			diagnosticsProvider;
+	private final BndQuickFixProvider				quickFixProvider;
 	private final ScheduledExecutorService			scheduler;
 	private final Map<String, ScheduledFuture<?>>	pendingDebounce	= new ConcurrentHashMap<>();
 
@@ -87,6 +88,7 @@ public class BndTextDocumentService implements TextDocumentService {
 		this.completionProvider = new BndCompletionProvider(workspaceManager);
 		this.semanticTokensProvider = new BndSemanticTokensProvider();
 		this.diagnosticsProvider = new BndDiagnosticsProvider(workspaceManager);
+		this.quickFixProvider = new BndQuickFixProvider(workspaceManager);
 	}
 
 	public void setClient(LanguageClient client) {
@@ -342,6 +344,15 @@ public class BndTextDocumentService implements TextDocumentService {
 				resolveAction.setCommand(new Command("Resolve", aQute.bnd.lsp.Constants.COMMAND_RESOLVE_BNDRUN,
 					Collections.singletonList(uri)));
 				actions.add(Either.forRight(resolveAction));
+			}
+
+			BndDocumentModel model = documents.get(uri);
+			File file = getFileFromUri(uri);
+			if (model != null && file != null && params.getContext() != null) {
+				for (CodeAction fix : quickFixProvider.provideQuickFixes(model, file, params.getContext()
+					.getDiagnostics())) {
+					actions.add(Either.forRight(fix));
+				}
 			}
 
 			return actions;

@@ -93,7 +93,7 @@ The capabilities returned by `BndLanguageServer.initialize` currently include:
 | Full semantic tokens | `BndSemanticTokensProvider` |
 | Document symbols and folding ranges | `BndTextDocumentService`, from parsed headers and clauses |
 | Definition | `BndTextDocumentService`, for supported `-include` and workspace `-buildpath` references |
-| Code actions | `BndTextDocumentService`, including resolve action for `.bndrun` documents |
+| Code actions | `BndTextDocumentService`, resolve action for `.bndrun` documents plus `BndQuickFixProvider` quick fixes for diagnostics with a known code |
 | Formatting | Not advertised; the method returns no edits |
 | Execute commands | `BndWorkspaceService`, with IDs from `Constants` |
 
@@ -132,6 +132,7 @@ Request behavior is split between model-only and bnd-backed features:
 - The model supplies source ranges, header/clauses, macro references, and tokens used by symbols, folding, definitions, semantic highlighting, and context-sensitive completion.
 - Completion combines syntax help and common macros with context-dependent workspace project, repository, bundle, and version data.
 - Hover and diagnostics resolve a bnd processor from the file context. For project files, diagnostics build/analyze through a `ProjectBuilder`; `.bndrun` diagnostics evaluate run bundles.
+- Property conflicts (`-propertyconflicts`, see bnd core `PropertyConflict`) are validated from the editor text through `PropertyConflict.analyze`, using the owning processor's parent for inherited settings. Conflicts reported by the builder are dropped in favour of these snapshot diagnostics, which carry exact key offsets. Diagnostics with code `bnd.propertyconflict`, `bnd.bundleactivator` (details `Verifier.BundleActivatorError`) or `bnd.bundleversion` (baseline `BundleInfo`) carry JSON data; `BndQuickFixProvider` turns them into quick fixes: rename to a unique merged `key.<suffix>` or remove the definition, remove `Bundle-Activator`, or change `Bundle-Version` to the suggested version while keeping the qualifier.
 - Effective properties evaluates a versioned editor snapshot when available, preserving unsaved text for the requested file while loading its surrounding workspace/properties context from disk. A mismatched requested document version returns a stale-document result.
 
 ## Workspace and State Ownership
