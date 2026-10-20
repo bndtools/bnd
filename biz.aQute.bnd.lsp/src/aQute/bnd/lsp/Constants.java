@@ -41,4 +41,7 @@ public interface Constants {
 	// Diagnostic Source
 	String	DIAGNOSTIC_SOURCE_BND		= "bnd";
 	String	DIAGNOSTIC_SOURCE_BND_JAVAC	= "bnd-javac";
-}
+	// Diagnostic codes with quick fixes
+	String	DIAGNOSTIC_CODE_PROPERTY_CONFLICT	= "bnd.propertyconflict";
+	String	DIAGNOSTIC_CODE_BUNDLE_ACTIVATOR	= "bnd.bundleactivator";
+	String	DIAGNOSTIC_CODE_BUNDLE_VERSION		= "bnd.bundleversion";}
