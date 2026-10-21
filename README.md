@@ -43,6 +43,9 @@ The master branch is release 7 currently and the Java release version is 17. Sin
 
 Want to work on Bnd/Bndtools? There are [instructions](CONTRIBUTING.md) to get you started. Please let us know if anything feels wrong or incomplete.
 
+See [Developing bnd and Bndtools](docs/development/index.md) for development notes,
+architecture, documentation development, and maintainer procedures.
+
 Some more instructions how to get started with bndtools development can be found [here](https://bndtools.org/development.html)
 
 ## Repo Structure
