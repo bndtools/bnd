@@ -68,6 +68,8 @@ import aQute.bnd.result.Result;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.Update;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -265,10 +267,29 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 		if (model.valid == null) {
 			saveDialogSettings();
-			ui.write(() -> {
-				TemplateUpdater updater = templates.updater(model.location, model.selectedTemplates);
-				model.execute(updater);
-			});
+			TemplateUpdater updater = templates.updater(model.location, model.selectedTemplates);
+			Map<File, List<Update>> conflicts = updater.conflicts();
+			if (!conflicts.isEmpty()) {
+				IO.close(updater);
+				StringBuilder sb = new StringBuilder();
+				try (Formatter f = new Formatter(sb)) {
+					conflicts.forEach((file, updates) -> f.format("%n%s%n    %s%n",
+						model.location.toPath()
+							.relativize(file.toPath()),
+						updates.stream()
+							.map(u -> u.info()
+								.name())
+							.distinct()
+							.collect(Collectors.joining(", "))));
+				}
+				ConfirmDialogWithTextarea.open(getShell(), "Conflicting template fragments",
+					"The selected template fragments write different content to the same file. "
+						+ "Deselect fragments until each file below has a single source, "
+						+ "or ask the fragment author to mark the file with append=true in tool.bnd.",
+					sb.toString());
+				return false;
+			}
+			ui.write(() -> model.execute(updater));
 			return true;
 		} else
 			return false;

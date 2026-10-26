@@ -8,9 +8,12 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,9 +52,14 @@ import aQute.lib.strings.Strings;
  * <p>
  * Once the set of templates is know, an {@link TemplateUpdater} is created.
  * This takes a folder and analyzes the given templates. Since there can be
- * multiple templates, there could be conflicts. The caller can remove
- * {@link Update} objects if they conflict. Otherwise, multiple updates will be
- * concatenated during {@link TemplateUpdater#commit()}
+ * multiple templates, several of them can contribute the same file.
+ * Contributions with identical content collapse into a single write.
+ * Contributions with different content are only merged when they are marked
+ * {@link Action#append}; at most one contribution per file may lack that
+ * marker and it is written first. Anything else is a conflict, see
+ * {@link TemplateUpdater#conflicts()}. The caller can remove {@link Update}
+ * objects to resolve conflicts, {@link TemplateUpdater#commit()} refuses to
+ * write while conflicts remain.
  */
 public class FragmentTemplateEngine {
 
@@ -280,14 +288,48 @@ public class FragmentTemplateEngine {
 		 * Remove an update
 		 */
 		public TemplateUpdater remove(Update update) {
-			updates.remove(update.to, update);
+			updates.removeValue(update.to, update);
 			return this;
 		}
 
 		/**
+		 * Files that receive different content from more than one template
+		 * without an {@link Action#append} marker. Identical content never
+		 * conflicts. Resolve by {@link #remove(Update)}; {@link #commit()}
+		 * fails while this map is not empty.
+		 */
+		public Map<File, List<Update>> conflicts() {
+			Map<File, List<Update>> conflicts = new LinkedHashMap<>();
+			updates.forEach((file, us) -> {
+				long bases = distinct(us).stream()
+					.filter(u -> !u.actions.contains(Action.append))
+					.count();
+				if (bases > 1)
+					conflicts.put(file, new ArrayList<>(us));
+			});
+			return conflicts;
+		}
+
+		/**
 		 * Commit the updates
+		 *
+		 * @throws IllegalStateException when {@link #conflicts()} is not empty
 		 */
 		public void commit() {
+			Map<File, List<Update>> conflicts = conflicts();
+			if (!conflicts.isEmpty()) {
+				String detail = conflicts.entrySet()
+					.stream()
+					.map(e -> e.getKey() + " <- " + e.getValue()
+						.stream()
+						.map(u -> u.info.name())
+						.distinct()
+						.collect(Collectors.joining(", ")))
+					.collect(Collectors.joining("; "));
+				throw new IllegalStateException(
+					"template fragments write different content to the same file, remove all but one or mark them append in tool.bnd: "
+						+ detail);
+			}
 			try (Processor processor = new Processor(workspace)) {
 				updates.forEach((k, us) -> {
 
@@ -304,28 +346,41 @@ public class FragmentTemplateEngine {
 
 					if (us.isEmpty())
 						return;
+
+					if (us.stream()
+						.anyMatch(u -> u.actions.contains(Action.delete))) {
+						IO.delete(k);
+					}
+
+					List<Update> writes = distinct(us);
+					if (writes.isEmpty())
+						return;
+
 					k.getParentFile()
 						.mkdirs();
 					try (FileOutputStream fout = new FileOutputStream(k)) {
-						for (Update r : us) {
-							if (r.actions.contains(Action.delete)) {
-								IO.delete(r.to);
-							}
+						boolean atLineStart = true;
+						for (Update r : writes) {
+							byte[] content = content(r);
 							if (r.actions.contains(Action.preprocess)) {
-								String s = IO.collect(r.from.openInputStream());
-								String preprocessed = processor.getReplacer()
-									.process(s);
-								fout.write(preprocessed.getBytes(StandardCharsets.UTF_8));
-							} else {
-								IO.copy(r.from.openInputStream(), fout);
+								String s = new String(content, StandardCharsets.UTF_8);
+								content = processor.getReplacer()
+									.process(s)
+									.getBytes(StandardCharsets.UTF_8);
 							}
-							if (r.actions.contains(Action.exec)) {
-								k.setExecutable(true);
-							}
+							if (content.length == 0)
+								continue;
+							if (!atLineStart)
+								fout.write('\n');
+							fout.write(content);
+							atLineStart = content[content.length - 1] == '\n';
 						}
-
 					} catch (Exception e) {
 						throw Exceptions.duck(e);
+					}
+					if (writes.stream()
+						.anyMatch(u -> u.actions.contains(Action.exec))) {
+						k.setExecutable(true);
 					}
 				});
 			} catch (IOException e1) {
@@ -338,6 +393,36 @@ public class FragmentTemplateEngine {
 		 */
 		public Map<File, List<Update>> updaters() {
 			return updates;
+		}
+
+		/**
+		 * Writing contributions for one file: byte-identical duplicates
+		 * dropped, delete-only entries dropped, the non-append contribution
+		 * first.
+		 */
+		List<Update> distinct(List<Update> us) {
+			List<Update> result = new ArrayList<>();
+			List<byte[]> seen = new ArrayList<>();
+			for (Update u : us) {
+				if (u.from == null)
+					continue;
+				byte[] content = content(u);
+				if (seen.stream()
+					.anyMatch(b -> Arrays.equals(b, content)))
+					continue;
+				seen.add(content);
+				result.add(u);
+			}
+			result.sort(Comparator.comparing(u -> u.actions.contains(Action.append)));
+			return result;
+		}
+
+		byte[] content(Update u) {
+			try {
+				return IO.read(u.from.openInputStream());
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
 		}
 
 		List<Update> make(TemplateInfo template) {

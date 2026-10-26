@@ -148,7 +148,9 @@ class TemplateFragmentsTest {
 				-includeresource workspace-master/cnf/build.bnd;literal="# a\\n"
 				""");
 			File b = makeJar("b.zip", """
-				-includeresource workspace-master/cnf/build.bnd;literal="# b\\n"
+				-includeresource \\
+					workspace-master/cnf/build.bnd;literal="# b\\n", \\
+					workspace-master/tool.bnd;literal="-tool: cnf/build.bnd;append=true"
 				""");
 
 			Result<List<TemplateInfo>> result = tfs.read(
@@ -161,6 +163,7 @@ class TemplateFragmentsTest {
 			assertThat(infos).hasSize(2);
 
 			TemplateUpdater updater = tfs.updater(wsDir, infos);
+			assertThat(updater.conflicts()).isEmpty();
 			updater.commit();
 
 			assertThat(IO.getFile(wsDir, "cnf/build.bnd")).isFile();
@@ -177,6 +180,107 @@ class TemplateFragmentsTest {
 			assertThat(build).isFile();
 		}
 
+	}
+
+	@Test
+	void testIdenticalContributionsCollapse() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			String spec = """
+				-includeresource workspace-master/cnf/ext/eclipse-apps.pmvn;literal="# name = Launcher\\n\\norg.bndtools:org.bndtools.applaunch:7.4.0"
+				""";
+			File headless = makeJar("headless.zip", spec);
+			File ui = makeJar("ui.zip", spec);
+			File appUi = makeJar("app-ui.zip", spec);
+
+			List<TemplateInfo> infos = tfs.read("-workspace-templates " + headless.toURI() + ";name=headless,"
+				+ ui.toURI() + ";name=ui," + appUi.toURI() + ";name=app-ui")
+				.unwrap();
+			assertThat(infos).hasSize(3);
+
+			File pmvn = IO.getFile(wsDir, "cnf/ext/eclipse-apps.pmvn");
+			try (TemplateUpdater updater = tfs.updater(wsDir, infos)) {
+				assertThat(updater.updaters()
+					.get(pmvn)).hasSize(3);
+				assertThat(updater.conflicts()).isEmpty();
+				updater.commit();
+			}
+
+			assertThat(IO.collect(pmvn)).isEqualTo("# name = Launcher\n\norg.bndtools:org.bndtools.applaunch:7.4.0");
+		}
+	}
+
+	@Test
+	void testDifferentContributionsConflictUntilRemoved() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			File a = makeJar("a.zip", """
+				-includeresource workspace-master/cnf/conflict.bnd;literal="# a\\n"
+				""");
+			File b = makeJar("b.zip", """
+				-includeresource workspace-master/cnf/conflict.bnd;literal="# b\\n"
+				""");
+
+			List<TemplateInfo> infos = tfs
+				.read("-workspace-templates " + a.toURI() + ";name=a," + b.toURI() + ";name=b")
+				.unwrap();
+
+			File target = IO.getFile(wsDir, "cnf/conflict.bnd");
+			IO.delete(target);
+			try (TemplateUpdater updater = tfs.updater(wsDir, infos)) {
+				Map<File, List<Update>> conflicts = updater.conflicts();
+				assertThat(conflicts).containsOnlyKeys(target);
+				assertThat(conflicts.get(target)).extracting(u -> u.info()
+					.name())
+					.containsExactly("a", "b");
+
+				assertThatException().isThrownBy(updater::commit)
+					.isInstanceOf(IllegalStateException.class)
+					.withMessageContaining("conflict.bnd")
+					.withMessageContaining("a, b");
+				assertThat(target).doesNotExist();
+
+				Update fromB = conflicts.get(target)
+					.get(1);
+				updater.remove(fromB);
+				assertThat(updater.conflicts()).isEmpty();
+				assertThat(updater.updaters()
+					.get(target)).hasSize(1);
+				updater.commit();
+			}
+
+			assertThat(IO.collect(target)).isEqualTo("# a\n");
+		}
+	}
+
+	@Test
+	void testAppendWritesBaseFirstAndSeparatesLines() throws Exception {
+		try (Workspace w = getworkSpace()) {
+			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
+			File base = makeJar("base.zip", """
+				-includeresource workspace-master/cnf/merged.properties;literal="x=1"
+				""");
+			String addonSpec = """
+				-includeresource \\
+					workspace-master/cnf/merged.properties;literal="y=2\\n", \\
+					workspace-master/tool.bnd;literal="-tool: cnf/merged.properties;append=true"
+				""";
+			File addon = makeJar("addon.zip", addonSpec);
+			File addonTwin = makeJar("addon-twin.zip", addonSpec);
+
+			// append contributions listed before the base
+			List<TemplateInfo> infos = tfs.read("-workspace-templates " + addon.toURI() + ";name=addon,"
+				+ addonTwin.toURI() + ";name=addon-twin," + base.toURI() + ";name=base")
+				.unwrap();
+
+			File target = IO.getFile(wsDir, "cnf/merged.properties");
+			try (TemplateUpdater updater = tfs.updater(wsDir, infos)) {
+				assertThat(updater.conflicts()).isEmpty();
+				updater.commit();
+			}
+
+			assertThat(IO.collect(target)).isEqualTo("x=1\ny=2\n");
+		}
 	}
 
 	@Test
@@ -214,7 +318,7 @@ class TemplateFragmentsTest {
 	void testRequireField() throws Exception {
 		try (Workspace w = getworkSpace()) {
 			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
-			
+
 			// Create template jars
 			File base = makeJar("base.zip", """
 				-includeresource workspace-master/cnf/base.txt;literal="base content\\n"
@@ -229,7 +333,7 @@ class TemplateFragmentsTest {
 			// Read templates with require dependencies:
 			// app requires common, common requires base
 			Result<List<TemplateInfo>> result = tfs.read(
-				"-workspace-templates " + 
+				"-workspace-templates " +
 				base.toURI() + ";name=base;description=Base," +
 				common.toURI() + ";name=common;description=Common;require=" + base.toURI() + "," +
 				app.toURI() + ";name=app;description=App;require=" + common.toURI());
@@ -239,7 +343,7 @@ class TemplateFragmentsTest {
 
 			List<TemplateInfo> infos = result.unwrap();
 			assertThat(infos).hasSize(3);
-			
+
 			// Add all templates to the engine
 			infos.forEach(tfs::add);
 
@@ -257,7 +361,7 @@ class TemplateFragmentsTest {
 			assertThat(IO.getFile(wsDir, "cnf/base.txt")).isFile();
 			assertThat(IO.getFile(wsDir, "cnf/common.txt")).isFile();
 			assertThat(IO.getFile(wsDir, "cnf/app.txt")).isFile();
-			
+
 			assertThat(IO.collect(IO.getFile(wsDir, "cnf/base.txt"))).isEqualTo("base content\n");
 			assertThat(IO.collect(IO.getFile(wsDir, "cnf/common.txt"))).isEqualTo("common content\n");
 			assertThat(IO.collect(IO.getFile(wsDir, "cnf/app.txt"))).isEqualTo("app content\n");
@@ -268,7 +372,7 @@ class TemplateFragmentsTest {
 	void testRequireMultipleDependencies() throws Exception {
 		try (Workspace w = getworkSpace()) {
 			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
-			
+
 			// Create template jars
 			File pluginA = makeJar("pluginA.zip", """
 				-includeresource workspace-master/cnf/pluginA.txt;literal="plugin A\\n"
@@ -282,7 +386,7 @@ class TemplateFragmentsTest {
 
 			// Main requires both pluginA and pluginB
 			Result<List<TemplateInfo>> result = tfs.read(
-				"-workspace-templates " + 
+				"-workspace-templates " +
 				pluginA.toURI() + ";name=pluginA," +
 				pluginB.toURI() + ";name=pluginB," +
 				main.toURI() + ";name=main;require=\"" + pluginA.toURI() + "," + pluginB.toURI() + "\"");
@@ -314,7 +418,7 @@ class TemplateFragmentsTest {
 	void testRequireCircularDependency() throws Exception {
 		try (Workspace w = getworkSpace()) {
 			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
-			
+
 			File templateA = makeJar("templateA.zip", """
 				-includeresource workspace-master/cnf/a.txt;literal="A\\n"
 				""");
@@ -324,7 +428,7 @@ class TemplateFragmentsTest {
 
 			// Create circular dependency: A requires B, B requires A
 			Result<List<TemplateInfo>> result = tfs.read(
-				"-workspace-templates " + 
+				"-workspace-templates " +
 				templateA.toURI() + ";name=A;require=" + templateB.toURI() + "," +
 				templateB.toURI() + ";name=B;require=" + templateA.toURI());
 
@@ -354,14 +458,14 @@ class TemplateFragmentsTest {
 	void testRequireMissingDependency() throws Exception {
 		try (Workspace w = getworkSpace()) {
 			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
-			
+
 			File template = makeJar("template.zip", """
 				-includeresource workspace-master/cnf/main.txt;literal="main\\n"
 				""");
 
 			// Template requires a non-existent template
 			Result<List<TemplateInfo>> result = tfs.read(
-				"-workspace-templates " + 
+				"-workspace-templates " +
 				template.toURI() + ";name=main;require=nonexistent/missing");
 
 			assertThat(result.isOk()).describedAs(result.toString())
@@ -386,7 +490,7 @@ class TemplateFragmentsTest {
 	void testRequireDeduplication() throws Exception {
 		try (Workspace w = getworkSpace()) {
 			FragmentTemplateEngine tfs = new FragmentTemplateEngine(w);
-			
+
 			File base = makeJar("base.zip", """
 				-includeresource workspace-master/cnf/base.txt;literal="base\\n"
 				""");
@@ -399,7 +503,7 @@ class TemplateFragmentsTest {
 
 			// Both moduleA and moduleB require base
 			Result<List<TemplateInfo>> result = tfs.read(
-				"-workspace-templates " + 
+				"-workspace-templates " +
 				base.toURI() + ";name=base," +
 				moduleA.toURI() + ";name=moduleA;require=" + base.toURI() + "," +
 				moduleB.toURI() + ";name=moduleB;require=" + base.toURI());
@@ -417,13 +521,13 @@ class TemplateFragmentsTest {
 
 			try (TemplateUpdater updater = tfs.updater(wsDir, selectedTemplates)) {
 				Map<File, List<Update>> updates = updater.updaters();
-				
+
 				// Base should only appear once in updates, not twice
 				File baseFile = IO.getFile(wsDir, "cnf/base.txt");
 				if (updates.containsKey(baseFile)) {
 					assertThat(updates.get(baseFile)).hasSize(1);
 				}
-				
+
 				updater.commit();
 			}
 
@@ -431,7 +535,7 @@ class TemplateFragmentsTest {
 			assertThat(IO.getFile(wsDir, "cnf/base.txt")).isFile();
 			assertThat(IO.getFile(wsDir, "cnf/moduleA.txt")).isFile();
 			assertThat(IO.getFile(wsDir, "cnf/moduleB.txt")).isFile();
-			
+
 			// Base content should appear only once
 			assertThat(IO.collect(IO.getFile(wsDir, "cnf/base.txt"))).isEqualTo("base\n");
 		}

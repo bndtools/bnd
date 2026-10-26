@@ -10,7 +10,7 @@ to consist of many aspects. There is the _gradle setup_, the _OSGi release_, may
 layout_ etc. Initially, we attempted to use a single GitHub repository as a template for new workspaces, but this approach quickly became complex.
 
 For example, if someone created a [library][3] for bnd, to make it easy for the
-user to setup his functionality, the author of the library had to maintain a full workspace 
+user to setup his functionality, the author of the library had to maintain a full workspace
 with gradle, etc. This put the burden on chasing the OSGi release, the gradle releases, on the
 people that were willing to spread the gospel around OSGi/bndtools.
 
@@ -24,7 +24,7 @@ During workspace creation there is a wizard where one can select template fragme
 
 
 Official templates from the [bndtools Github organisation](https://github.com/bndtools) are shown with a green checkmark.
-Non-official templates from 3rd-party authors are shown with a yellow exclamation mark. 
+Non-official templates from 3rd-party authors are shown with a yellow exclamation mark.
 
 
 > ##### Security Note: Check templates before installation
@@ -34,10 +34,10 @@ Non-official templates from 3rd-party authors are shown with a yellow exclamatio
 > This allows you to examine the content which is about to be downloaded to your workspace when you press finish.
 {: .block-warning }
 
-The [workspace](/chapters/123-tour-workspace.html) is already prepared for this model of fragments. The [merged instructions][2] mean that 
+The [workspace](/chapters/123-tour-workspace.html) is already prepared for this model of fragments. The [merged instructions][2] mean that
 we can extend the properties and instructions from many different sources. However, the most important
 feature here is the `cnf/ext` folder. Any `bnd` or special fragment file placed in this folder will automatically
-be ready before the `build.bnd` file is read. For example, a fragment could contain the 
+be ready before the `build.bnd` file is read. For example, a fragment could contain the
 index for OSGi R8. See [build](150-build.html).
 
 ## Providing template fragments as a developer
@@ -47,18 +47,18 @@ There is a single master index for all template fragments hosted on
 [https://github.com/bndtools/workspace-templates/blob/master/index.bnd](https://github.com/bndtools/workspace-templates/blob/master/index.bnd)
 
 This index is open for any person or organization that maintains one or more fragment and
-seeks an easy way to make them available to bndtools users. All that is needed is to host the fragment somewhere and provide 
+seeks an easy way to make them available to bndtools users. All that is needed is to host the fragment somewhere and provide
 a pull request (PR) to add it to this index file.
 
-The format of the index file is like all Parameters. 
+The format of the index file is like all Parameters.
 
 * `key` – The key is the identity of the fragment. It is either a URL or provides the following structure:
 
     `id ::= [organization ['/' repository [ '/' path ] ['#' git-ref ]]`
-    
+
 The id is resolved against `bndtools/workspace-templates#master`. Therefore, in the `example` organization,
-the `example` is a valid id that resolves to `example/workspace-templates#master`. Since the ID has a path, 
-it is possible to host multiple fragments in a single repository. 
+the `example` is a valid id that resolves to `example/workspace-templates#master`. Since the ID has a path,
+it is possible to host multiple fragments in a single repository.
 Instead of a branch name like `#master` as `git-ref` you could also point to a specific commit via its SHA e.g. `#567648ff425693b27b191bd38ace7c9c10539c2d`.
 
 The index has the following attributes for a clause:
@@ -85,7 +85,7 @@ For example consider this `index.bnd`:
             description="OSGi R8 with Felix distribution",\
         acme-org/myrepo/subfolder/workspace-template#commitSHA; \
             name=3rdparty-template; \
-            description="A Template fragment by acme-org at a specific commit SHA"    
+            description="A Template fragment by acme-org at a specific commit SHA"
 
 
 The id must resolve to a folder in the repository, and can be translated to github URLs:
@@ -113,11 +113,19 @@ The `-tool` instruction is a SELECT that is matched against the file paths (not 
 The attributes that can be set are:
 
 * `skip=true` – Skip the selected file,
-* `append=true` – Allow duplicates, append
+* `append=true` – Allow another fragment to provide the same file; this content is appended to it
 * `exec=true` – Set the execute bit on non-windows systems
 * `preprocess=true` – Preprocess the file (this uses the tool file and the current workspace as domain.
 * `delete=true` – Deletes an existing file in the target. Cannot be wildcarded
-    
+
+## Several fragments providing the same file
+
+When more than one selected fragment (including `require`d ones) contains the same file path:
+
+* Byte-identical content is written once. Fragments may therefore share a common file, e.g. a `cnf/ext/*.pmvn` index, without any marker.
+* Different content is only merged when the extra contributions are marked `append=true`. At most one contribution may lack the marker; it is written first, the appended ones follow in selection order, each starting on a new line.
+* Anything else is a conflict. Bndtools lists the conflicting files and fragments and does not create the workspace; `bnd add fragment` prints them and installs nothing. Deselect fragments until each file has a single source.
+
 It is possible to define the [`-workspace-templates`][4] instruction in the `build.bnd` file.
 It must contain the same format as the index. This local index is merged with the main index. In the
 
