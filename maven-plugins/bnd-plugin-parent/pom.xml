@@ -103,11 +103,6 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.maven.shared</groupId>
-				<artifactId>maven-mapping</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.maven.plugin-tools</groupId>
 				<artifactId>maven-plugin-annotations</artifactId>
 				<version>3.16.0</version>
