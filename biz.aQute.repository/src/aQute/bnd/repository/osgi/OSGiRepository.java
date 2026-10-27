@@ -14,11 +14,13 @@ import java.util.Formatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.util.promise.Promise;
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
@@ -47,6 +50,8 @@ import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.uri.URIUtil;
+import aQute.p2.provider.Feature;
+import aQute.p2.provider.FeatureExpander;
 import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "OSGiRepository", parameters = OSGiRepository.Config.class)
@@ -96,9 +101,12 @@ public class OSGiRepository extends BaseRepository
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
-		File target = IO.getFile(getIndex().getCache(), bsn + "-" + version + ".jar");
+		String type = properties != null ? properties.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE) : null;
+		// Features may share bsn+version with a bundle; use a distinct file name
+		File target = IO.getFile(getIndex().getCache(),
+			bsn + "-" + version + (Feature.TYPE.equals(type) ? ".feature.jar" : ".jar"));
 
-		Promise<File> promise = getIndex().get(bsn, version, target);
+		Promise<File> promise = getIndex().get(bsn, version, type, target);
 		if (promise == null)
 			return null;
 
@@ -195,8 +203,16 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		return getIndex().getBridge()
-			.versions(bsn);
+		return getIndex().versions(bsn);
+	}
+
+	/**
+	 * Expand an Eclipse feature container into its member bundles, see
+	 * {@link FeatureExpander#getMembers}.
+	 */
+	@Override
+	public List<Container> getTypedResourceMembers(Container container, Set<String> visited) throws Exception {
+		return FeatureExpander.getMembers(this, container, visited);
 	}
 
 	@Override
