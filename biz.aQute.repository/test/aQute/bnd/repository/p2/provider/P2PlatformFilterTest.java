@@ -28,7 +28,9 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.p2.provider.EclipsePlatform;
 import aQute.p2.provider.Feature;
@@ -273,6 +275,142 @@ public class P2PlatformFilterTest {
 
 			softly.assertThat(buildpath(ws, "broken"))
 				.isEqualTo(host);
+		}
+	}
+
+	@Test
+	public void testOSGiRepositoryOnTheP2IndexExpandsTheFeature() throws Exception {
+		File index;
+		try (Workspace ws = workspace()) {
+			P2Repository repository = ws.getPlugin(P2Repository.class);
+			repository.list(null);
+			index = new File(repository.getLocation(), "index.xml.gz");
+		}
+		softly.assertThat(index)
+			.isFile();
+
+		File ws = new File(tmp, "osgi-ws");
+		store("""
+			-connection-settings: false
+			-plugin.osgi: \\
+			  aQute.bnd.repository.osgi.OSGiRepository; \\
+			    name=fixture; \\
+			    locations="%s"
+			""".formatted(index.toURI()), new File(ws, "cnf/build.bnd"));
+		project(ws, "win", "-runproperties: osgi.os=win32, osgi.ws=win32, osgi.arch=x86_64");
+		project(ws, "macosx", "-runproperties: osgi.os=macosx, osgi.ws=cocoa, osgi.arch=x86_64");
+
+		try (Workspace workspace = Workspace.getWorkspace(ws)) {
+			softly.assertThat(buildpath(workspace, "win"))
+				.containsExactly("test.frag.win32", "test.host");
+			softly.assertThat(buildpath(workspace, "macosx"))
+				.containsExactly("test.frag.macosx", "test.host");
+			softly.assertThat(workspace.getRepository("fixture")
+				.versions("test.feature"))
+				.as("features are only found by type")
+				.isEmpty();
+		}
+	}
+
+	/**
+	 * A p2 index with a bundle and a feature of the same identity, used via an
+	 * OSGiRepository. The index keeps one resource per identity, so either one
+	 * hides the other in the lookup by bsn and version.
+	 */
+	@Test
+	public void testOSGiRepositoryDistinguishesBundleAndFeatureWithTheSameIdentity() throws Exception {
+		File p2 = new File(tmp, "shared-p2");
+		IO.mkdirs(new File(p2, "plugins"));
+		IO.mkdirs(new File(p2, "features"));
+		bundle(p2, "shared", null, null);
+		String featureXml = """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<feature id="shared" label="Shared" version="1.0.0">
+			  <plugin id="shared" version="1.0.0" unpack="false"/>
+			</feature>
+			""";
+		try (Jar jar = new Jar("shared")) {
+			jar.putResource("feature.xml", new EmbeddedResource(featureXml.getBytes(UTF_8), 0L));
+			jar.write(new File(p2, "features/shared_1.0.0.jar"));
+		}
+		store("""
+			<?xml version='1.0' encoding='UTF-8'?>
+			<?artifactRepository version='1.1.0'?>
+			<repository name='Shared Fixture' type='org.eclipse.equinox.p2.artifact.repository.simpleRepository' version='1'>
+			  <mappings size='2'>
+			    <rule filter='(&amp; (classifier=osgi.bundle))' output='${repoUrl}/plugins/${id}_${version}.jar'/>
+			    <rule filter='(&amp; (classifier=org.eclipse.update.feature))' output='${repoUrl}/features/${id}_${version}.jar'/>
+			  </mappings>
+			  <artifacts size='2'>
+			    <artifact classifier='osgi.bundle' id='shared' version='1.0.0'/>
+			    <artifact classifier='org.eclipse.update.feature' id='shared' version='1.0.0'/>
+			  </artifacts>
+			</repository>
+			""", new File(p2, "artifacts.xml"));
+		store("""
+			version = 1
+			metadata.repository.factory.order = content.xml,!
+			artifact.repository.factory.order = artifacts.xml,!
+			""", new File(p2, "p2.index"));
+
+		File p2ws = new File(tmp, "shared-p2-ws");
+		store("""
+			-connection-settings: false
+			-plugin.p2: \\
+			  aQute.bnd.repository.p2.provider.P2Repository; \\
+			    name=fixture; \\
+			    url="%s"
+			""".formatted(p2.toURI()), new File(p2ws, "cnf/build.bnd"));
+		File index;
+		try (Workspace workspace = Workspace.getWorkspace(p2ws)) {
+			P2Repository repository = workspace.getPlugin(P2Repository.class);
+			repository.list(null);
+			index = new File(repository.getLocation(), "index.xml.gz");
+		}
+
+		File ws = new File(tmp, "shared-osgi-ws");
+		store("""
+			-connection-settings: false
+			-plugin.osgi: \\
+			  aQute.bnd.repository.osgi.OSGiRepository; \\
+			    name=fixture; \\
+			    locations="%s"
+			""".formatted(index.toURI()), new File(ws, "cnf/build.bnd"));
+		store("-buildpath: shared;version=1.0.0\n", new File(ws, "bundle/bnd.bnd"));
+		store("-buildpath: shared;version=1.0.0;type=org.eclipse.update.feature\n", new File(ws, "feature/bnd.bnd"));
+
+		try (Workspace workspace = Workspace.getWorkspace(ws)) {
+			RepositoryPlugin repository = workspace.getRepository("fixture");
+			Version version = new Version("1.0.0");
+
+			softly.assertThat(repository.versions("shared"))
+				.containsExactly(version);
+
+			File bundle = repository.get("shared", version, Map.of());
+			softly.assertThat(bundle)
+				.as("without a type the bundle is returned")
+				.isFile();
+			try (Jar jar = new Jar(bundle)) {
+				softly.assertThat(jar.getBsn())
+					.isEqualTo("shared");
+				softly.assertThat(jar.getResource("feature.xml"))
+					.isNull();
+			}
+
+			File feature = repository.get("shared", version, Map.of("type", Feature.TYPE));
+			softly.assertThat(feature)
+				.as("with the feature type the feature is returned")
+				.isFile()
+				.isNotEqualTo(bundle);
+			try (Jar jar = new Jar(feature)) {
+				softly.assertThat(jar.getResource("feature.xml"))
+					.isNotNull();
+			}
+
+			softly.assertThat(buildpath(workspace, "bundle"))
+				.containsExactly("shared");
+			softly.assertThat(buildpath(workspace, "feature"))
+				.containsExactly("shared");
 		}
 	}
 }
