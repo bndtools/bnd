@@ -6,14 +6,19 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.Update;
 import aQute.lib.collections.ExtList;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
@@ -229,8 +234,26 @@ public class AddCommands {
 		}
 
 
-		engine.updater(ws.getBase(), selectedTemplates)
-			.commit();
+		try (TemplateUpdater updater = engine.updater(ws.getBase(), selectedTemplates)) {
+			Map<File, List<Update>> conflicts = updater.conflicts();
+			if (!conflicts.isEmpty()) {
+				bnd.out.format("%nNo template fragments installed, the selection writes different content to the same file:%n");
+				conflicts.forEach((file, updates) -> bnd.out.format("  %s <- %s%n", ws.getBase()
+					.toPath()
+					.relativize(file.toPath()),
+					updates.stream()
+						.map(u -> u.info()
+							.name())
+						.distinct()
+						.collect(Collectors.joining(", "))));
+				bnd.out.format(
+					"Select fewer fragments, or let the fragment mark the file with append=true in tool.bnd.%n");
+				return;
+			}
+			updater.commit();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 
 		bnd.out.format("Added %s template fragment(s): %n", selectedTemplates.size());
 		showTemplatesFragments(selectedTemplates);
