@@ -1,0 +1,66 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+Bundle-SymbolicName: biz.aQute.bnd.mcp
+Bundle-Description: Model Context Protocol (MCP) Server for bnd
+
+mcp.version: 2.0.1
+jackson.version: [2.21,2.22)
+
+-buildpath: \
+	osgi.annotation,\
+	org.osgi.framework;version='1.10',\
+	org.osgi.dto;version='1.0',\
+	org.osgi.resource;version='1.0',\
+	org.osgi.util.tracker;version='1.5',\
+	org.osgi.service.coordinator;version=latest,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
+	org.osgi.service.resolver;version=latest,\
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
+	aQute.libg,\
+	biz.aQute.bnd.util;version=latest,\
+	biz.aQute.bndlib;version=latest,\
+	biz.aQute.repository;version=latest,\
+	biz.aQute.resolve;version=latest,\
+	io.modelcontextprotocol.sdk.mcp-core;version=${mcp.version},\
+	io.modelcontextprotocol.sdk.mcp-json-jackson2;version=${mcp.version},\
+	com.fasterxml.jackson.core.jackson-annotations;version='${jackson.version}',\
+	com.fasterxml.jackson.core.jackson-core;version='${jackson.version}',\
+	com.fasterxml.jackson.core.jackson-databind;version='${jackson.version}',\
+	io.projectreactor.reactor-core;version=3.7.0,\
+	reactive-streams;version=1.0.4,\
+	slf4j.api;version='[1.7.25,2)'
+
+-testpath: \
+	${junit},\
+	assertj-core;version=latest,\
+	slf4j.simple;version='[1.7.25,2)'
+
+-conditionalpackage: \
+	aQute.lib.*,\
+	aQute.libg.*,\
+	org.osgi.*
+
+# The jackson2 schema validator needs networknt; it is not embedded and replaced by ToolAdapter.
+-includeresource: \
+	${workspace}/LICENSE, \
+	@${repo;biz.aQute.bnd.util;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
+	@${repo;io.modelcontextprotocol.sdk.mcp-core;${mcp.version}}!/!META-INF/*, \
+	@${repo;io.modelcontextprotocol.sdk.mcp-json-jackson2;${mcp.version}}!/io/modelcontextprotocol/json/jackson2/*, \
+	@${repo;com.fasterxml.jackson.core.jackson-annotations;${jackson.version}}!/!META-INF/*, \
+	@${repo;com.fasterxml.jackson.core.jackson-core;${jackson.version}}!/!META-INF/*, \
+	@${repo;com.fasterxml.jackson.core.jackson-databind;${jackson.version}}!/!META-INF/*, \
+	@${repo;io.projectreactor.reactor-core;3.7.0}!/!META-INF/*, \
+	@${repo;reactive-streams;1.0.4}!/!META-INF/*, \
+	@${repo;slf4j.api;[1.7.25,2)}!/!META-INF/*, \
+	@${repo;slf4j.simple;[1.7.25,2)}!/!META-INF/*
+
+Private-Package: \
+	aQute.bnd.mcp
+
+Main-Class: aQute.bnd.mcp.Main
