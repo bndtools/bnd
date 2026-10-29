@@ -33,6 +33,33 @@ public final class TrustedChecksums {
 	private Map<Archive, ArtifactChecksum>	index	= Map.of();
 	private volatile boolean							indexExists				= false;
 	private final Map<TrustedChecksumCacheKey, Boolean>	trustedChecksumCache	= new ConcurrentHashMap<>();
+	private ChecksumPolicy					checksumPolicy	= ChecksumPolicy.LENIENT;
+
+	public enum ChecksumPolicy {
+		STRICT("strict"), LENIENT("lenient");
+
+		private final String name;
+
+		ChecksumPolicy(String name) {
+			this.name = name;
+		}
+
+		public static ChecksumPolicy fromString(String policy) {
+			if (policy == null || policy.isEmpty()) {
+				return LENIENT; // default
+			}
+			return switch (policy.trim()
+				.toLowerCase()) {
+				case "strict" -> STRICT;
+				case "lenient" -> LENIENT;
+				default -> throw new IllegalArgumentException("Unknown checksum policy: " + policy);
+			};
+		}
+
+		public String getName() {
+			return name;
+		}
+	}
 
 	public TrustedChecksums(File trustedChecksumFile) {
 		this.sidecarFile = trustedChecksumFile;
@@ -40,6 +67,16 @@ public final class TrustedChecksums {
 
 	public File getFile() {
 		return this.sidecarFile;
+	}
+
+	public void setChecksumPolicy(ChecksumPolicy policy) {
+		if (policy != null) {
+			this.checksumPolicy = policy;
+		}
+	}
+
+	public ChecksumPolicy getChecksumPolicy() {
+		return this.checksumPolicy;
 	}
 
 	/**
@@ -63,17 +100,26 @@ public final class TrustedChecksums {
 	 * @return {@code true} if a trusted checksum exists for the artifact and
 	 *         the file successfully matches it; {@code false} if no trusted
 	 *         checksum is configured
-	 * @throws TrustedChecksumException if checksum calculation fails or the
-	 *             file does not match the configured trusted checksum. In the
-	 *             mismatch case the file is deleted before the exception is
-	 *             thrown.
+	 * @throws TrustedChecksumException if checksum calculation fails, the file
+	 *             does not match the configured trusted checksum, or in strict
+	 *             mode when no checksum entry exists. In the mismatch case the
+	 *             file is deleted before the exception is thrown.
 	 */
 	public boolean checkTrustedChecksum(Archive archive, File file) {
-		if (!indexExists)
+		if (!indexExists) {
+			if (checksumPolicy == ChecksumPolicy.STRICT) {
+				throw new TrustedChecksumException(
+					"Strict checksum policy enabled but no trusted checksums file found", null);
+			}
 			return false;
+		}
 
 		ArtifactChecksum expected = get(archive);
 		if (expected == null) {
+			if (checksumPolicy == ChecksumPolicy.STRICT) {
+				throw new TrustedChecksumException(
+					"Strict checksum policy enabled but no checksum entry found for: " + archive, null);
+			}
 			return false;
 		}
 

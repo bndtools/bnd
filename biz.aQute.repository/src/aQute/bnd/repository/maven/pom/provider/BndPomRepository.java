@@ -200,6 +200,18 @@ public class BndPomRepository extends BaseRepository
 				.executor(), reporter);
 			storage.setTrustedChecksums(trustedChecksums);
 
+			// Set the checksum policy
+			String checksumPolicyStr = configuration.checksumPolicy("lenient");
+			try {
+				TrustedChecksums.ChecksumPolicy policy = TrustedChecksums.ChecksumPolicy.fromString(checksumPolicyStr);
+				storage.setTrustedChecksumsPolicy(policy);
+			} catch (IllegalArgumentException e) {
+				reporter.error("Invalid checksum policy: %s", checksumPolicyStr);
+				status("Invalid checksum policy: " + checksumPolicyStr);
+				storage.close();
+				return false;
+			}
+
 			boolean transitive = configuration.transitive(true);
 			boolean dependencyManagement = configuration.dependencyManagement(false);
 
