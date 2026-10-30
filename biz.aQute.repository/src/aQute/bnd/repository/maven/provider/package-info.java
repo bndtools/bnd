@@ -1,4 +1,4 @@
-@Version("2.4.0")
+@Version("2.5.0")
 package aQute.bnd.repository.maven.provider;
 
 import org.osgi.annotation.versioning.Version;
