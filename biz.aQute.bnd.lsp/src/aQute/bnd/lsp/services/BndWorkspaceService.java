@@ -5,8 +5,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.gson.Gson;
@@ -24,13 +26,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.differ.Baseline;
+import aQute.bnd.differ.Baseline.BundleInfo;
+import aQute.bnd.differ.Baseline.Info;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.lsp.Constants;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.print.JarPrinter;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.version.Version;
 import biz.aQute.resolve.RunResolution;
 
 public class BndWorkspaceService implements WorkspaceService {
@@ -95,6 +106,10 @@ public class BndWorkspaceService implements WorkspaceService {
 						return executeBuildProject(args);
 					case Constants.COMMAND_BUILD_WORKSPACE :
 						return executeBuildWorkspace(args);
+					case Constants.COMMAND_BUILD_CLEAN :
+						return executeClean(args);
+					case Constants.COMMAND_BASELINE :
+						return executeBaseline(args);
 					case Constants.COMMAND_MACRO_EXPAND :
 						return executeMacroExpand(args);
 					case Constants.COMMAND_REPO_LIST :
@@ -221,6 +236,12 @@ public class BndWorkspaceService implements WorkspaceService {
 		return Map.of("disposed", launchService.dispose(id));
 	}
 
+	/**
+	 * Arguments: the .bndrun URI, optionally followed by a boolean
+	 * {@code writeChanges} (default {@code true}). With {@code false} the
+	 * resolution is computed but the file is not touched; {@code changed}
+	 * reports whether the current -runbundles differ from the result.
+	 */
 	private Object executeResolveBndrun(List<Object> args) throws Exception {
 		if (args == null || args.isEmpty()) {
 			throw new IllegalArgumentException("Missing .bndrun file URI argument");
@@ -232,6 +253,8 @@ public class BndWorkspaceService implements WorkspaceService {
 		if (file == null || !file.isFile()) {
 			throw new IllegalArgumentException("Invalid file: " + uriStr);
 		}
+		boolean writeChanges = args.size() < 2 || args.get(1) == null || !"false".equals(args.get(1)
+			.toString());
 
 		Workspace ws = workspaceManager.getWorkspaceForFile(file);
 		if (ws == null) {
@@ -241,11 +264,15 @@ public class BndWorkspaceService implements WorkspaceService {
 		try (biz.aQute.resolve.Bndrun bndrun = biz.aQute.resolve.Bndrun.createBndrun(ws, file)) {
 			RunResolution res = bndrun.resolve();
 			if (res.isOK()) {
-				bndrun.update(res, false, true);
-				workspaceManager.refreshWorkspace(file);
+				boolean changed = bndrun.update(res, false, writeChanges);
+				if (writeChanges && changed) {
+					workspaceManager.refreshWorkspace(file);
+				}
 
 				Map<String, Object> result = new HashMap<>();
 				result.put("success", true);
+				result.put("changed", changed);
+				result.put("written", writeChanges && changed);
 				result.put("resolvedBundles", res.getRunBundlesAsString());
 				return result;
 			} else {
@@ -305,6 +332,137 @@ public class BndWorkspaceService implements WorkspaceService {
 		result.put("success", true);
 		result.put("builtProjects", builtProjects);
 		return result;
+	}
+
+	/**
+	 * Argument: a file URI. Inside a project, cleans that project; otherwise
+	 * cleans every project of the enclosing workspace.
+	 */
+	private Object executeClean(List<Object> args) throws Exception {
+		if (args == null || args.isEmpty() || args.get(0) == null) {
+			throw new IllegalArgumentException("Missing project or workspace file URI");
+		}
+		File file = getFileFromUri(args.get(0)
+			.toString());
+		Project project = workspaceManager.getProjectForFile(file);
+		List<Project> projects;
+		if (project != null) {
+			projects = List.of(project);
+		} else {
+			Workspace ws = workspaceManager.getWorkspaceForFile(file);
+			if (ws == null) {
+				throw new IllegalStateException("Not in a bnd workspace: " + file);
+			}
+			projects = new ArrayList<>(ws.getAllProjects());
+		}
+
+		List<String> cleaned = new ArrayList<>();
+		List<String> errors = new ArrayList<>();
+		for (Project p : projects) {
+			p.clear();
+			p.clean();
+			if (p.isOk()) {
+				cleaned.add(p.getName());
+			} else {
+				p.getErrors()
+					.forEach(e -> errors.add(p.getName() + ": " + e));
+			}
+		}
+		workspaceManager.refreshWorkspace(file);
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("success", errors.isEmpty());
+		result.put("cleanedProjects", cleaned);
+		result.put("errors", errors);
+		return result;
+	}
+
+	/**
+	 * Argument: a file URI inside a project. Baselines every sub-bundle of
+	 * the project against its -baseline repository the same way the CLI
+	 * {@code baseline} command does, without touching the build output.
+	 */
+	private Object executeBaseline(List<Object> args) throws Exception {
+		if (args == null || args.isEmpty() || args.get(0) == null) {
+			throw new IllegalArgumentException("Missing project file URI");
+		}
+		File file = getFileFromUri(args.get(0)
+			.toString());
+		Project project = workspaceManager.getProjectForFile(file);
+		if (project == null) {
+			throw new IllegalStateException("Could not find project for: " + file);
+		}
+
+		List<Map<String, Object>> bundles = new ArrayList<>();
+		List<String> errors = new ArrayList<>();
+		boolean mismatch = false;
+		try (ProjectBuilder parent = project.getBuilder(null)) {
+			for (Builder b : parent.getSubBuilders()) {
+				ProjectBuilder pb = (ProjectBuilder) b;
+				Map<String, Object> entry = new LinkedHashMap<>();
+				entry.put("bsn", pb.getBsn());
+				bundles.add(entry);
+				try (Jar older = pb.getBaselineJar()) {
+					if (older == null) {
+						entry.put("baselined", false);
+						entry.put("reason", "No baseline JAR available; set " + aQute.bnd.osgi.Constants.BASELINE);
+						continue;
+					}
+					// baseline here, not inside build()
+					pb.setProperty(aQute.bnd.osgi.Constants.BASELINE, "");
+					try (Jar newer = pb.build()) {
+						DiffPluginImpl differ = new DiffPluginImpl();
+						differ.setIgnore(new Parameters(pb.getProperty(aQute.bnd.osgi.Constants.DIFFIGNORE), pb));
+						Instructions diffpackages = new Instructions(
+							new Parameters(pb.getProperty(aQute.bnd.osgi.Constants.DIFFPACKAGES), pb));
+						Baseline baseline = new Baseline(pb, differ);
+						Set<Info> infos = baseline.baseline(newer, older, diffpackages);
+						BundleInfo binfo = baseline.getBundleInfo();
+
+						entry.put("baselined", true);
+						entry.put("mismatch", binfo.mismatch);
+						entry.put("newerVersion", str(binfo.newerVersion));
+						entry.put("olderVersion", str(binfo.olderVersion));
+						entry.put("suggestedVersion", str(binfo.suggestedVersion));
+						entry.put("reason", binfo.reason);
+						mismatch |= binfo.mismatch;
+
+						List<Map<String, Object>> packages = new ArrayList<>();
+						infos.stream()
+							.sorted((x, y) -> x.packageName.compareTo(y.packageName))
+							.forEach(info -> {
+								Map<String, Object> pkg = new LinkedHashMap<>();
+								pkg.put("name", info.packageName);
+								pkg.put("delta", info.packageDiff.getDelta()
+									.toString());
+								pkg.put("mismatch", info.mismatch);
+								pkg.put("newerVersion", str(info.newerVersion));
+								pkg.put("olderVersion",
+									Version.LOWEST.equals(info.olderVersion) ? null : str(info.olderVersion));
+								pkg.put("suggestedVersion", str(info.suggestedVersion));
+								pkg.put("suggestedIfProviders", str(info.suggestedIfProviders));
+								pkg.put("reason", info.reason);
+								pkg.put("warning", info.warning);
+								packages.add(pkg);
+							});
+						entry.put("packages", packages);
+					}
+				}
+				pb.getErrors()
+					.forEach(e -> errors.add(pb.getBsn() + ": " + e));
+			}
+		}
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("success", errors.isEmpty() && !mismatch);
+		result.put("mismatch", mismatch);
+		result.put("bundles", bundles);
+		result.put("errors", errors);
+		return result;
+	}
+
+	private static String str(Version v) {
+		return v == null ? null : v.toString();
 	}
 
 	private Object executeMacroExpand(List<Object> args) {
