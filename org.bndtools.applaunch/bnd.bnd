@@ -6,4 +6,7 @@
 	osgi.core,\
 	org.eclipse.osgi
 
+-testpath: \
+	${junit}
+
 Bundle-Activator: org.bndtools.applaunch.Activator

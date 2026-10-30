@@ -1,3 +1,93 @@
-This project is used for launching Bndtools from within Eclipse, primarily for debugging purposes.
+org.bndtools.applaunch
+======================
 
-It is a slightly modified version of bndtools.runtime.eclipse.applaunch-0.1.0.jar that Neil Bartlett originally wrote.
+Launches an Eclipse (Equinox) application from a bnd launcher, primarily used to run and
+debug Bndtools itself from within Eclipse (see the bndrun files in bndtools.core). It is a
+modified version of bndtools.runtime.eclipse.applaunch-0.1.0.jar that Neil Bartlett
+originally wrote.
+
+How it works
+------------
+
+1. The bundle waits for the bnd launcher service `aQute.launcher.Launcher` to become ready
+   (`launcher.ready=true`). The program arguments of the launch (`-runprogramargs`) are
+   taken from its `launcher.arguments` property.
+2. The arguments are processed like the Eclipse launcher processes them: the Eclipse
+   runtime options are turned into framework properties and locations, the remaining
+   arguments are published as application arguments through the Equinox
+   `EnvironmentInfo` service (`getCommandLineArgs`, `getFrameworkArgs`,
+   `getNonFrameworkArgs`).
+3. `org.eclipse.equinox.app` is started. It processes the application arguments itself
+   (`-application`, `-product`, `-feature`, ...) and asks the registered
+   `ApplicationLauncher` to run the selected application.
+4. The application is run on the main thread through a `java.lang.Runnable` service with
+   the property `main.thread=true`, which the bnd launcher picks up.
+
+Supported Eclipse runtime options
+---------------------------------
+
+Program arguments are configured with `-runprogramargs` in the bndrun file; the arguments
+are comma separated, one argument per entry:
+
+    -runprogramargs: \
+        -application, org.example.application,\
+        -data, ${.}/generated/workspace,\
+        -consoleLog,\
+        -clearPersistedState
+
+The following options are consumed by this bundle, see "The Eclipse Runtime Options" in the
+Platform Plug-in Developer Guide:
+
+    Option                          Effect
+    -arch <arch>                    osgi.arch
+    -clean                          osgi.clean=true
+    -configuration <location>       configuration location (*)
+    -console [[host:]port]          osgi.console (empty when no port is given)
+    -consoleLog                     eclipse.consoleLog=true
+    -data <location>                instance (workspace) location (*)
+    -debug [options file]           osgi.debug (empty when no file is given)
+    -dev [entries]                  osgi.dev (empty when no entries are given)
+    -initialize                     the configuration is initialized, no application runs
+    -install <location>             install location (*)
+    -launcher <location>            eclipse.launcher
+    -nl <locale>                    osgi.nl
+    -nlExtensions <extensions>      osgi.nl.extensions
+    -noExit                         osgi.noShutdown=true
+    -os <os>                        osgi.os
+    -user <location>                user location (*)
+    -ws <ws>                        osgi.ws
+    -framework <location>           ignored with a warning, use -runfw
+    -vm <path>                      eclipse.vm
+    -vmargs <args>...               eclipse.vmargs, everything after -vmargs is consumed
+    -noSplash, -showSplash [bitmap], -endSplash <command>, -protect <value>,
+    --launcher.appendVmargs, --launcher.overrideVmargs
+                                    consumed, there is no splash screen or native launcher
+
+Option names are case insensitive. An option that requires a value but is not followed by
+one is passed on to the application, like Eclipse does.
+
+All other arguments, for example `-application`, `-product`, `-feature`,
+`-pluginCustomization`, `-noRegistryCache`, `-clearPersistedState` or `-perspective`, are
+left to the Eclipse runtime, E4 and workbench layers which process them from the
+application arguments.
+
+(*) Locations accept file system paths, URLs and the symbolic values `@user.home/...`,
+`@user.dir/...`, `@none` and `@noDefault`. Because the framework is already running when
+the arguments are processed, a location can only be applied when it has not been set yet.
+This is normally the case for `-data` and `-user`. The configuration and install locations
+are always set by the framework; a differing value is ignored with a warning. The same
+applies to `osgi.framework`.
+
+Properties that influence bundle resolution (for example `osgi.os`, `osgi.ws`, `osgi.arch`
+for platform specific fragments) or framework start-up (for example `osgi.instance.area`
+when it must be known before the first bundle starts, `osgi.console`) have to be given with
+`-runproperties` in the bndrun file. They are then already in place when the framework
+starts.
+
+Tests
+-----
+
+Unit tests for the argument processing are in `test/`. The OSGi integration tests in
+`org.bndtools.applaunch.test` launch a headless Eclipse application with the bnd launcher:
+`programargs.bndrun` passes every kind of runtime option as program argument,
+`systemproperties.bndrun` selects the application through `eclipse.product` only.
