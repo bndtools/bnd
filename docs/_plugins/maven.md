@@ -76,7 +76,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | `name`           | `NAME`| `Maven` | The name of the repository.|
 | `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_ (text with one GAV per line or pom.xml).|
 | `checksumFile`   | `PATH`| `<index-dir>/<index-filename>.checksums` | The path to the trusted checksum file relative to `build.bnd`. If not specified, defaults to a `.checksums` sidecar file next to the index file. See [Trusted Checksum Verification](#trusted-checksum-verification).|
-| `checksumRecord`   | `boolean` | `false` | When set to `true`, the repository automatically generates (records) the trusted checksum file during initialization. Checksums are computed for all artifacts currently listed in the index file and written to the default sidecar location (`<index>.checksums`) or the path specified by `checksumFile`. Non-fatal errors during recording are logged but do not prevent the repository from initializing. |
+| `checksumRecord`   | `boolean` | `false` | When set to `true`, the repository generates (records) the trusted checksum file after successful repository initialization. Checksums are computed for all artifacts currently listed in the index file and written to the default sidecar location (`<index>.checksums`) or the path specified by `checksumFile`. **Important:** `checksumRecord=true` does not bootstrap `checksumPolicy=strict` on a missing checksum file; strict initialization fails before recording can run. 
 | `checksumPolicy`   | enum `strict` `lenient` | `lenient` | Controls how checksums are validated when a checksum file is present. See [Checksum Policy](#checksum-policy) for details. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
@@ -231,7 +231,7 @@ org.osgi:osgi.core:6.0.0=sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6
 
 ### Generating the Checksums File
 
-The `checksumRecord` configuration option enables automatic generation of the trusted checksum file during repository initialization. This is useful for CI/CD pipelines and build automation where you want to "bootstrap" or audit the checksums without manual intervention.
+The `checksumRecord` configuration option enables automatic generation of the trusted checksum file after successful repository initialization.
 
 **Configuration:**
 
@@ -241,7 +241,7 @@ The `checksumRecord` configuration option enables automatic generation of the tr
 	releaseUrl=https://repo.maven.apache.org/maven2/;
 	index=${.}/central.maven;
 	checksumRecord=true;
-	checksumPolicy=strict;
+	checksumPolicy=lenient;
 	name="Central"
 ```
 
@@ -262,7 +262,12 @@ The `checksumRecord` configuration option enables automatic generation of the tr
 
 **Notes:**
 
-- Recording happens **after** repository initialization completes, ensuring all artifacts are available
+- Recording happens **after** repository initialization completes.
+- Therefore, `checksumPolicy=strict` + missing checksum file fails initialization before recording can run.
+- Recommended bootstrap flow:
+  1. Run once with `checksumPolicy=lenient` and `checksumRecord=true` to generate/update the checksum file.
+  2. Commit and review the checksum file.
+  3. Switch to `checksumPolicy=strict` for enforcement.
 - Only artifacts that have been downloaded to the local repository can have their checksums recorded
 - Remote-only artifacts (not yet downloaded) are skipped during recording
 - The generated file uses SHA-1 by default (matching the format created by the IDE's "Create Trusted Checksums file" action)
@@ -300,6 +305,7 @@ In `strict` mode:
 - **Every** dependency in the repository index must have a matching entry in the checksum file with the correct BSN and version
 - If a dependency is missing from the checksum file or has a different version, the build fails with an error
 - This mode ensures complete traceability: all dependencies must be explicitly validated against known-good checksums
+- `checksumRecord=true` does not change this requirement in the same run.
 
 Configuration:
 ```
