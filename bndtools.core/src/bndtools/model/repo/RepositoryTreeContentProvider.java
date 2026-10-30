@@ -41,7 +41,6 @@ import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.repository.p2.provider.P2Repository;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
@@ -68,6 +67,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	 */
 	private static final int									MAX_CACHED_FILTER_RESULTS	= 10;
 	private boolean												showRepos					= true;
+	private volatile boolean showFeatures = true;
+	private volatile int featureVisibilityGeneration;
 
 	private Requirement											requirementFilter			= null;
 
@@ -114,6 +115,16 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		return showRepos;
 	}
 
+	public boolean isShowFeatures() {
+		return showFeatures;
+	}
+
+	public void setShowFeatures(boolean showFeatures) {
+		this.showFeatures = showFeatures;
+		featureVisibilityGeneration++;
+		repoPluginListResults.clear();
+	}
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public Object[] getElements(Object inputElement) {
@@ -157,12 +168,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		if (parentElement instanceof RepositoryPlugin) {
 			RepositoryPlugin repo = (RepositoryPlugin) parentElement;
 			result = getRepositoryBundles(repo);
-		} else if (parentElement instanceof RepositoryFeatureResource) {
-			// Handle RepositoryFeatureResource - for now, features from search
-			// have no children
-			// In the future, we could lazy-load the full Feature and show its
-			// children
-			result = new Object[0];
 		} else if (parentElement instanceof RepositoryFeature) {
 			// Check RepositoryFeature BEFORE RepositoryBundle since both extend
 			// RepositoryEntry
@@ -376,6 +381,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		result = listResults.get(wildcardFilter);
 
 		if (result == null) {
+			int generation = featureVisibilityGeneration;
 			Job job = new Job("Loading " + repoPlugin.getName() + " content...") {
 
 				@Override
@@ -396,33 +402,16 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 						// Collect features first
 						List<Object> items = new ArrayList<>();
+						Set<String> featureIds = new LinkedHashSet<>();
 
-						if (repoPlugin instanceof P2Repository) {
+						if (repoPlugin instanceof Repository repository) {
 							try {
-								List<?> features = ((P2Repository) repoPlugin).getFeatures();
-								if (features != null) {
-									List<Feature> sortedFeatures = new ArrayList<>();
-									for (Object featureObj : features) {
-										if (featureObj instanceof Feature) {
-											sortedFeatures.add((Feature) featureObj);
-										}
-									}
-									sortedFeatures.sort(Comparator
-										.comparing(Feature::getId, Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
-										.thenComparing(Feature::getVersion,
-											Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER)));
-									for (Feature feature : sortedFeatures) {
-										// Apply wildcardFilter to features,
-										// same as for bundles
-										if (wildcardFilter == null
-											|| matchesWildcard(feature.getId(), wildcardFilter)) {
-											items.add(new RepositoryFeature(repoPlugin, feature));
-										}
-									}
-								}
+								for (Resource resource : getFeatureResources(repository))
+									featureIds.add(aQute.bnd.osgi.resource.ResourceUtils.getIdentity(resource));
+								if (showFeatures)
+									items.addAll(getRepositoryFeatures(repoPlugin, repository));
 							} catch (Exception e) {
-								logger.logError(MessageFormat.format("Error querying features from repository {0}.",
-									repoPlugin.getName()), e);
+								logger.logError("Error querying features from repository " + repoPlugin.getName(), e);
 							}
 						}
 
@@ -432,10 +421,20 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 						// a bundle and
 						// a feature in p2 repositories).
 						for (String bsn : bsns) {
+							if (featureIds.contains(bsn)) {
+								try {
+									if (repoPlugin.versions(bsn).isEmpty())
+										continue;
+								} catch (Exception e) {
+									logger.logError("Error querying bundle versions for " + bsn, e);
+								}
+							}
 							items.add(new RepositoryBundle(repoPlugin, bsn));
 						}
 
 						jobresult = items.toArray();
+						if (generation != featureVisibilityGeneration)
+							return Status.CANCEL_STATUS;
 
 						Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin,
 							p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
@@ -479,7 +478,28 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		return result;
 	}
 
-	private Object[] searchR5Repository(RepositoryPlugin repoPlugin, Repository osgiRepo) {
+	List<RepositoryFeatureResource> getRepositoryFeatures(RepositoryPlugin plugin, Repository repository) {
+		if (!showFeatures)
+			return List.of();
+		return getFeatureResources(repository).stream()
+			.map(resource -> new RepositoryFeatureResource(plugin, resource))
+			.filter(item -> wildcardFilter == null || matchesWildcard(item.getId(), wildcardFilter))
+			.sorted(Comparator.comparing(RepositoryFeatureResource::getId, String.CASE_INSENSITIVE_ORDER)
+				.thenComparing(item -> Version.parseVersion(item.getVersion())))
+			.toList();
+	}
+
+	private List<Resource> getFeatureResources(Repository repository) {
+		Requirement requirement = new aQute.bnd.osgi.resource.CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+			.addDirective("filter", "(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + Feature.TYPE + ")")
+			.buildSyntheticRequirement();
+		return repository.findProviders(Collections.singleton(requirement))
+			.getOrDefault(requirement, Collections.emptyList()).stream()
+			.map(Capability::getResource).distinct()
+			.toList();
+	}
+
+	Object[] searchR5Repository(RepositoryPlugin repoPlugin, Repository osgiRepo) {
 		Object[] result;
 		Set<Object> resultSet = new LinkedHashSet<>();
 		Map<Requirement, Collection<Capability>> providers = osgiRepo
@@ -490,7 +510,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				Resource resource = providerCap.getResource();
 				// Separate features from bundles
 				if (isFeatureResource(resource)) {
-					resultSet.add(new RepositoryFeatureResource(repoPlugin, resource));
+					if (showFeatures)
+						resultSet.add(new RepositoryFeatureResource(repoPlugin, resource));
 				} else {
 					resultSet.add(new RepositoryResourceElement(repoPlugin, resource));
 				}

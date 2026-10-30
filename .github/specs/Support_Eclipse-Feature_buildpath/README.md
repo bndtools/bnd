@@ -13,6 +13,16 @@ This spec describes the support for referencing Eclipse features in the bnd `-bu
 
 A feature is a **container of bundles**: on a path it expands to its member bundles — the `<plugin>` references of its `feature.xml` and, recursively, the members of its `<includes>` referenced features. `<requires>` imports are dependencies, not members, and are **not** expanded.
 
+## Change History
+
+### Repository Feature Visibility
+
+- Use indexed feature resources for both P2 and OSGi repository trees and search results.
+- Display the same feature version and member hierarchy without downloading feature JARs.
+- Add a persistent **Show Eclipse Features** toolbar toggle, enabled by default.
+- Load original indexed capabilities and requirements for feature and member selections.
+- Resolve and open included features without requiring the P2-specific feature API.
+
 ## The Identity Problem
 
 OSGi uses bsn+version as the unique identifier of a bundle. This is **not sufficient** for Eclipse features: a feature and a bundle may share the same id and version in a p2 repository (e.g. `org.eclipse.emf.ecore` exists both as bundle and as feature). All lookups therefore additionally honor the identity type:

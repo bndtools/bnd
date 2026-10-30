@@ -99,13 +99,17 @@ public abstract class AbstractFeatureSwtbotTest {
 	 * so all nodes are re-resolved on every poll.
 	 */
 	protected SWTBotTreeItem findFeatureNode(SWTBotTree tree) {
+		return findFeatureNode(tree, FIXTURE_REPO);
+	}
+
+	protected SWTBotTreeItem findFeatureNode(SWTBotTree tree, String repositoryName) {
 		AtomicReference<SWTBotTreeItem> result = new AtomicReference<>();
 		bot.waitUntilWidgetAppears(new DefaultCondition() {
 			@Override
 			public boolean test() {
 				for (SWTBotTreeItem repoNode : tree.getAllItems()) {
 					String repoText = repoNode.getText();
-					if (repoText == null || !repoText.startsWith(FIXTURE_REPO)) {
+					if (repoText == null || !repoText.startsWith(repositoryName)) {
 						continue;
 					}
 					SWTBotTreeItem feature = featureChild(repoNode);
@@ -142,7 +146,7 @@ public abstract class AbstractFeatureSwtbotTest {
 			@Override
 			public String getFailureMessage() {
 				StringBuilder sb = new StringBuilder(
-					"Feature node test.feature did not appear below repository " + FIXTURE_REPO + ". Tree state:");
+					"Feature node test.feature did not appear below repository " + repositoryName + ". Tree state:");
 				for (SWTBotTreeItem repoNode : tree.getAllItems()) {
 					sb.append("\n- ")
 						.append(repoNode.getText());
