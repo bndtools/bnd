@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -24,6 +24,7 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -66,14 +67,24 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	 * if you search with lots of different filter strings.
 	 */
 	private static final int									MAX_CACHED_FILTER_RESULTS	= 10;
+	private static final int									MAX_CACHED_REPOSITORIES		= 16;
 	private boolean												showRepos					= true;
 	private volatile boolean showFeatures = true;
 	private volatile int featureVisibilityGeneration;
 
 	private Requirement											requirementFilter			= null;
 
-	private final Map<RepositoryPlugin, Map<String, Object[]>>	repoPluginListResults		= new HashMap<>();
+	private static final Map<RepositoryPlugin, Map<String, Object[]>>	repoPluginListResults	= new LinkedHashMap<>(16,
+		0.75f, true) {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<RepositoryPlugin, Map<String, Object[]>> eldest) {
+			return size() > MAX_CACHED_REPOSITORIES;
+		}
+	};
 	private StructuredViewer									structuredViewer;
+	private boolean									waitForFastResult		= true;
 
 	public RepositoryTreeContentProvider() {
 		this.phases = EnumSet.allOf(ResolutionPhase.class);
@@ -122,7 +133,21 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	public void setShowFeatures(boolean showFeatures) {
 		this.showFeatures = showFeatures;
 		featureVisibilityGeneration++;
-		repoPluginListResults.clear();
+		invalidateRepositoryCache(null);
+	}
+
+	public void setWaitForFastResult(boolean waitForFastResult) {
+		this.waitForFastResult = waitForFastResult;
+	}
+
+	public static void invalidateRepositoryCache(RepositoryPlugin repository) {
+		synchronized (repoPluginListResults) {
+			if (repository == null) {
+				repoPluginListResults.clear();
+			} else {
+				repoPluginListResults.remove(repository);
+			}
+		}
 	}
 
 	@Override
@@ -153,11 +178,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		if (viewer instanceof StructuredViewer) {
 			this.structuredViewer = (StructuredViewer) viewer;
-
-			// only clear during subsequent updates
-			if (oldInput != null) {
-				repoPluginListResults.clear();
-			}
 		}
 	}
 
@@ -375,13 +395,14 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		 * this node and the next time this method gets called the 'results'
 		 * will be available in the cache
 		 */
-		Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin,
-			p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
+		Map<String, Object[]> listResults = getRepositoryListResults(repoPlugin);
 
-		result = listResults.get(wildcardFilter);
+		final String filter = wildcardFilter;
+		result = listResults.get(filter);
 
 		if (result == null) {
 			int generation = featureVisibilityGeneration;
+			AtomicBoolean servedLoading = new AtomicBoolean();
 			Job job = new Job("Loading " + repoPlugin.getName() + " content...") {
 
 				@Override
@@ -391,11 +412,14 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					List<String> bsns = null;
 
 					try {
-						bsns = repoPlugin.list(wildcardFilter);
+						bsns = repoPlugin.list(filter);
 					} catch (Exception e) {
 						String message = MessageFormat.format("Error querying repository {0}.", repoPlugin.getName());
 						logger.logError(message, e);
 						status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
+					}
+					if (bsns == null) {
+						bsns = Collections.emptyList();
 					}
 					if (bsns != null) {
 						Collections.sort(bsns);
@@ -406,10 +430,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 						if (repoPlugin instanceof Repository repository) {
 							try {
-								for (Resource resource : getFeatureResources(repository))
+								for (Resource resource : getFeatureResources(repository)) {
 									featureIds.add(aQute.bnd.osgi.resource.ResourceUtils.getIdentity(resource));
-								if (showFeatures)
+								}
+								if (showFeatures) {
 									items.addAll(getRepositoryFeatures(repoPlugin, repository));
+								}
 							} catch (Exception e) {
 								logger.logError("Error querying features from repository " + repoPlugin.getName(), e);
 							}
@@ -436,15 +462,20 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 						if (generation != featureVisibilityGeneration)
 							return Status.CANCEL_STATUS;
 
-						Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin,
-							p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
-						listResults.put(wildcardFilter, jobresult);
+						Map<String, Object[]> listResults = getRepositoryListResults(repoPlugin);
+						listResults.put(filter, jobresult);
 
 						Display.getDefault()
 							.asyncExec(() -> {
-								if (!structuredViewer.getControl()
-									.isDisposed())
-									structuredViewer.refresh(repoPlugin, true);
+								// runs after the UI thread decided whether it showed the loading element
+								if (servedLoading.get() && !structuredViewer.getControl()
+									.isDisposed()) {
+									if (showRepos) {
+										structuredViewer.refresh(repoPlugin, true);
+									} else {
+										structuredViewer.refresh();
+									}
+								}
 							});
 					}
 
@@ -452,25 +483,28 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				}
 			};
 			job.schedule();
+			if (waitForFastResult) {
+				try {
+					job.join(100, null);
+				} catch (InterruptedException e) {
+					Thread.currentThread()
+						.interrupt();
+				} catch (OperationCanceledException e) {
+					// Use the loading element when the job is canceled.
+				}
+				result = listResults.get(filter);
+				if (result != null) {
+					return result;
+				}
+			}
 
-			// wait 100 ms and see if the job will complete fast (likely already
-			// cached)
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {}
-
-			IStatus status = job.getResult();
-
-			if (status != null && status.isOK()) {
-				Map<String, Object[]> fastResults = repoPluginListResults.computeIfAbsent(repoPlugin,
-					p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
-				result = fastResults.get(wildcardFilter);
-			} else {
-				Object[] loading = new Object[] {
-					new LoadingContentElement()
-				};
-
-				listResults.put(wildcardFilter, loading);
+			Object[] loading = new Object[] {
+				new LoadingContentElement(repoPlugin.getName())
+			};
+			// The job may have stored its result while the loading row was prepared.
+			result = listResults.putIfAbsent(filter, loading);
+			if (result == null) {
+				servedLoading.set(true);
 				result = loading;
 			}
 		}
@@ -494,9 +528,18 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			.addDirective("filter", "(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + Feature.TYPE + ")")
 			.buildSyntheticRequirement();
 		return repository.findProviders(Collections.singleton(requirement))
-			.getOrDefault(requirement, Collections.emptyList()).stream()
-			.map(Capability::getResource).distinct()
+			.getOrDefault(requirement, Collections.emptyList())
+			.stream()
+			.map(Capability::getResource)
+			.distinct()
 			.toList();
+	}
+
+	private static Map<String, Object[]> getRepositoryListResults(RepositoryPlugin repoPlugin) {
+		synchronized (repoPluginListResults) {
+			return repoPluginListResults.computeIfAbsent(repoPlugin,
+				p -> createLRUMap(MAX_CACHED_FILTER_RESULTS));
+		}
 	}
 
 	Object[] searchR5Repository(RepositoryPlugin repoPlugin, Repository osgiRepo) {
@@ -541,7 +584,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
 	// Define a LRU-like inner map (max n entries)
 	private static Map<String, Object[]> createLRUMap(int n) {
-		return new LinkedHashMap<String, Object[]>(n + 1, 1.0f, true) {
+		return Collections.synchronizedMap(new LinkedHashMap<String, Object[]>(n + 1, 1.0f, true) {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -550,7 +593,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				// but always keep the 'null' key which is '*'
 				return size() > n && eldest.getKey() != null;
 			}
-		};
+		});
 	}
 
 	/**
