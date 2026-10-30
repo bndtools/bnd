@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -22,12 +23,20 @@ import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.InitializeParams;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.xml.sax.InputSource;
 
 import aQute.bnd.lsp.BndLanguageServer;
 import aQute.bnd.lsp.Constants;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
+import aQute.p2.provider.Feature;
 
 class BndRepositoriesServiceTest {
 	@TempDir
@@ -180,6 +189,68 @@ class BndRepositoriesServiceTest {
 			assertThat(b.get("bsn")).isEqualTo("p");
 			assertThat(b.get("project")).isEqualTo("p");
 		});
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"", "osgi.bundle", "osgi.fragment"})
+	void browsesIndexedEclipseFeaturesWithoutDownloadingJars(String sharedType) throws Exception {
+		String ws = workspace();
+		Feature feature = new Feature(XML.newDocumentBuilderFactory().newDocumentBuilder().parse(new InputSource(
+			new StringReader("""
+				<feature id="test.feature" label="Indexed Feature" provider-name="Example" version="1.2.3">
+				  <plugin id="test.bundle" version="2.0.0"/>
+				  <includes id="test.included" version="3.0.0" optional="true"/>
+				  <requires><import feature="test.required" version="4.0.0" match="compatible"/></requires>
+				</feature>
+				"""))));
+		feature.parse();
+		Path index = temporary.resolve("cnf/features.xml");
+		var generator = new XMLResourceGenerator().resource(feature.toResource());
+		if (!sharedType.isEmpty()) {
+			generator.resource(new ResourceBuilder().addCapability(new CapReqBuilder("osgi.identity")
+				.addAttribute("osgi.identity", "test.feature").addAttribute("type", sharedType)
+				.addAttribute("version", new org.osgi.framework.Version("1.2.3"))).build());
+		}
+		generator.save(index.toFile());
+		Files.writeString(temporary.resolve("cnf/build.bnd"),
+			"-plugin.index: aQute.bnd.repository.osgi.OSGiRepository;name=Indexed;locations='" + index.toUri() + "'\n");
+		BndWorkspaceManager manager = new BndWorkspaceManager();
+		try {
+			var service = new BndRepositoriesService(manager);
+			List<Map<String, Object>> repos = field(service.list(request(Map.of("workspace", ws))), "repositories");
+			Map<String, Object> indexed = repos.stream().filter(repo -> "Indexed".equals(repo.get("name")))
+				.findFirst().orElseThrow();
+			assertThat(indexed.get("p2")).isEqualTo(false);
+			Map<String, Object> repo = Map.of("workspace", ws, "repo", indexed.get("index"), "repoName", "Indexed");
+			List<Map<String, Object>> features = field(service.bundles(request(repo)), "features");
+			List<Map<String, Object>> bundles = field(service.bundles(request(repo)), "bundles");
+			if (sharedType.isEmpty()) {
+				assertThat(bundles).noneSatisfy(entry -> assertThat(entry).containsEntry("bsn", "test.feature"));
+			} else {
+				assertThat(bundles).anySatisfy(entry -> assertThat(entry).containsEntry("bsn", "test.feature"));
+			}
+			assertThat(features).singleElement().satisfies(entry -> {
+				assertThat(entry).containsEntry("id", "test.feature").containsEntry("version", "1.2.3")
+					.containsEntry("label", "Indexed Feature");
+			});
+			var detailRequest = new java.util.LinkedHashMap<>(repo);
+			detailRequest.put("id", "test.feature");
+			detailRequest.put("version", "1.2.3");
+			Object detail = service.feature(request(detailRequest));
+			List<Map<String, Object>> plugins = field(detail, "plugins");
+			assertThat(plugins).singleElement().satisfies(entry -> assertThat(entry)
+				.containsEntry("id", "test.bundle").containsEntry("type", "bundle"));
+			List<Map<String, Object>> includes = field(detail, "includes");
+			assertThat(includes).singleElement().satisfies(entry -> assertThat(entry)
+				.containsEntry("id", "test.included").containsEntry("optional", true));
+			List<Map<String, Object>> requires = field(detail, "requires");
+			assertThat(requires).singleElement().satisfies(entry -> {
+				assertThat(entry).containsEntry("id", "test.required").containsEntry("type", "feature");
+				assertThat(entry.get("filter").toString()).contains("(version>=4.0.0)", "(!(version>=5.0.0))");
+			});
+		} finally {
+			manager.shutdown();
+		}
 	}
 
 	@Test
