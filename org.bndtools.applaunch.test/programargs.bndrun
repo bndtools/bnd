@@ -1,0 +1,53 @@
+# Launches the headless test application with every kind of Eclipse runtime
+# option given as program argument, see
+# https://help.eclipse.org/latest/topic/org.eclipse.platform.doc.isv/reference/misc/runtime-options.html
+# Program arguments are comma separated, one argument per entry.
+-include: shared.bndrun
+
+-runproperties.scenario: \
+	tester.names=org.bndtools.applaunch.test.ProgramArgumentsTest
+
+-runprogramargs: \
+	-os, aix,\
+	-ws, motif,\
+	-arch, ppc64,\
+	-nl, de_DE,\
+	-nlExtensions, @collation=phonebook,\
+	-clean,\
+	-consoleLog,\
+	-noExit,\
+	-debug,\
+	-dev, bin/,\
+	-data, ${.}/generated/instance,\
+	-user, ${.}/generated/user,\
+	-configuration, ${.}/generated/configuration,\
+	-launcher, ${.}/generated/eclipse,\
+	-install, ${.}/generated/install,\
+	-noSplash,\
+	-showSplash, splash.bmp,\
+	-vm, ${.}/generated/java,\
+	-application, org.bndtools.applaunch.test.application,\
+	-product, org.bndtools.applaunch.test.product,\
+	-clearPersistedState,\
+	-perspective, some.perspective,\
+	--custom=value,\
+	file.txt,\
+	-vmargs, -Xmx1g
+-runbundles: \
+	assertj-core;version='[3.24.2,3.24.3)',\
+	biz.aQute.tester.junit-platform;version=snapshot,\
+	junit-jupiter-api;version='[5.14.2,5.14.3)',\
+	junit-jupiter-engine;version='[5.14.2,5.14.3)',\
+	junit-jupiter-params;version='[5.14.2,5.14.3)',\
+	junit-platform-commons;version='[1.14.2,1.14.3)',\
+	junit-platform-engine;version='[1.14.2,1.14.3)',\
+	junit-platform-launcher;version='[1.14.2,1.14.3)',\
+	net.bytebuddy.byte-buddy;version='[1.14.9,1.14.10)',\
+	org.bndtools.applaunch.test;version=snapshot,\
+	org.bndtools.applaunch;version=snapshot,\
+	org.eclipse.equinox.app;version='[1.6.400,1.6.401)',\
+	org.eclipse.equinox.common;version='[3.18.200,3.18.201)',\
+	org.eclipse.equinox.registry;version='[3.11.400,3.11.401)',\
+	org.opentest4j;version='[1.3.0,1.3.1)',\
+	org.osgi.test.common;version='[1.2.1,1.2.2)',\
+	org.osgi.test.junit5;version='[1.2.1,1.2.2)'

@@ -14,9 +14,16 @@ class BndApplicationLauncher implements ApplicationLauncher {
 	private final Logger		log	= Logger.getLogger(BndApplicationLauncher.class.getPackage()
 		.getName());
 	private final BundleContext	bc;
+	private final boolean		initialize;
 
-	public BndApplicationLauncher(BundleContext context) {
+	/**
+	 * @param initialize {@code true} if {@code -initialize} was given: the
+	 *            main thread returns without running the application, which
+	 *            lets the launcher shut the framework down like Eclipse does
+	 */
+	BndApplicationLauncher(BundleContext context, boolean initialize) {
 		this.bc = context;
+		this.initialize = initialize;
 	}
 
 	@Override
@@ -24,6 +31,10 @@ class BndApplicationLauncher implements ApplicationLauncher {
 		log.log(Level.FINE,
 			"Received launch request from Eclipse application service, registering java.lang.Runnable{main.thread=true}");
 		Runnable service = () -> {
+			if (initialize) {
+				log.info("-initialize specified: the configuration is initialized and the Eclipse application is not run.");
+				return;
+			}
 			try {
 				log.log(Level.FINE, "Executing appplication on thread {0} ({1}).", new Object[] {
 					Thread.currentThread()
