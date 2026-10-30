@@ -264,14 +264,14 @@ class IndexFile {
 		} else {
 			promises = toAdd.stream()
 				.map(archive -> {
-					if (!archive.isSnapshot()) {
-						File localFile = repo.toLocalFile(archive);
-						if (localFile.isFile() && localFile.length() > 0) {
-							return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
-								.recover(p -> failed(archive, p.getFailure()));
-						}
-					}
 					try {
+						if (!archive.isSnapshot()) {
+							File localFile = repo.toLocalFile(archive);
+							if (localFile.isFile() && localFile.length() > 0) {
+								return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
+									.recover(p -> failed(archive, p.getFailure()));
+							}
+						}
 						return repo.get(archive)
 							.map(file -> (file == null) ? failed(archive, "Not found")
 								: parseSingleOrMultiFile(archive, file))
