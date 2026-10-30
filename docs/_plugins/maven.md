@@ -77,6 +77,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_ (text with one GAV per line or pom.xml).|
 | `checksumFile`   | `PATH`| `<index-dir>/<index-filename>.checksums` | The path to the trusted checksum file relative to `build.bnd`. If not specified, defaults to a `.checksums` sidecar file next to the index file. See [Trusted Checksum Verification](#trusted-checksum-verification).|
 | `checksumRecord`   | `boolean` | `false` | When set to `true`, the repository automatically generates (records) the trusted checksum file during initialization. Checksums are computed for all artifacts currently listed in the index file and written to the default sidecar location (`<index>.checksums`) or the path specified by `checksumFile`. Non-fatal errors during recording are logged but do not prevent the repository from initializing. |
+| `checksumPolicy`   | enum `strict` `lenient` | `lenient` | Controls how checksums are validated when a checksum file is present. See [Checksum Policy](#checksum-policy) for details. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
@@ -201,6 +202,7 @@ You can override this location with the checksumFile configuration property:
 		releaseUrl=https://repo.maven.apache.org/maven2/; \
 		index=${.}/central.maven; \
 		checksumFile=${.}/trusted/central.checksums; \
+		checksumPolicy=strict; \
 		name="Central"
 ```
 
@@ -239,6 +241,7 @@ The `checksumRecord` configuration option enables automatic generation of the tr
 	releaseUrl=https://repo.maven.apache.org/maven2/;
 	index=${.}/central.maven;
 	checksumRecord=true;
+	checksumPolicy=strict;
 	name="Central"
 ```
 
@@ -273,17 +276,49 @@ Additionally the Bndtools Eclipse Plugin provides a context menu action on the r
 
 After generating the file, review it and commit it to version control alongside your index file. This ensures that everyone on your team (and CI) uses the same trusted checksums.
 
+### Checksum Policy
+
+The `checksumPolicy` configuration property controls how strictly the repository enforces checksum verification when a checksum file is present. Two modes are available:
+
+#### Lenient Mode (default)
+
+In `lenient` mode (the default for backward compatibility):
+- If no checksum file exists, verification is skipped and artifacts are used as-is
+- If a checksum file exists, only artifacts explicitly listed in it are verified
+- Artifacts not listed in the checksum file are used as-is without verification
+- This allows you to incrementally build and maintain your checksum file over time
+
+Configuration:
+```
+checksumPolicy=lenient
+```
+
+#### Strict Mode
+
+In `strict` mode:
+- A checksum file **must** exist; the build fails if it is missing
+- **Every** dependency in the repository index must have a matching entry in the checksum file with the correct BSN and version
+- If a dependency is missing from the checksum file or has a different version, the build fails with an error
+- This mode ensures complete traceability: all dependencies must be explicitly validated against known-good checksums
+
+Configuration:
+```
+checksumPolicy=strict
+```
+
+**Use Case Example:** Strict mode is recommended for production builds and CI/CD pipelines where you want to guarantee that all dependencies have been explicitly reviewed and approved via the checksum file.
+
 ### Expected Behavior
 
-|                              Situation                             |                               Behavior                              |
-|:------------------------------------------------------------------:|:-------------------------------------------------------------------:|
-| No checksum file exists                                            | Default: No verification is performed; artifacts are used as-is.                  |
-| `.checksums` file exists but has no entry for an artifact              | That artifact is not verified; it is used as-is.                    |
-| Checksum file exists and artifact matches the expected hash        | Artifact is used normally.                                          |
-| Checksum file exists but  artifact does not match the expected hash | The local file is deleted and a `TrustedChecksumException` is thrown. The artifact appears as if it does not exist / could not be downloaded and thus will not resolve. Removing the artifact entry from the checksum file and a rebuild should re-download the artifact |
+|                              Situation                             |                               Behavior (Lenient)                              | Behavior (Strict)                        |
+|:------------------------------------------------------------------:|:-------------------------------------------------------------------:|:------|
+| No checksum file exists                                            | No verification is performed; artifacts are used as-is.                  | **Build fails** with error                      |
+| `.checksums` file exists but has no entry for an artifact              | That artifact is not verified; it is used as-is.                    | **Build fails** with error - dependency missing from checksums                   |
+| Checksum file exists and artifact matches the expected hash        | Artifact is used normally.                                          | Artifact is used normally.                     |
+| Checksum file exists but artifact does not match the expected hash | The local file is deleted and a `TrustedChecksumException` is thrown. The artifact appears as if it does not exist / could not be downloaded and thus will not resolve. Removing the artifact entry from the checksum file and a rebuild should re-download the artifact | **Build fails** with error - checksum mismatch                    |
+| BSN matches but version in `.checksums` differs from index         | That artifact is not verified; it is used as-is.                    | **Build fails** with error - version mismatch                     |
 
-This design means you can incrementally add entries to the checksum file: only artifacts explicitly listed are verified. Artifacts not listed in the file are passed through without verification.
-
+In lenient mode, you can incrementally add entries to the checksum file: only artifacts explicitly listed are verified. Artifacts not listed in the file are passed through without verification.
 
 ## IDEs
 
