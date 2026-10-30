@@ -166,6 +166,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	private Action									downloadAction;
 	private String									advancedSearchState;
 	private Action									offlineAction;
+	private Action showFeaturesAction;
 	private final IEventBroker						eventBroker					= PlatformUI.getWorkbench()
 		.getService(IEventBroker.class);
 
@@ -487,12 +488,19 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 					Feature.Includes includes = featureItem.getIncludes();
 					String featureId = includes.id;
 					try {
-						if (repo instanceof P2Repository) {
-							Object featureObj = ((P2Repository) repo).getFeature(includes.id, includes.version);
-							if (featureObj instanceof Feature) {
-								Feature feature = (Feature) featureObj;
+						if (repo instanceof org.osgi.service.repository.Repository repository) {
+							org.osgi.resource.Requirement requirement = bndtools.model.repo.RepositoryFeatureResource
+								.getMemberRequirement(featureItem.getParent().getParent().getParent(),
+									includes.id, Feature.RELATION_INCLUDE);
+							java.util.Collection<org.osgi.resource.Capability> providers = requirement == null
+								? java.util.List.of() : repository.findProviders(java.util.List.of(requirement))
+									.getOrDefault(requirement, java.util.List.of());
+							if (!providers.isEmpty()) {
 								// Try to get the feature JAR file
-								RepositoryBundle featureBundle = new RepositoryBundle(repo, feature.getId());
+								RepositoryFeature featureBundle = new bndtools.model.repo.RepositoryFeatureResource(repo,
+									providers.stream().map(org.osgi.resource.Capability::getResource)
+										.max(java.util.Comparator.comparing(aQute.bnd.osgi.resource.ResourceUtils::getVersion))
+										.orElseThrow());
 								File featureFile = featureBundle.getFile(false);
 								if (featureFile != null && featureFile.exists()) {
 									openFeatureURI(featureFile.toURI());
@@ -755,6 +763,20 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	}
 
 	void createActions() {
+		showFeaturesAction = new Action("Show Eclipse Features", IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				contentProvider.setShowFeatures(isChecked());
+				Plugin.getDefault().getDialogSettings().put("repositories.showFeatures", isChecked());
+				viewer.refresh();
+			}
+		};
+		String showFeatures = Plugin.getDefault().getDialogSettings().get("repositories.showFeatures");
+		showFeaturesAction.setChecked(showFeatures == null || Boolean.parseBoolean(showFeatures));
+		contentProvider.setShowFeatures(showFeaturesAction.isChecked());
+		showFeaturesAction.setToolTipText("Show or hide Eclipse features");
+		showFeaturesAction.setImageDescriptor(Icons.desc("feature"));
+
 		collapseAllAction = new Action() {
 			@Override
 			public void run() {
@@ -1026,6 +1048,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 	private void fillToolBar(IToolBarManager toolBar) {
 		toolBar.add(advancedSearchAction);
+		toolBar.add(showFeaturesAction);
 		toolBar.add(downloadAction);
 		toolBar.add(new Separator());
 		toolBar.add(refreshAction);

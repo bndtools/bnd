@@ -19,6 +19,13 @@ Bnd/Bndtools is a swiss army knife for OSGi. It creates manifest headers for you
 * [gradle plugin(s)](gradle-plugins/README.md) – A bnd workspace plugin that builds identical to Eclipse's bndtool as well as a gradle plugin that provides bnd support for non-workspace projects
 * ant – well ...
 
+## Eclipse Feature Browsing
+
+Bndtools displays Eclipse features from both P2 repositories and their generated
+OSGi indexes. The Repositories view toolbar provides **Show Eclipse Features**
+to show or hide them; the setting is remembered. Feature selections also expose
+their capabilities and requirements in the resolution view.
+
 ## Feedback
 
 Well, assuming you were born after 1970 you probably know how to file an [issue](https://github.com/bndtools/bnd/issues)? :-) We got a good record fixing bugs. However, to help us, it always works best if you can provide the smallest possible example as a github repo. If the bug is consistent we tend fix it really fast. At least specify the environment where the bug appears, we got lots of variants.
