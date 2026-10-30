@@ -333,7 +333,10 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		capsViewer.setFilters(new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parent, Object element) {
-				return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
+				Capability capability = (Capability) element;
+				return IdentityNamespace.IDENTITY_NAMESPACE.equals(capability.getNamespace())
+					&& Feature.TYPE.equals(capability.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE))
+					|| !filteredCapabilityNamespaces.contains(capability.getNamespace());
 			}
 		});
 
@@ -741,60 +744,43 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	}
 
 	private CapReqLoader createIncludedFeatureLoader(IncludedFeatureItem featureItem) {
-		RepositoryPlugin repo = featureItem.getParent().getParent().getRepo();
-		Feature.Includes includes = featureItem.getIncludes();
-		try {
-			if (repo instanceof P2Repository) {
-				Object featureObj = ((P2Repository) repo).getFeature(includes.id, includes.version);
-				if (featureObj instanceof Feature) {
-					Feature feature = (Feature) featureObj;
-					Resource resource = new RepositoryFeature(repo, feature).getResource();
-					if (resource == null) {
-						feature.parse();
-						resource = feature.toResource();
-					}
-					if (resource != null) {
-						return new ResourceCapReqLoader(resource);
-					}
-				}
-			}
-		} catch (Exception e) {
-			// Ignore resolution errors
-		}
-		return null;
+		return createIndexedMemberLoader(featureItem.getParent(), featureItem.getIncludes().id,
+			Feature.RELATION_INCLUDE);
 	}
 
 	private CapReqLoader createRequiredFeatureLoader(RequiredFeatureItem requiredItem) {
-		RepositoryPlugin repo = requiredItem.getParent().getParent().getRepo();
-		Feature.Requires requires = requiredItem.getRequires();
+		Feature.Requires member = requiredItem.getRequires();
+		return createIndexedMemberLoader(requiredItem.getParent(),
+			member.feature != null ? member.feature : member.plugin, Feature.RELATION_REQUIRE);
+	}
+
+	private CapReqLoader createIndexedMemberLoader(FeatureFolderNode folder, String id, String relation) {
+		RepositoryFeature parent = folder.getParent().getParent();
+		if (!(parent.getRepo() instanceof Repository repository))
+			return null;
 		try {
-			if (requires.feature != null && repo instanceof P2Repository) {
-				Object featureObj = ((P2Repository) repo).getFeature(requires.feature, requires.version);
-				if (featureObj instanceof Feature) {
-					Feature feature = (Feature) featureObj;
-					Resource resource = new RepositoryFeature(repo, feature).getResource();
-					if (resource == null) {
-						feature.parse();
-						resource = feature.toResource();
-					}
-					if (resource != null) {
-						return new ResourceCapReqLoader(resource);
-					}
-				}
-			} else if (requires.plugin != null) {
-				RepositoryBundle bundle = new RepositoryBundle(repo, requires.plugin);
-				Resource resource = bundle.getResource();
-				if (resource != null) {
-					return new ResourceCapReqLoader(resource);
-				}
-			}
+			Requirement requirement = bndtools.model.repo.RepositoryFeatureResource
+				.getMemberRequirement(parent, id, relation);
+			if (requirement == null)
+				return null;
+			return repository.findProviders(Collections.singleton(requirement))
+				.getOrDefault(requirement, Collections.emptyList()).stream()
+				.map(Capability::getResource)
+				.filter(resource -> requirement.getDirectives().get("filter").contains("(type=" + Feature.TYPE + ")")
+					|| !ResourceUtils.hasType(resource, Feature.TYPE))
+				.max(java.util.Comparator.comparing(aQute.bnd.osgi.resource.ResourceUtils::getVersion))
+				.map(ResourceCapReqLoader::new).orElse(null);
 		} catch (Exception e) {
-			// Ignore resolution errors
+			org.bndtools.api.Logger.getLogger(ResolutionView.class).logError("Failed to load feature member " + id, e);
+			return null;
 		}
-		return null;
 	}
 
 	private CapReqLoader createIncludedBundleLoader(IncludedBundleItem bundleItem) {
+		CapReqLoader indexed = createIndexedMemberLoader(bundleItem.getParent(), bundleItem.getPlugin().id,
+			Feature.RELATION_PLUGIN);
+		if (indexed != null)
+			return indexed;
 		RepositoryPlugin repo = bundleItem.getParent().getParent().getRepo();
 		String bundleId = bundleItem.getPlugin().id;
 		try {

@@ -56,6 +56,24 @@ Omitting `cache` preserves the existing behavior. Setting it does not move or de
 previously cached files, or change the shared HTTP download cache (normally
 `~/.bnd/urlcache`).
 
+## Eclipse Features
+
+Eclipse features are stored in the generated index with identity type
+`org.eclipse.update.feature`. Bndtools displays them both through the P2 plugin
+and through an OSGi Repository configured with that index.
+
+The **Show Eclipse Features** toolbar toggle in the Repositories view controls
+feature visibility in the normal tree and advanced search results. Features are
+shown by default, and the selection is remembered across restarts. Hiding them
+does not change repository contents, build paths, or resolution.
+
+Feature versions can be expanded into included features, required features and
+bundles, and included bundles. Selecting a feature or member displays its indexed
+capabilities and requirements in the resolution view. The hierarchy is read from
+index metadata without downloading feature JARs. Older indexes without
+`bnd.relation` metadata must be refreshed through the P2 plugin to distinguish
+members from dependencies.
+
 ## Tagging
 
 This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.
