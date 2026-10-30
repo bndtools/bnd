@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 Bundle-SymbolicName: org.bndtools.jdtls
-Bundle-Version: 7.5.0.${tstamp}
+Bundle-Version: ${base.version}.${tstamp}
 Bundle-Description: Headless bnd workspace support for Eclipse JDT LS integration
 
 -buildpath: \
