@@ -1,0 +1,5 @@
+-include: ~test.swtbot.perf.win32.x86_64.bndrun
+
+-runproperties.dataset: \
+	bndtools.test.performance.index=${.}/../../workspace-templates/eclipse/eclipse_4.41_simrel_2026-09/cnf/ext/eclipse_4.41_simrel_2026-09_p2.index.xml.gz,\
+	bndtools.test.performance.filter=HA

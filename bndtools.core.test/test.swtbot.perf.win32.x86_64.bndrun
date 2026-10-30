@@ -1,0 +1,9 @@
+# Opt-in performance run of the Add Bundle dialog (RepoBundleSelectionPerfSwtbotTest).
+# The test is skipped in regular runs since bndtools.test.performance is unset there.
+# No tester.names filter: running the perf test first races the bndtools.core activation.
+# BNDTOOLS_PERF_INDEX optionally selects a local OSGi XML index, including .xml.gz.
+
+-include: ~test.swtbot.win32.x86_64.bndrun
+
+-runproperties.perf: \
+	bndtools.test.performance=true

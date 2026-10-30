@@ -3,6 +3,8 @@ package bndtools.jface.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ContentViewer;
@@ -112,12 +114,18 @@ public class TreeFilter extends ViewerFilter {
 	 * @param patternString the pattern string.
 	 */
 	public void setPattern(String patternString) {
-		clearCaches();
+		BiFunction<Viewer, Object, Boolean> newMatcher;
 		if (Strings.nonNullOrEmpty(patternString)) {
-			matcher = createMatcher(patternString);
+			try {
+				newMatcher = createMatcher(patternString);
+			} catch (PatternSyntaxException e) {
+				return;
+			}
 		} else {
-			matcher = null;
+			newMatcher = null;
 		}
+		clearCaches();
+		matcher = newMatcher;
 	}
 
 	/**
@@ -209,7 +217,7 @@ public class TreeFilter extends ViewerFilter {
 	}
 
 	protected BiFunction<Viewer, Object, Boolean> createMatcher(String pattern) {
-		Glob glob = new Glob(pattern);
+		Glob glob = new Glob(pattern, Pattern.CASE_INSENSITIVE);
 		return (viewer, element) -> {
 			String label = getLabel(viewer, element);
 			return glob.finds(label) >= 0;

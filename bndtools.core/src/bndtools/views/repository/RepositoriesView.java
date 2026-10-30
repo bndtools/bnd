@@ -277,6 +277,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				}
 			}
 		};
+		contentProvider.setLocalFiltering(true);
+		contentProvider.setLocalFilterUseLabels(true);
 		viewer.setContentProvider(contentProvider);
 		StickyToolTipSupport.enableFor(viewer);
 
@@ -753,7 +755,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				saveExpansionState();
 				contentProvider.setFilter(filterString);
 				viewer.refresh();
-				viewer.expandToLevel(2);
+				viewer.expandToLevel(1);
 			}
 
 		} finally {
