@@ -1,0 +1,145 @@
+---
+layout: bnd
+title: Documentation Development
+parent: Developing bnd and Bndtools
+nav_order: 2
+---
+
+# bnd manual Web Site
+
+The repository's `docs/` folder holds the bnd manual website hosted at [https://bnd.bndtools.org][bndmanual].
+This web site is maintained as markdown and turned into HTML by [Jekyll][jekyll]
+using [GitHub Pages](https://help.github.com/articles/what-are-github-pages/).
+
+[bndmanual]: https://bnd.bndtools.org
+[jekyll]: https://jekyllrb.com/
+
+## Local docs development
+
+Run the commands below from `docs/`. Prefer Docker with Ruby 3.4.5 and the
+dependencies in `Gemfile.lock`; CI uses the same Ruby version. With a compatible
+local Ruby installation, install dependencies with `bundle install` first.
+
+```
+# Start the local Jekyll Dev-Server
+./run.sh
+```
+
+## Build docs
+
+```
+# Build it
+./build.sh
+```
+
+## Setup local docs development environment (MacOS)
+
+If you get an error like `activesupport-7.0.7.2 requires ruby version >= 2.7.0, which is incompatible with the current version, ruby 2.6.10p210` when executing `./run.sh` then consider doing the following:
+
+- Install rbenv Ruby Version manager https://github.com/rbenv/rbenv e.g. via brew
+- and then use it to install and use e.g. ruby 3.1.2
+
+```
+brew install rbenv
+rbenv init
+rbenv install 3.4.5
+rbenv local 3.4.5
+./run.sh
+```
+
+After a successfull start of `./run.sh` you see this:
+
+```
+Server address: http://127.0.0.1:4000
+Server running... press ctrl-c to stop.
+```
+
+Open http://127.0.0.1:4000 in your browser to see the result while developing. 
+The server does support hot-reload so you should see changes to `.md` files immediately without restart (there are a few exceptions). Checkout the [jekyll-docs](https://jekyllrb.com/docs/pages/) to get more into the details and features.
+
+
+## Generating some pages for headers and instructions
+
+The folders `_heads` and `_instructions` are special. They are populated by a bnd command `generatemanual` which generates .md files from the `Syntax.java` class.
+
+As a developer the process is like this:
+
+```
+# build bnd (e.g. via cd..; ./gradlew :build -x test) get a recent iz.aQute.bnd.jar
+# then generate the documentation by running the generatemanual CLI command (see bnd.java)
+# go into the /docs folder of the bnd repo
+cd bndrepo/docs
+./generate.sh
+```
+
+This `generate.sh` under the hood calls the bnd CLI command `generatemanual` via: `java -jar ../biz.aQute.bnd/generated/biz.aQute.bnd.jar generatemanual .`
+
+This creates or updates files in `/docs/_heads` and `/docs/_instructions`.
+
+Contributor guides in `docs/development/`, including the arc42 architecture,
+are maintained Markdown pages. Jekyll renders them during the normal site build;
+`generatemanual` does not generate or overwrite them.
+
+### Architecture pages and diagrams
+
+Keep the architecture overview in `development/architecture/index.md` and its
+twelve numbered sections alongside it. Each section uses `layout: bnd`,
+`parent: Architecture (arc42)`, `grand_parent: Developing bnd and Bndtools`,
+and a numeric `nav_order` matching its arc42 section number.
+
+Use `relative_url` for internal site links so archived releases work under
+`/releases/<version>`. Use GitHub URLs for repository files outside `docs/`.
+Just-the-Docs renders fenced `mermaid` blocks using the version configured in
+`_config.yml`; no additional Jekyll plugin is needed.
+
+Validate both site variants, using output directories outside the source tree:
+
+```bash
+bundle exec jekyll build --trace --destination /tmp/bnd-docs-master
+bundle exec jekyll build --trace --baseurl /releases/test --destination /tmp/bnd-docs-release
+```
+
+Check all twelve sections, navigation, search, evidence links, and all twelve
+Mermaid diagrams in a browser. A successful Jekyll build alone does not verify
+client-side diagram rendering. Architecture pages are included in future release
+snapshots once they are present on the release branch; do not regenerate old archives.
+
+If new files were added or existing files updated, then commit them to git in a PR.
+We need to do this from time to time to update the docs when new headers or instructions get added to `Syntax.java`.
+
+### Adding content to generated files
+
+There is a extension mechanism to add manual content and also override the frontmatter block of the markdown files.
+Each folder (`/docs/_heads` and `/docs/instructions`) contains an `_ext` subfolder (ext as extension).
+Please add file with the same name in that `_ext` sub-folder and then this content will be added to the bottom of the generated file. Frontmatter attributes will be overwritten too if specified.
+
+
+
+
+## Local search
+
+Search uses the built-in Just-the-Docs/Lunr integration configured in `_config.yml`.
+It works when running `./run.sh` locally and in the standard docs build in CI.
+
+
+### CSS Styling for Code Highlighter
+
+- jekyll uses `rouge` code highlighter
+- see `_config.yml` and section `syntax_highlighter_opts`
+- also see this website https://jekyll-themes.com/brazacz/rouge-themes for examples
+- rouge is compatible with and can use 'pygments' styles (see https://pygments.org/styles/)
+- these styles can be generated with the command 
+
+The following commands locally will help to generate the .css files for the pygment styles:
+
+```
+gem install rouge
+# show a list of supported styles
+rougify help style
+# go to the css folder
+cd css
+# generate the css
+rougify style github.dark > github.dark.css
+```
+
+Then reference the `.css` file in `_includes/head.htm `

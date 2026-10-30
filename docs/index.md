@@ -17,6 +17,11 @@ bnd is the engine behind many popular OSGi development tools, including Eclipse 
 
 ---
 
+## Contributing to bnd
+
+See [Developing bnd and Bndtools]({{ '/development/' | relative_url }}) for
+contributor guides, architecture, documentation development, and release procedures.
+
 ## Quick Start Examples
 
 bnd makes it easy to add OSGi metadata to JARs, whether wrapping existing libraries or building your own projects.
