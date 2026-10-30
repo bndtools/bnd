@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 Bundle-SymbolicName: biz.aQute.bnd.lsp
-Bundle-Version: 7.5.0.${tstamp}
+Bundle-Version: ${base.version}.${tstamp}
 Bundle-Description: Language Server Protocol (LSP) Server for bnd
 
 -buildpath: \

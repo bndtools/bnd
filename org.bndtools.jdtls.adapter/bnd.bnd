@@ -1,7 +1,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 Bundle-SymbolicName: org.bndtools.jdtls.adapter;singleton:=true
-Bundle-Version: 7.5.0.${tstamp}
+Bundle-Version: ${base.version}.${tstamp}
 Bundle-Description: Native bnd project importer for Eclipse JDT LS
 
 -buildpath: \
