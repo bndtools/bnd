@@ -791,8 +791,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			workspace.ifPresent(ws -> ws.refresh(this));
 			return true;
 		} catch (Exception e) {
-			reporter.exception(e, "Init for MavenBndRepository failed %s", configuration);
 			status = Exceptions.getDisplayTypeName(e) + " " + Exceptions.causes(e);
+			reporter.exception(e, "Init for MavenBndRepository failed %s, %s", status, configuration);
 			return false;
 		}
 	}
