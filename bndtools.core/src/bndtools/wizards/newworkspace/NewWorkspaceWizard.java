@@ -38,6 +38,8 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -320,6 +322,8 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 
 	class NewWorkspaceWizardPage extends WizardPage {
+		private final Map<TemplateInfo, Integer> templateIndices = new HashMap<>();
+
 		NewWorkspaceWizardPage() {
 			super("New Workspace");
 			setTitle("Create New Workspace");
@@ -366,6 +370,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			Text filterText = new Text(container, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
 			filterText.setMessage("glob pattern, e.g. *eclipse*");
+			Pattern[] filterPattern = new Pattern[1];
 			GridData filterTextLayoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false, 7, 1);
 			GC gc = new GC(filterText);
 			filterTextLayoutData.widthHint = gc.stringExtent("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM").x;
@@ -374,6 +379,23 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 
 			CheckboxTableViewer selectedTemplates = CheckboxTableViewer.newCheckList(container,
 				SWT.BORDER | SWT.FULL_SELECTION);
+			Runnable applyTemplateFilter = () -> {
+				if (filterText.isDisposed() || selectedTemplates.getControl()
+					.isDisposed()) {
+					return;
+				}
+				String glob = filterText.getText()
+					.trim();
+				filterPattern[0] = glob.isEmpty() ? null
+					: Pattern.compile(globToRegex(glob), Pattern.CASE_INSENSITIVE);
+				Table table = selectedTemplates.getTable();
+				table.setRedraw(false);
+				try {
+					selectedTemplates.refresh();
+				} finally {
+					table.setRedraw(true);
+				}
+			};
 			StickyToolTipSupport.enableFor(selectedTemplates);
 			selectedTemplates.setContentProvider(ArrayContentProvider.getInstance());
 			selectedTemplates.addFilter(new ViewerFilter() {
@@ -391,15 +413,13 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			selectedTemplates.addFilter(new ViewerFilter() {
 				@Override
 				public boolean select(Viewer viewer, Object parentElement, Object element) {
-					String glob = filterText.getText()
-						.trim();
-					if (glob.isEmpty()) {
+					Pattern pattern = filterPattern[0];
+					if (pattern == null) {
 						return true;
 					}
 					if (!(element instanceof TemplateInfo ti)) {
 						return true;
 					}
-					Pattern pattern = Pattern.compile(globToRegex(glob), Pattern.CASE_INSENSITIVE);
 					String author = ti.isOfficial() ? "bndtools (Official)"
 						: ti.id()
 							.organisation() + " (3rd Party)";
@@ -411,7 +431,19 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 							.matches();
 				}
 			});
-			filterText.addModifyListener(e -> selectedTemplates.refresh());
+			filterText.addModifyListener(e -> {
+				Display display = filterText.getDisplay();
+				display.timerExec(-1, applyTemplateFilter);
+				display.timerExec(300, applyTemplateFilter);
+			});
+			filterText.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetDefaultSelected(SelectionEvent event) {
+					filterText.getDisplay()
+						.timerExec(-1, applyTemplateFilter);
+					applyTemplateFilter.run();
+				}
+			});
 			Table table = selectedTemplates.getTable();
 			GridData tableLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 10);
 			tableLayoutData.widthHint = 820;
@@ -574,6 +606,10 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			ui.u("error", model.error, this::setErrorMessage);
 			ui.u("valid", model.valid, v -> setPageComplete(v == null));
 			ui.u("templates", model.templates, l -> {
+				templateIndices.clear();
+				for (int i = 0; i < l.size(); i++) {
+					templateIndices.put(l.get(i), i + 1);
+				}
 				selectedTemplates.setInput(l.toArray());
 				if (!l.isEmpty()) {
 					int digits = String.valueOf(l.size()).length();
@@ -617,7 +653,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		}
 
 		int localIndex(TemplateInfo template) {
-			return model.templates.indexOf(template) + 1;
+			return templateIndices.getOrDefault(template, -1);
 		}
 
 		String requiredIndices(TemplateInfo template) {

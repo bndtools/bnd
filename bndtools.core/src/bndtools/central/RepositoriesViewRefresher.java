@@ -34,6 +34,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Plugin;
+import bndtools.model.repo.RepositoryTreeContentProvider;
 
 public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
@@ -68,6 +69,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 	}
 
 	public void refreshRepositories(final RepositoryPlugin target) {
+		RepositoryTreeContentProvider.invalidateRepositoryCache(target);
 		if (state.updateAndGet(current -> (current == State.IDLE) ? State.BUSY : State.REDO) == State.REDO) {
 			return;
 		}

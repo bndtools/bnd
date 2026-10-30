@@ -7,8 +7,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -17,19 +17,21 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
@@ -50,8 +52,8 @@ import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryFeature;
+import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
-import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
 	private static final ILogger				logger					= Logger
@@ -71,40 +73,10 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	Button										addButton;
 	Button										removeButton;
 
-	ViewerFilter								alreadySelectedFilter	= new ViewerFilter() {
-																			@Override
-																			public boolean select(Viewer viewer,
-																				Object parentElement, Object element) {
-																				String search = selectionSearchTxt
-																					.getText()
-																					.toLowerCase(Locale.ROOT);
+	static final int							FILTER_DELAY_MS			= 300;
 
-																				String bsn = null;
-																				if (element instanceof RepositoryBundle) {
-																					bsn = ((RepositoryBundle) element)
-																						.getBsn();
-																				} else if (element instanceof ProjectBundle) {
-																					bsn = ((ProjectBundle) element)
-																						.getBsn();
-																				} else if (element instanceof RepositoryFeature) {
-																					bsn = ((RepositoryFeature) element)
-																						.getBsn();
-																				} else if (element instanceof FeatureVersionNode) {
-																					bsn = ((FeatureVersionNode) element)
-																						.getParent()
-																						.getBsn();
-																				}
-
-																				if (bsn != null) {
-																					if (search.length() > 0
-																						&& bsn.toLowerCase(Locale.ROOT)
-																							.indexOf(search) == -1) {
-																						return false;
-																					}
-																				}
-																				return true;
-																			}
-																		};
+	final RepositoryTreeContentProvider		contentProvider			= new RepositoryTreeContentProvider();
+	private final Runnable						applyFilterTask			= this::applyFilter;
 
 	protected RepoBundleSelectionWizardPage(DependencyPhase phase) {
 		super("bundleSelectionPage");
@@ -132,20 +104,34 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	}
 
 	Control createAvailableBundlesPanel(Composite parent) {
+		contentProvider.setWaitForFastResult(false);
 		Composite panel = new Composite(parent, SWT.NONE);
 		new Label(panel, SWT.NONE).setText("Available Bundles:");
 		selectionSearchTxt = new Text(panel, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
 		selectionSearchTxt.setMessage("filter bundle name");
 
-		final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+		// Tree.computeSize visits every visible item on Windows; the holder reports a fixed size instead
+		Composite treeHolder = new Composite(panel, SWT.NONE);
+		treeHolder.setLayout(new Layout() {
+			@Override
+			protected Point computeSize(Composite composite, int wHint, int hHint, boolean flushCache) {
+				return new Point(wHint == SWT.DEFAULT ? 250 : wHint, hHint == SWT.DEFAULT ? 300 : hHint);
+			}
+
+			@Override
+			protected void layout(Composite composite, boolean flushCache) {
+				for (Control child : composite.getChildren()) {
+					child.setBounds(composite.getClientArea());
+				}
+			}
+		});
+		final Tree availableTree = new Tree(treeHolder, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		availableViewer = new TreeViewer(availableTree);
 		availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false) {
 
 		});
-		availableViewer.setContentProvider(new SearchableRepositoryTreeContentProvider());
+		availableViewer.setContentProvider(contentProvider);
 		availableViewer.setAutoExpandLevel(2);
-
-		availableViewer.setFilters(alreadySelectedFilter);
 
 		// Load data
 		try {
@@ -163,7 +149,19 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 					availableTree.setFocus();
 			}
 		});
-		selectionSearchTxt.addModifyListener(e -> availableViewer.setFilters(alreadySelectedFilter));
+		selectionSearchTxt.addModifyListener(e -> {
+			Display display = selectionSearchTxt.getDisplay();
+			display.timerExec(-1, applyFilterTask);
+			display.timerExec(FILTER_DELAY_MS, applyFilterTask);
+		});
+		selectionSearchTxt.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				selectionSearchTxt.getDisplay()
+					.timerExec(-1, applyFilterTask);
+				applyFilter();
+			}
+		});
 		availableViewer.addSelectionChangedListener(event -> {
 			enabledStatus();
 		});
@@ -179,11 +177,30 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		selectionSearchTxt.setLayoutData(gd);
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.heightHint = 300;
-		gd.widthHint = 250;
-		availableTree.setLayoutData(gd);
+		treeHolder.setLayoutData(gd);
 
 		return panel;
+	}
+
+	void applyFilter() {
+		if (selectionSearchTxt.isDisposed() || availableViewer.getControl()
+			.isDisposed()) {
+			return;
+		}
+		String filter = selectionSearchTxt.getText();
+		if (Objects.equals(filter, contentProvider.getFilter())) {
+			return;
+		}
+		Control tree = availableViewer.getControl();
+		tree.setRedraw(false);
+		try {
+			contentProvider.setFilter(filter);
+			contentProvider.setWaitForFastResult(false);
+			// rebuilds the tree in one pass; refresh() would diff thousands of items one by one
+			availableViewer.setInput(availableViewer.getInput());
+		} finally {
+			tree.setRedraw(true);
+		}
 	}
 
 	private void enabledStatus() {
