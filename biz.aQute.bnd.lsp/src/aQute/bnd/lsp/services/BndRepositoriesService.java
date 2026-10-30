@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
@@ -17,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
@@ -26,6 +28,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.repository.p2.provider.P2Repository;
 import aQute.bnd.service.Actionable;
@@ -112,7 +115,23 @@ public class BndRepositoriesService {
 			}
 		}
 		List<Map<String, Object>> features = new ArrayList<>();
-		if (repo instanceof P2Repository p2) {
+		if (repo instanceof Repository indexed) {
+			for (Resource resource : featureResources(indexed)) {
+				Map<String, Object> entry = feature(resource);
+				if (glob == null || glob.matches((String) entry.get("id"))) {
+					features.add(entry);
+				}
+			}
+			if (!features.isEmpty()) {
+				Requirement requirement = new CapReqBuilder("osgi.identity").filter("(|(type=osgi.bundle)(type=osgi.fragment))")
+					.buildSyntheticRequirement();
+				var bundleIds = indexed.findProviders(List.of(requirement))
+					.getOrDefault(requirement, List.of()).stream()
+					.map(capability -> capability.getAttributes().get("osgi.identity")).toList();
+				var featureIds = features.stream().map(entry -> entry.get("id")).toList();
+				bundles.removeIf(entry -> featureIds.contains(entry.get("bsn")) && !bundleIds.contains(entry.get("bsn")));
+			}
+		} else if (repo instanceof P2Repository p2) {
 			for (Feature feature : p2.getFeatures()) {
 				String id = feature.getId();
 				if (glob != null && (id == null || !glob.matches(id))) {
@@ -150,8 +169,18 @@ public class BndRepositoriesService {
 	public Object feature(JsonObject request) throws Exception {
 		Workspace ws = workspace(request);
 		RepositoryPlugin repo = repository(ws, request);
+		String id = required(request, "id");
+		String version = required(request, "version");
+		if (repo instanceof Repository indexed) {
+			for (Resource resource : featureResources(indexed)) {
+				Map<String, Object> metadata = feature(resource);
+				if (id.equals(metadata.get("id")) && version.equals(metadata.get("version"))) {
+					return featureDetails(resource);
+				}
+			}
+		}
 		if (!(repo instanceof P2Repository p2)) {
-			throw new IllegalArgumentException("Repository has no features: " + repo.getName());
+			throw new IllegalArgumentException("Feature not found: " + id + ";version=" + version);
 		}
 		Feature feature = p2.getFeature(required(request, "id"), required(request, "version"));
 		if (feature == null) {
@@ -429,6 +458,86 @@ public class BndRepositoriesService {
 		entry.put("label", feature.label);
 		entry.put("provider", feature.providerName);
 		return entry;
+	}
+
+	private static List<Resource> featureResources(Repository repository) {
+		Requirement requirement = new CapReqBuilder("osgi.identity").filter("(type=" + Feature.TYPE + ")")
+			.buildSyntheticRequirement();
+		return repository.findProviders(List.of(requirement))
+			.getOrDefault(requirement, List.of()).stream()
+			.map(Capability::getResource).distinct().toList();
+	}
+
+	private static Map<String, Object> feature(Resource resource) {
+		Map<String, Object> attributes = resource.getCapabilities("osgi.identity").get(0).getAttributes();
+		Map<String, Object> entry = item(Objects.toString(attributes.get("osgi.identity"), null),
+			Objects.toString(attributes.get("version"), "0.0.0"));
+		entry.put("label", attributes.get("label"));
+		entry.put("provider", attributes.get("provider-name"));
+		return entry;
+	}
+
+	private static Map<String, Object> featureDetails(Resource resource) {
+		Map<String, Object> result = feature(resource);
+		List<Map<String, Object>> plugins = new ArrayList<>();
+		List<Map<String, Object>> includes = new ArrayList<>();
+		List<Map<String, Object>> requires = new ArrayList<>();
+		for (Requirement requirement : resource.getRequirements("osgi.identity")) {
+			FilterParser.Expression expression = new FilterParser().parse(requirement);
+			String id = Objects.toString(requirement.getAttributes().get("id"), identity(expression));
+			if (id == null) {
+				continue;
+			}
+			Map<String, Object> member = item(id,
+				Objects.toString(requirement.getAttributes().get("version"), version(expression)));
+			String filter = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+			member.put("filter", filter);
+			member.put("optional", Namespace.RESOLUTION_OPTIONAL.equals(
+				requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)));
+			member.put("match", requirement.getAttributes().get("match"));
+			Object relation = requirement.getAttributes().get(Feature.RELATION_ATTRIBUTE);
+			boolean isFeature = Feature.RELATION_INCLUDE.equals(relation)
+				|| filter != null && filter.contains("(type=" + Feature.TYPE + ")");
+			member.put("type", isFeature ? "feature" : "bundle");
+			if (Feature.RELATION_PLUGIN.equals(relation)) {
+				plugins.add(member);
+			} else if (Feature.RELATION_INCLUDE.equals(relation)) {
+				includes.add(member);
+			} else {
+				requires.add(member);
+			}
+		}
+		result.put("plugins", plugins);
+		result.put("includes", includes);
+		result.put("requires", requires);
+		return result;
+	}
+
+	private static String identity(FilterParser.Expression expression) {
+		if (expression instanceof FilterParser.IdentityExpression identity) {
+			return identity.getSymbolicName();
+		}
+		if (expression instanceof FilterParser.SubExpression group) {
+			for (FilterParser.Expression child : group.getExpressions()) {
+				String id = identity(child);
+				if (id != null) return id;
+			}
+		}
+		return null;
+	}
+
+	private static String version(FilterParser.Expression expression) {
+		if (expression instanceof FilterParser.WithRangeExpression ranged && ranged.getRangeExpression() != null) {
+			return ranged.getRangeExpression().getRangeString();
+		}
+		if (expression instanceof FilterParser.RangeExpression range) return range.getRangeString();
+		if (expression instanceof FilterParser.SubExpression group) {
+			for (FilterParser.Expression child : group.getExpressions()) {
+				String version = version(child);
+				if (version != null) return version;
+			}
+		}
+		return null;
 	}
 
 	private static Map<String, Object> item(String id, String version) {
