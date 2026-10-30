@@ -1,0 +1,25 @@
+# Shared launch settings for the org.bndtools.applaunch integration tests.
+# Any references to local bundles (e.g. version=snapshot) must include a reference to the
+# project building the bundles in the bnd.bnd -dependson instruction.
+
+-runfw: org.eclipse.osgi;version='[3.18.600.v20231110-1900,3.18.600.v20231110-1900]'
+-runee: JavaSE-17
+
+-tester: biz.aQute.tester.junit-platform
+
+-runrequires: \
+	bnd.identity;id='biz.aQute.tester.junit-platform',\
+	bnd.identity;id='junit-jupiter-engine',\
+	bnd.identity;id='org.bndtools.applaunch',\
+	bnd.identity;id='org.bndtools.applaunch.test'
+
+# Help the resolver by removing some candidates
+-runblacklist: \
+	bnd.identity;id='biz.aQute.junit'
+
+-runvm: -ea
+
+# The Eclipse application occupies the main thread, the tests run on their own thread
+-runproperties: \
+	tester.separatethread=true,\
+	launch.keep=false
