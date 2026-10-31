@@ -446,13 +446,6 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		this.trustedChecksums = trustedChecksums;
 	}
 
-	public void setTrustedChecksumsPolicy(TrustedChecksums.ChecksumPolicy policy) {
-		if (this.trustedChecksums != null && policy != null) {
-			this.trustedChecksums.setChecksumPolicy(policy);
-		}
-	}
-
-
 	private boolean checkTrustedChecksum(Archive archive, File file) {
 		if (trustedChecksums == null || archive == null || file == null || !file.isFile()) {
 			return false;

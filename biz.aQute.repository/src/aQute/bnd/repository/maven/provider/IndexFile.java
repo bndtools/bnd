@@ -60,6 +60,7 @@ import aQute.lib.zip.ZipUtil;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
+import aQute.maven.provider.TrustedChecksums.TrustedChecksumException;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -116,7 +117,12 @@ class IndexFile {
 	 * Open, will refresh this repository, which will load the file
 	 */
 	void open() throws Exception {
-		serialize(this::load);
+		Promise<Boolean> result = serialize(this::load);
+
+		Throwable failure = result.getFailure();
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
 	}
 
 	/**
@@ -139,6 +145,11 @@ class IndexFile {
 					.recover(failed -> {
 						Throwable failure = Exceptions.unrollCause(failed.getFailure(),
 							InvocationTargetException.class);
+
+						if (failure instanceof TrustedChecksumException) {
+							throw Exceptions.duck(failure);
+						}
+
 						logger.debug("Failure occured updating index {}", getMessage(failure), failed.getFailure());
 						return Boolean.FALSE;
 					});
@@ -295,6 +306,11 @@ class IndexFile {
 
 	private Map<Archive, Resource> failed(Archive archive, Throwable t) {
 		Throwable failure = Exceptions.unrollCause(t, InvocationTargetException.class);
+
+		if (failure instanceof TrustedChecksumException) {
+			throw Exceptions.duck(failure);
+		}
+
 		String message = getMessage(failure);
 		logger.debug("Failed to get {}: {}", archive, message, t);
 		return failed(archive, message);
