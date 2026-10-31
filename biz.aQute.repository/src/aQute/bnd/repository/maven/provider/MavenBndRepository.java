@@ -740,17 +740,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 			storageMvn.setTrustedChecksums(trustedChecksums);
 
-			// Set the checksum policy
-			String checksumPolicyStr = configuration.checksumPolicy("lenient");
-			try {
-				TrustedChecksums.ChecksumPolicy policy = TrustedChecksums.ChecksumPolicy.fromString(checksumPolicyStr);
-				storageMvn.setTrustedChecksumsPolicy(policy);
-			} catch (IllegalArgumentException e) {
-				reporter.error("Invalid checksum policy: %s", checksumPolicyStr);
-				status = "Invalid checksum policy: " + checksumPolicyStr;
-				return false;
-			}
-
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
 			String source = configuration.source();
 			if (source != null) {
@@ -799,6 +788,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private TrustedChecksums loadTrustedChecksumFile(File indexFile) {
 		String checksumFile = configuration.checksumFile();
+		String checksumPolicyStr = configuration.checksumPolicy("lenient");
+		TrustedChecksums.ChecksumPolicy policy = TrustedChecksums.ChecksumPolicy.fromString(checksumPolicyStr);
 
 		File trustedChecksumFile;
 		if (checksumFile != null) {
@@ -808,7 +799,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			trustedChecksumFile = IO.getFile(indexDir, indexFile.getName() + ".checksums");
 		}
 
-		return new TrustedChecksums(trustedChecksumFile);
+		return new TrustedChecksums(trustedChecksumFile, policy);
 	}
 
 	private void validateUris(List<MavenBackingRepository> release, Formatter f) {
