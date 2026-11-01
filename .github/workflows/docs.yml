@@ -43,7 +43,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f
       with:
-        ruby-version: 3.4.5
+        ruby-version: 3.4.12
         bundler-cache: true
         working-directory: docs
 
