@@ -69,8 +69,7 @@ public class TrustedChecksumsTest {
 	public void testLenientModeNoChecksumsFile(@TempDir File tmpDir) throws Exception {
 		// In lenient mode, if there's no checksums file, it should return false (not throw)
 		File nonExistentFile = new File(tmpDir, "nonexistent.checksums");
-		TrustedChecksums tc = new TrustedChecksums(nonExistentFile);
-		tc.setChecksumPolicy(ChecksumPolicy.LENIENT);
+		TrustedChecksums tc = new TrustedChecksums(nonExistentFile, ChecksumPolicy.LENIENT);
 		tc.open();
 
 		Archive archive = Archive.valueOf("org.example:artifact:1.0");
@@ -86,8 +85,7 @@ public class TrustedChecksumsTest {
 	public void testStrictModeNoChecksumsFile(@TempDir File tmpDir) throws Exception {
 		// In strict mode, if there's no checksums file, it should throw
 		File nonExistentFile = new File(tmpDir, "nonexistent.checksums");
-		TrustedChecksums tc = new TrustedChecksums(nonExistentFile);
-		tc.setChecksumPolicy(ChecksumPolicy.STRICT);
+		TrustedChecksums tc = new TrustedChecksums(nonExistentFile, ChecksumPolicy.STRICT);
 		tc.open();
 
 		Archive archive = Archive.valueOf("org.example:artifact:1.0");
@@ -107,8 +105,7 @@ public class TrustedChecksumsTest {
 		String checksumContent = "org.example:other:1.0=sha256:abc123def456\n";
 		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
 
-		TrustedChecksums tc = new TrustedChecksums(checksumsFile);
-		tc.setChecksumPolicy(ChecksumPolicy.LENIENT);
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.LENIENT);
 		tc.open();
 
 		Archive archive = Archive.valueOf("org.example:artifact:1.0");
@@ -127,8 +124,7 @@ public class TrustedChecksumsTest {
 		String checksumContent = "org.example:other:1.0=sha256:abc123def456\n";
 		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
 
-		TrustedChecksums tc = new TrustedChecksums(checksumsFile);
-		tc.setChecksumPolicy(ChecksumPolicy.STRICT);
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.STRICT);
 		tc.open();
 
 		Archive archive = Archive.valueOf("org.example:artifact:1.0");
@@ -149,8 +145,7 @@ public class TrustedChecksumsTest {
 		String checksumContent = "org.example:artifact:1.33=sha256:abc123def456\n";
 		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
 
-		TrustedChecksums tc = new TrustedChecksums(checksumsFile);
-		tc.setChecksumPolicy(ChecksumPolicy.STRICT);
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.STRICT);
 		tc.open();
 
 		// Trying to verify version 1.37 when checksums has 1.33
@@ -172,8 +167,7 @@ public class TrustedChecksumsTest {
 		String checksumContent = "org.example:artifact:1.33=sha256:abc123def456\n";
 		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
 
-		TrustedChecksums tc = new TrustedChecksums(checksumsFile);
-		tc.setChecksumPolicy(ChecksumPolicy.LENIENT);
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.LENIENT);
 		tc.open();
 
 		// Trying to verify version 1.37 when checksums has 1.33

@@ -33,7 +33,7 @@ public final class TrustedChecksums {
 	private Map<Archive, ArtifactChecksum>	index	= Map.of();
 	private volatile boolean							indexExists				= false;
 	private final Map<TrustedChecksumCacheKey, Boolean>	trustedChecksumCache	= new ConcurrentHashMap<>();
-	private ChecksumPolicy					checksumPolicy	= ChecksumPolicy.LENIENT;
+	private final ChecksumPolicy						checksumPolicy;
 
 	public enum ChecksumPolicy {
 		STRICT("strict"), LENIENT("lenient");
@@ -61,18 +61,22 @@ public final class TrustedChecksums {
 		}
 	}
 
+	/**
+	 * @deprecated use the other constructor which takes a policy
+	 */
+	@Deprecated
 	public TrustedChecksums(File trustedChecksumFile) {
 		this.sidecarFile = trustedChecksumFile;
+		this.checksumPolicy = ChecksumPolicy.LENIENT;
+	}
+
+	public TrustedChecksums(File trustedChecksumFile, ChecksumPolicy policy) {
+		this.sidecarFile = trustedChecksumFile;
+		this.checksumPolicy = policy != null ? policy : ChecksumPolicy.LENIENT;
 	}
 
 	public File getFile() {
 		return this.sidecarFile;
-	}
-
-	public void setChecksumPolicy(ChecksumPolicy policy) {
-		if (policy != null) {
-			this.checksumPolicy = policy;
-		}
 	}
 
 	public ChecksumPolicy getChecksumPolicy() {
