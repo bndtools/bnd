@@ -114,10 +114,12 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<?>> {
 		}
 	}
 
-	private void apply(EnvironmentInfo envInfo, String key, String value) {
+	void apply(EnvironmentInfo envInfo, String key, String value) {
 		String filter = LOCATIONS.get(key);
 		if (filter != null) {
 			setLocation(key, value, filter);
+		} else if (RuntimeOptions.PROP_CLEAN.equals(key)) {
+			log.warning("-clean cannot clear Equinox caches after framework startup; set osgi.clean=true with -runproperties before the framework starts.");
 		} else if (RuntimeOptions.PROP_FRAMEWORK.equals(key)) {
 			log.warning(MessageFormat.format(
 				"{0} cannot be changed to {1} after the framework has started; use -runfw instead.", key, value));
@@ -184,7 +186,9 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<?>> {
 
 	private static File toFile(URL url) {
 		try {
-			return new File(new URI(url.toExternalForm()).getPath());
+			URI uri = new URI(url.toExternalForm());
+			String path = uri.isOpaque() ? uri.getSchemeSpecificPart() : uri.getPath();
+			return new File(path);
 		} catch (URISyntaxException e) {
 			// Equinox may produce file URLs with unescaped characters
 			return new File(url.getPath());

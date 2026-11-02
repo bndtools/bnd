@@ -40,7 +40,7 @@ Platform Plug-in Developer Guide:
 
     Option                          Effect
     -arch <arch>                    osgi.arch
-    -clean                          osgi.clean=true
+      -clean                          warns; set osgi.clean=true with -runproperties before startup
     -configuration <location>       configuration location (*)
     -console [[host:]port]          osgi.console (empty when no port is given)
     -consoleLog                     eclipse.consoleLog=true

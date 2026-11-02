@@ -123,8 +123,6 @@ public class ProgramArgumentsTest {
 
 	@Test
 	public void flagOptionsBecomeProperties() {
-		softly.assertThat(context.getProperty("osgi.clean"))
-			.isEqualTo("true");
 		softly.assertThat(context.getProperty("eclipse.consoleLog"))
 			.isEqualTo("true");
 		softly.assertThat(context.getProperty("osgi.noShutdown"))

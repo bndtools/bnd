@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.Dictionary;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -57,5 +58,15 @@ public class BndApplicationLauncherTest {
 		assertThat(new LauncherTracker(context).addingService(reference)).isSameAs(registration);
 		verify(context, never()).getBundles();
 		verify(context, never()).registerService(eq(ApplicationLauncher.class), any(ApplicationLauncher.class), any());
+	}
+
+	@Test
+	public void cleanDoesNotChangeFrameworkPropertyAfterStartup() {
+		LauncherTracker tracker = new LauncherTracker(mock(BundleContext.class));
+		EnvironmentInfo environment = mock(EnvironmentInfo.class);
+
+		tracker.apply(environment, "osgi.clean", "true");
+
+		verify(environment, never()).setProperty("osgi.clean", "true");
 	}
 }

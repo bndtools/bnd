@@ -20,7 +20,7 @@
 	-dev, bin/,\
 	-data, ${.}/generated/instance,\
 	-user, ${.}/generated/user,\
-	-configuration, ${.}/generated/configuration,\
+	-configuration, file:generated/configuration,\
 	-launcher, ${.}/generated/eclipse,\
 	-install, ${.}/generated/install,\
 	-noSplash,\
