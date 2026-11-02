@@ -263,7 +263,7 @@ final class RuntimeOptions {
 			try {
 				URI uri = new URI(location);
 				if ("file".equalsIgnoreCase(uri.getScheme())) {
-					return uri.toURL();
+					return uri.isOpaque() ? fileURL(uri.getSchemeSpecificPart()) : uri.toURL();
 				}
 			} catch (URISyntaxException e) {
 				return fileURL(location.substring(5));

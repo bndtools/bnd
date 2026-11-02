@@ -340,4 +340,22 @@ public class RuntimeOptionsTest {
 			.getPath())
 			.endsWith("applaunch my workspace");
 	}
+
+	@Test
+	public void opaqueRelativeFileUrlResolvesAsAPath() throws Exception {
+		File location = new File("generated/configuration").getAbsoluteFile();
+
+		softly.assertThat(RuntimeOptions.toLocationURL("file:generated/configuration"))
+			.isEqualTo(location.toURI()
+				.toURL());
+	}
+
+	@Test
+	public void opaqueRelativeFileUrlDecodesEscapedPath() throws Exception {
+		File location = new File("generated/applaunch relative config").getAbsoluteFile();
+
+		softly.assertThat(RuntimeOptions.toLocationURL("file:generated/applaunch%20relative%20config"))
+			.isEqualTo(location.toURI()
+				.toURL());
+	}
 }
