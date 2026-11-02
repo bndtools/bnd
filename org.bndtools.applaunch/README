@@ -71,12 +71,13 @@ All other arguments, for example `-application`, `-product`, `-feature`,
 left to the Eclipse runtime, E4 and workbench layers which process them from the
 application arguments.
 
-(*) Locations accept file system paths, URLs and the symbolic values `@user.home/...`,
-`@user.dir/...`, `@none` and `@noDefault`. Because the framework is already running when
-the arguments are processed, a location can only be applied when it has not been set yet.
-This is normally the case for `-data` and `-user`. The configuration and install locations
-are always set by the framework; a differing value is ignored with a warning. The same
-applies to `osgi.framework`.
+(*) Locations accept file system paths, URLs and the symbolic values `@user.home/...` and
+`@user.dir/...`. `@none` and `@noDefault` cannot be applied after framework startup; set
+these values with `-runproperties` so Equinox sees them before it initializes locations.
+Because the framework is already running when the arguments are processed, a location can
+only be applied when it has not been set yet. This is normally the case for `-data` and
+`-user`. The configuration and install locations are already set by the framework; a
+differing value is ignored with a warning. The same applies to `osgi.framework`.
 
 Properties that influence bundle resolution (for example `osgi.os`, `osgi.ws`, `osgi.arch`
 for platform specific fragments) or framework start-up (for example `osgi.instance.area`

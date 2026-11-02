@@ -7,6 +7,7 @@
 	org.eclipse.osgi
 
 -testpath: \
-	${junit}
+	${junit},\
+	${mockito}
 
 Bundle-Activator: org.bndtools.applaunch.Activator

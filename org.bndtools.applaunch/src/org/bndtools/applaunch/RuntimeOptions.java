@@ -246,8 +246,8 @@ final class RuntimeOptions {
 	 * {@code @user.home} and {@code @user.dir} prefixes, {@code file:} URLs,
 	 * other URLs and plain file system paths.
 	 *
-	 * @return the URL or {@code null} for {@code @none} and {@code @noDefault}
-	 *         which leave a location unset
+	 * @return the URL or {@code null} for {@code @none} and {@code @noDefault},
+	 *         which can only be applied before framework startup
 	 */
 	static URL toLocationURL(String value) throws MalformedURLException {
 		String location = value.trim();
@@ -260,7 +260,14 @@ final class RuntimeOptions {
 			location = System.getProperty("user.dir") + location.substring(USER_DIR.length());
 		}
 		if (location.regionMatches(true, 0, "file:", 0, 5)) {
-			return fileURL(location.substring(5));
+			try {
+				URI uri = new URI(location);
+				if ("file".equalsIgnoreCase(uri.getScheme())) {
+					return uri.toURL();
+				}
+			} catch (URISyntaxException e) {
+				return fileURL(location.substring(5));
+			}
 		}
 		try {
 			URI uri = new URI(location);

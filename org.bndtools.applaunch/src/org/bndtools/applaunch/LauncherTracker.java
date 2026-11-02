@@ -33,7 +33,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * and registers the {@link ApplicationLauncher} which runs the Eclipse
  * application on the main thread.
  */
-class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<ApplicationLauncher>> {
+class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<?>> {
 
 	private static final String					LAUNCHER_ARGUMENTS	= "launcher.arguments";
 	private static final String					EQUINOX_APP			= "org.eclipse.equinox.app";
@@ -61,18 +61,21 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 	}
 
 	@Override
-	public ServiceRegistration<ApplicationLauncher> addingService(ServiceReference<Object> reference) {
+	public ServiceRegistration<?> addingService(ServiceReference<Object> reference) {
 		RuntimeOptions options = RuntimeOptions.parse(launcherArguments(reference));
 		configure(options);
+		if (options.initialize()) {
+			log.info("-initialize specified: registering main-thread callback without starting an application.");
+			return BndApplicationLauncher.registerInitializationCallback(context);
+		}
 		startEquinoxApp();
 
 		log.fine("Registering ApplicationLauncher service.");
-		return context.registerService(ApplicationLauncher.class,
-			new BndApplicationLauncher(context, options.initialize()), null);
+		return context.registerService(ApplicationLauncher.class, new BndApplicationLauncher(context), null);
 	}
 
 	@Override
-	public void removedService(ServiceReference<Object> reference, ServiceRegistration<ApplicationLauncher> service) {
+	public void removedService(ServiceReference<Object> reference, ServiceRegistration<?> service) {
 		service.unregister();
 	}
 
@@ -124,6 +127,19 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 	}
 
 	private void setLocation(String property, String value, String filter) {
+		URL url;
+		try {
+			url = RuntimeOptions.toLocationURL(value);
+		} catch (IOException e) {
+			log.log(Level.WARNING, MessageFormat.format("Unable to set {0} to {1}", property, value), e);
+			return;
+		}
+		if (url == null) {
+			log.warning(MessageFormat.format(
+				"{0}={1} cannot be applied after framework startup; set it with -runproperties before the framework starts.",
+				property, value));
+			return;
+		}
 		Collection<ServiceReference<Location>> references;
 		try {
 			references = context.getServiceReferences(Location.class, filter);
@@ -138,12 +154,7 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 			.next();
 		Location location = context.getService(reference);
 		try {
-			URL url = RuntimeOptions.toLocationURL(value);
-			if (url == null) {
-				log.log(Level.FINE, "{0}={1} leaves the location unset.", new Object[] {
-					property, value
-				});
-			} else if (location.isSet()) {
+			if (location.isSet()) {
 				if (!sameLocation(location.getURL(), url)) {
 					log.warning(MessageFormat.format(
 						"{0} is already set to {1} and cannot be changed to {2} after the framework has started; set it with -runproperties instead.",

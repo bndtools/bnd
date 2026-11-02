@@ -325,4 +325,19 @@ public class RuntimeOptionsTest {
 			.isEqualTo(URI.create("http://localhost:8080/workspace/")
 				.toURL());
 	}
+
+	@Test
+	public void escapedFileUrlPreservesEncodedPath() throws Exception {
+		File workspace = new File(System.getProperty("java.io.tmpdir"), "applaunch my workspace");
+		URL expected = workspace.toURI()
+			.toURL();
+
+		URL actual = RuntimeOptions.toLocationURL(expected.toExternalForm());
+
+		softly.assertThat(actual)
+			.isEqualTo(expected);
+		softly.assertThat(actual.toURI()
+			.getPath())
+			.endsWith("applaunch my workspace");
+	}
 }
