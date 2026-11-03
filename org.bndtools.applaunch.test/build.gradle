@@ -1,0 +1,16 @@
+import aQute.bnd.osgi.Constants
+
+tasks.named("testOSGi") {
+	description = "org.bndtools.applaunch integration tests: Eclipse runtime options as program arguments"
+	bndrun = file("programargs.bndrun")
+}
+
+tasks.named("testrun.systemproperties") {
+	description = "org.bndtools.applaunch integration tests: application selected by framework properties"
+	enabled = !bnd.is(Constants.NOJUNITOSGI)
+	inputs.files(tasks.named("jar")).withPropertyName("jar")
+}
+
+tasks.named("check") {
+	dependsOn("testrun.systemproperties")
+}

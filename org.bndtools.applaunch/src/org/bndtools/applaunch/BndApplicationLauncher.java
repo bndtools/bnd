@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.service.runnable.ParameterizedRunnable;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 class BndApplicationLauncher implements ApplicationLauncher {
 
@@ -15,8 +16,14 @@ class BndApplicationLauncher implements ApplicationLauncher {
 		.getName());
 	private final BundleContext	bc;
 
-	public BndApplicationLauncher(BundleContext context) {
+	BndApplicationLauncher(BundleContext context) {
 		this.bc = context;
+	}
+
+	static ServiceRegistration<Runnable> registerInitializationCallback(BundleContext context) {
+		Dictionary<String, String> svcProps = new Hashtable<>();
+		svcProps.put("main.thread", "true");
+		return context.registerService(Runnable.class, () -> {}, svcProps);
 	}
 
 	@Override

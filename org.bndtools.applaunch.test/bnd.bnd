@@ -1,0 +1,39 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+# Don't release since this is a test project
+-buildrepo:
+-releaserepo:
+
+# Any references to local bundles (e.g. version=snapshot) in the bndrun's -runbundles
+# instruction must include a reference to the project building the bundles to ensure
+# the necessary dependencies have already been built.
+-dependson: \
+	biz.aQute.tester.junit-platform,\
+	org.bndtools.applaunch
+
+# Contributes an Eclipse application and product through plugin.xml, which the
+# extension registry only accepts from singleton bundles.
+Bundle-SymbolicName: ${p};singleton:=true
+Bundle-Description: OSGi integration tests for org.bndtools.applaunch: an Eclipse application \
+ launched by the bnd launcher with Eclipse runtime options passed as program arguments.
+
+-includeresource: plugin.xml
+
+Test-Cases: ${classes;CONCRETE;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable}
+
+-buildpath: \
+	osgi.annotation,\
+	osgi.core,\
+	org.eclipse.osgi,\
+	org.eclipse.equinox.app,\
+	assertj-core,\
+	junit-jupiter-api,\
+	junit-platform-commons,\
+	org.apiguardian:apiguardian-api,\
+	org.opentest4j,\
+	org.osgi.test.common,\
+	org.osgi.test.junit5
+
+# Don't run testOSGi in parallel with other tasks claiming launchpad
+-noparallel: launchpad;task="testOSGi"
