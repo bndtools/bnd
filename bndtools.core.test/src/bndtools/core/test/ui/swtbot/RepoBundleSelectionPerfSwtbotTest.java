@@ -42,6 +42,9 @@ import aQute.p2.provider.Feature;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.core.test.utils.WorkbenchTest;
+import bndtools.model.repo.RepositoryBundle;
+import bndtools.model.repo.RepositoryFeature;
+import bndtools.model.repo.RepositoryFeatureResource;
 
 /**
  * Measures the "Add Bundle" dialog of the Build Path section against a
@@ -77,6 +80,10 @@ class RepoBundleSelectionPerfSwtbotTest extends AbstractFeatureSwtbotTest {
 		File cnf = Central.getWorkspace()
 			.getBuildDir();
 		String externalIndex = System.getProperty(ENABLE_PROPERTY + ".index", System.getenv("BNDTOOLS_PERF_INDEX"));
+		if (Boolean.getBoolean(ENABLE_PROPERTY + ".requireExternalIndex")) {
+			assertThat(externalIndex).as("set BNDTOOLS_PERF_INDEX to a local OSGi XML index for the SimRel run")
+				.isNotBlank();
+		}
 		File target = new File(cnf, "perf-index.xml");
 		if (externalIndex == null || externalIndex.isBlank()) {
 			IO.store(index(), target);
@@ -248,15 +255,17 @@ class RepoBundleSelectionPerfSwtbotTest extends AbstractFeatureSwtbotTest {
 			.findFirst()
 			.orElseThrow(() -> new AssertionError("Perf repository root not present in Run page"));
 		repositoryItem.expand();
-		List<String> rows = waitForRunRepositoryRows(tree,
+		List<RunRepositoryRow> rows = waitForRunRepositoryRows(tree,
 			visibleBundlesCount(), "Browse Repos entries loaded");
 		long contentLoadMs = elapsedMs(start) - pageOpenMs;
 
 		assertThat(rows.stream()
-			.filter(text -> text.toLowerCase(Locale.ROOT)
-				.contains(filter.toLowerCase(Locale.ROOT)))
+			.filter(row -> row.matches(filter))
 			.count()).as("Browse Repos has matches for '%s'", filter)
 			.isPositive();
+		List<RunRepositoryRow> expectedFilteredRows = rows.stream()
+			.filter(row -> row.matches(filter))
+			.toList();
 
 		start = System.nanoTime();
 		for (int index = 1; index <= filter.length(); index++) {
@@ -264,7 +273,7 @@ class RepoBundleSelectionPerfSwtbotTest extends AbstractFeatureSwtbotTest {
 		}
 		assertThat(search.getText()).isEqualTo(filter);
 		long typingMs = elapsedMs(start);
-		List<String> filteredRows = waitForFilteredRunRepositoryRows(tree, rows.size());
+		List<RunRepositoryRow> filteredRows = waitForFilteredRunRepositoryRows(tree, expectedFilteredRows);
 		long filterMs = elapsedMs(start);
 
 		System.out.printf(
@@ -280,15 +289,15 @@ class RepoBundleSelectionPerfSwtbotTest extends AbstractFeatureSwtbotTest {
 			.isLessThanOrEqualTo(RUN_FILTER_LIMIT_MS);
 	}
 
-	private List<String> waitForRunRepositoryRows(Tree tree, int expectedCount, String what) {
-		AtomicReference<List<String>> snapshot = new AtomicReference<>(List.of());
+	private List<RunRepositoryRow> waitForRunRepositoryRows(Tree tree, int expectedCount, String what) {
+		AtomicReference<List<RunRepositoryRow>> snapshot = new AtomicReference<>(List.of());
 		bot.waitUntil(new DefaultCondition() {
 			@Override
 			public boolean test() {
-				List<String> rows = runRepositoryRows(tree);
+				List<RunRepositoryRow> rows = runRepositoryRows(tree);
 				snapshot.set(rows);
 				return rows.size() == expectedCount
-					&& rows.stream().noneMatch(row -> row.startsWith("Loading " + PERF_REPO));
+					&& !hasRepositoryStatusRow(rows);
 			}
 
 			@Override
@@ -299,40 +308,57 @@ class RepoBundleSelectionPerfSwtbotTest extends AbstractFeatureSwtbotTest {
 		return snapshot.get();
 	}
 
-	private List<String> waitForFilteredRunRepositoryRows(Tree tree, int unfilteredCount) {
-		AtomicReference<List<String>> snapshot = new AtomicReference<>(List.of());
+	private List<RunRepositoryRow> waitForFilteredRunRepositoryRows(Tree tree,
+		List<RunRepositoryRow> expectedRows) {
+		AtomicReference<List<RunRepositoryRow>> snapshot = new AtomicReference<>(List.of());
 		bot.waitUntil(new DefaultCondition() {
 			@Override
 			public boolean test() {
-				List<String> rows = runRepositoryRows(tree);
+				List<RunRepositoryRow> rows = runRepositoryRows(tree);
 				snapshot.set(rows);
-				return !rows.isEmpty() && rows.size() < unfilteredCount
-					&& rows.stream().noneMatch(row -> row.startsWith("Loading " + PERF_REPO));
+				return !hasRepositoryStatusRow(rows) && rows.equals(expectedRows);
 			}
 
 			@Override
 			public String getFailureMessage() {
-				return "Browse Repos filter did not narrow results; unfiltered=" + unfilteredCount + ", found="
-					+ snapshot.get().size();
+				return "Browse Repos filter did not return final query results; expected=" + expectedRows.size()
+					+ ", found=" + snapshot.get();
 			}
 		}, 60_000, 250);
 		return snapshot.get();
 	}
 
-	private static List<String> runRepositoryRows(Tree tree) {
+	private static boolean hasRepositoryStatusRow(List<RunRepositoryRow> rows) {
+		return rows.stream().anyMatch(row -> row.label().startsWith("Loading ")
+			|| row.label().startsWith("Failed to load "));
+	}
+
+	private static List<RunRepositoryRow> runRepositoryRows(Tree tree) {
 		return UIThreadRunnable.syncExec(() -> {
-			List<String> rows = new ArrayList<>();
+			List<RunRepositoryRow> rows = new ArrayList<>();
 			for (TreeItem item : tree.getItems()) {
 				if (item.getText()
 					.startsWith(PERF_REPO)) {
 					for (TreeItem child : item.getItems()) {
-						rows.add(child.getText());
+						Object element = child.getData();
+						String identity = element instanceof RepositoryBundle bundle ? bundle.getBsn()
+							: element instanceof RepositoryFeatureResource feature ? feature.getId()
+								: element instanceof RepositoryFeature feature ? feature.getBsn() : null;
+						rows.add(new RunRepositoryRow(child.getText(), identity));
 					}
 					return rows;
 				}
 			}
 			return rows;
 		});
+	}
+
+	private record RunRepositoryRow(String label, String identity) {
+		boolean matches(String query) {
+			String lowerQuery = query.toLowerCase(Locale.ROOT);
+			return label.toLowerCase(Locale.ROOT).contains(lowerQuery)
+				|| identity != null && identity.toLowerCase(Locale.ROOT).contains(lowerQuery);
+		}
 	}
 
 	private static int visibleBundlesCount() {

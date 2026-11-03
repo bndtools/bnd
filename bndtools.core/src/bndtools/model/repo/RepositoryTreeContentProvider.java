@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -419,8 +418,18 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			if (filtered != null) {
 				return filtered;
 			}
+			RepositoryLoadState failedFilter = getLoadState(failedResults, repoPlugin, filteredKey);
+			if (failedFilter != null && failedFilter.cache() == listResults) {
+				return failedFilter.elements();
+			}
 			Object[] fullContents = listResults.get(LOCAL_CONTENT_CACHE_KEY);
 			if (fullContents == null) {
+				RepositoryLoadState failedContents = getLoadState(failedResults, repoPlugin,
+					LOCAL_CONTENT_CACHE_KEY);
+				if (failedContents != null && failedContents.cache() == listResults) {
+					return filterLocalRepositoryBundles(repoPlugin, listResults, filteredKey,
+						failedContents.elements());
+				}
 				return loadRepositoryBundles(repoPlugin, null, null, true, LOCAL_CONTENT_CACHE_KEY);
 			}
 			return filterLocalRepositoryBundles(repoPlugin, listResults, filteredKey, fullContents);
@@ -457,7 +466,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		Map<String, Object[]> resultMap = beginRepositoryLoad(repoPlugin);
 		Object[] justLoaded = resultMap.get(cacheKey);
 		if (justLoaded != null) {
-			completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
+			releaseRepositoryLoad(repoPlugin);
 			return localFiltering && LOCAL_CONTENT_CACHE_KEY.equals(cacheKey)
 				? filterLocalRepositoryBundles(repoPlugin, resultMap, localFilterCacheKey(), justLoaded)
 				: justLoaded;
@@ -479,21 +488,21 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					logger.logError(message, e);
 					completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
 					String detail = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-					Display.getDefault()
-						.asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey, detail, generation,
-							loadingShown.get()));
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, detail, generation,
+						loadingShown.get());
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
 				}
 				if (bsns == null) {
 					completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
-					Display.getDefault()
-						.asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey, "No bundle list returned", generation,
-							loadingShown.get()));
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, "No bundle list returned", generation,
+						loadingShown.get());
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "No bundle list returned");
 				}
+				bsns = new ArrayList<>(bsns);
 				Collections.sort(bsns);
 				List<Object> items = new ArrayList<>();
 				Set<String> featureIds = new LinkedHashSet<>();
+				String featureError = null;
 				if (repoPlugin instanceof Repository repository) {
 					try {
 						for (Resource resource : getFeatureResources(repository)) {
@@ -503,38 +512,35 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					} catch (Exception e) {
 						String message = "Error querying features from repository " + repoPlugin.getName();
 						logger.logError(message, e);
-						completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
-						String detail = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-						Display.getDefault()
-							.asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey, detail, generation,
-								loadingShown.get()));
-						return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
+						featureError = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
 					}
 				}
-			for (String bsn : bsns) {
-				if (featureIds.contains(bsn)) {
-					try {
-						if (repoPlugin.versions(bsn).isEmpty()) {
-							continue;
+				for (String bsn : bsns) {
+					if (featureIds.contains(bsn)) {
+						try {
+							if (repoPlugin.versions(bsn).isEmpty()) {
+								continue;
+							}
+						} catch (Exception e) {
+							logger.logError("Error querying bundle versions for " + bsn, e);
 						}
-					} catch (Exception e) {
-						String message = "Error querying bundle versions for " + bsn;
-						logger.logError(message, e);
-						completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
-						String detail = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-						Display.getDefault().asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey,
-							detail, generation, loadingShown.get()));
-						return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
 					}
+					items.add(new RepositoryBundle(repoPlugin, bsn));
 				}
-				items.add(new RepositoryBundle(repoPlugin, bsn));
-			}
+				if (featureError != null) {
+					items.add(LoadingContentElement.failure(repoPlugin.getName(), featureError));
+					Object[] partial = items.toArray();
+					completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
+					setLoadState(failedResults, repoPlugin, cacheKey, new RepositoryLoadState(resultMap, partial));
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, featureError, generation,
+						loadingShown.get());
+					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
+						"Feature data unavailable for repository " + repoPlugin.getName());
+				}
 
-			boolean published = completeRepositoryLoad(repoPlugin, resultMap, cacheKey, items.toArray());
-			Display.getDefault()
-				.asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey,
-				null, generation, loadingShown.get()));
-			return published ? Status.OK_STATUS : Status.CANCEL_STATUS;
+				boolean published = completeRepositoryLoad(repoPlugin, resultMap, cacheKey, items.toArray());
+				scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, null, generation, loadingShown.get());
+				return published ? Status.OK_STATUS : Status.CANCEL_STATUS;
 		}
 		};
 		job.schedule();
@@ -562,38 +568,59 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	private void finishRepositoryLoad(RepositoryPlugin repoPlugin, Map<String, Object[]> resultMap, String cacheKey,
 		String error, long generation,
 		boolean refresh) {
-		if (disposed || generation != inputGeneration) {
-			return;
-		}
-		RepositoryLoadState pending = getLoadState(pendingResults, repoPlugin, cacheKey);
-		if (pending != null && pending.cache() == resultMap) {
-			removeLoadState(pendingResults, repoPlugin, cacheKey);
-		}
-		if (getRepositoryListResults(repoPlugin) != resultMap) {
-			if (refresh && structuredViewer != null && !structuredViewer.getControl().isDisposed()) {
+		try {
+			if (disposed || generation != inputGeneration) {
+				return;
+			}
+			RepositoryLoadState pending = getLoadState(pendingResults, repoPlugin, cacheKey);
+			if (pending != null && pending.cache() == resultMap) {
+				removeLoadState(pendingResults, repoPlugin, cacheKey);
+			}
+			if (getRepositoryListResults(repoPlugin) != resultMap) {
+				if (refresh && structuredViewer != null && !structuredViewer.getControl().isDisposed()) {
+					structuredViewer.refresh();
+				}
+				return;
+			}
+			if (error == null) {
+				RepositoryLoadState failed = getLoadState(failedResults, repoPlugin, cacheKey);
+				if (failed != null && failed.cache() == resultMap) {
+					removeLoadState(failedResults, repoPlugin, cacheKey);
+				}
+			} else {
+				RepositoryLoadState failure = getLoadState(failedResults, repoPlugin, cacheKey);
+				if (failure == null || failure.cache() != resultMap) {
+					setLoadState(failedResults, repoPlugin, cacheKey,
+						new RepositoryLoadState(resultMap, new Object[] {
+							LoadingContentElement.failure(repoPlugin.getName(), error)
+						}));
+				}
+			}
+			if (!refresh || structuredViewer == null || structuredViewer.getControl().isDisposed()) {
+				return;
+			}
+			if (showRepos) {
+				structuredViewer.refresh(repoPlugin, true);
+			} else {
 				structuredViewer.refresh();
 			}
-			return;
+		} finally {
+			releaseRepositoryLoad(repoPlugin);
 		}
-		if (error == null) {
-			RepositoryLoadState failed = getLoadState(failedResults, repoPlugin, cacheKey);
-			if (failed != null && failed.cache() == resultMap) {
-				removeLoadState(failedResults, repoPlugin, cacheKey);
+	}
+
+	private void scheduleRepositoryLoadFinish(RepositoryPlugin repoPlugin, Map<String, Object[]> resultMap,
+		String cacheKey, String error, long generation, boolean refresh) {
+		try {
+			Display display = Display.getDefault();
+			if (display.isDisposed()) {
+				releaseRepositoryLoad(repoPlugin);
+				return;
 			}
-		} else {
-			setLoadState(failedResults, repoPlugin, cacheKey,
-				new RepositoryLoadState(resultMap, new Object[] {
-					LoadingContentElement.failure(repoPlugin.getName(), error)
-				}));
-		}
-		if (!refresh || structuredViewer == null || structuredViewer.getControl()
-			.isDisposed()) {
-			return;
-		}
-		if (showRepos) {
-			structuredViewer.refresh(repoPlugin, true);
-		} else {
-			structuredViewer.refresh();
+			display.asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey, error, generation, refresh));
+		} catch (RuntimeException e) {
+			releaseRepositoryLoad(repoPlugin);
+			logger.logError("Unable to refresh repository " + repoPlugin.getName(), e);
 		}
 	}
 
@@ -609,7 +636,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		}
 		Map<String, Object[]> activeCache = beginRepositoryLoad(repoPlugin);
 		if (activeCache != resultMap) {
-			completeRepositoryLoad(repoPlugin, activeCache, filteredKey, null);
+			releaseRepositoryLoad(repoPlugin);
 			return loadRepositoryBundles(repoPlugin, null, null, true, LOCAL_CONTENT_CACHE_KEY);
 		}
 		Object[] loading = { new LoadingContentElement(repoPlugin.getName()) };
@@ -624,17 +651,24 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					Object[] visible = filterLocalRepositoryContents(contents, filter, glob, features, labels);
-					completeRepositoryLoad(repoPlugin, resultMap, filteredKey, visible);
-					Display.getDefault().asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, filteredKey,
-						null, generation, true));
+					boolean incomplete = containsFailure(contents);
+					if (incomplete) {
+						setLoadState(failedResults, repoPlugin, filteredKey,
+							new RepositoryLoadState(resultMap, visible));
+						completeRepositoryLoad(repoPlugin, resultMap, filteredKey, null);
+						scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey,
+							failureMessage(contents), generation, true);
+					} else {
+						completeRepositoryLoad(repoPlugin, resultMap, filteredKey, visible);
+						scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey, null, generation, true);
+					}
 					return Status.OK_STATUS;
 				} catch (Exception e) {
 					String message = "Error filtering repository " + repoPlugin.getName();
 					logger.logError(message, e);
 					completeRepositoryLoad(repoPlugin, resultMap, filteredKey, null);
 					String detail = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-					Display.getDefault().asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, filteredKey,
-						detail, generation, true));
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey, detail, generation, true);
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
 				}
 			}
@@ -647,32 +681,67 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 		boolean includeFeatures, boolean matchLabels) {
 		List<Object> visible = new ArrayList<>(contents.length);
 		for (Object element : contents) {
+			if (element instanceof LoadingContentElement status && status.isFailure()) {
+				visible.add(element);
+				continue;
+			}
 			if (!includeFeatures && (element instanceof RepositoryFeatureResource || element instanceof RepositoryFeature)) {
 				continue;
 			}
+			if (filter == null) {
+				visible.add(element);
+				continue;
+			}
 			String name = null;
-			String label = null;
 			if (element instanceof RepositoryBundle bundle) {
 				name = bundle.getBsn();
-				label = bundle.getText();
 			} else if (element instanceof RepositoryFeatureResource feature) {
 				name = feature.getId();
-				label = feature.getLabel();
 			} else if (element instanceof RepositoryFeature feature) {
 				name = feature.getBsn();
-				label = feature.getText();
 			}
-			if (filter == null || matchesWildcard(name, filter, glob)
-				|| (matchLabels && matchesWildcard(label, filter, glob))) {
+			if (matchesWildcard(name, filter, glob)) {
+				visible.add(element);
+				continue;
+			}
+			if (matchLabels && matchesLocalFilterLabel(element, filter, glob)) {
 				visible.add(element);
 			}
 		}
 		return visible.toArray();
 	}
 
+	private static boolean containsFailure(Object[] contents) {
+		return Arrays.stream(contents).anyMatch(element -> element instanceof LoadingContentElement status
+			&& status.isFailure());
+	}
+
+	private static String failureMessage(Object[] contents) {
+		return Arrays.stream(contents)
+			.filter(LoadingContentElement.class::isInstance)
+			.map(LoadingContentElement.class::cast)
+			.filter(LoadingContentElement::isFailure)
+			.map(LoadingContentElement::toString)
+			.findFirst()
+			.orElse("Repository content is incomplete");
+	}
+
+	private static boolean matchesLocalFilterLabel(Object element, String filter, Glob glob) {
+		if (element instanceof RepositoryBundle bundle) {
+			return matchesWildcard(bundle.getText(), filter, glob);
+		}
+		if (element instanceof RepositoryFeatureResource feature) {
+			return matchesWildcard(feature.getLabel(), filter, glob)
+				|| matchesWildcard(feature.getVersion(), filter, glob);
+		}
+		if (element instanceof RepositoryFeature feature) {
+			return matchesWildcard(feature.getText(), filter, glob);
+		}
+		return false;
+	}
+
 	private String localFilterCacheKey() {
-		String normalized = wildcardFilter == null ? "" : wildcardFilter.toLowerCase(Locale.ROOT);
-		return cacheKey(normalized, showFeatures) + (localFilterUseLabels ? ":labels" : "");
+		return cacheKey(wildcardFilter, showFeatures) + (localFilterUseLabels ? ":labels" : "");
 	}
 
 	private static RepositoryLoadState getLoadState(Map<RepositoryPlugin, Map<String, RepositoryLoadState>> states,
@@ -762,6 +831,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			if (current && content != null) {
 				results.put(cacheKey, content);
 			}
+			return current;
+		}
+	}
+
+	private static void releaseRepositoryLoad(RepositoryPlugin repoPlugin) {
+		synchronized (repoPluginListResults) {
 			Integer loads = activeRepositoryLoads.get(repoPlugin);
 			if (loads != null) {
 				if (loads <= 1) {
@@ -771,7 +846,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				}
 			}
 			trimRepositoryCacheLocked(MAX_CACHED_REPOSITORIES);
-			return current;
 		}
 	}
 
