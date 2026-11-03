@@ -120,6 +120,11 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<?>> {
 			setLocation(key, value, filter);
 		} else if (RuntimeOptions.PROP_CLEAN.equals(key)) {
 			log.warning("-clean cannot clear Equinox caches after framework startup; set osgi.clean=true with -runproperties before the framework starts.");
+		} else if (RuntimeOptions.PROP_DEBUG.equals(key) || RuntimeOptions.PROP_DEV.equals(key)
+			|| RuntimeOptions.PROP_CONSOLE.equals(key)) {
+			log.warning(MessageFormat.format(
+				"{0} cannot be applied after framework startup; set it with -runproperties before the framework starts.",
+				key));
 		} else if (RuntimeOptions.PROP_FRAMEWORK.equals(key)) {
 			log.warning(MessageFormat.format(
 				"{0} cannot be changed to {1} after the framework has started; use -runfw instead.", key, value));

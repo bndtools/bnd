@@ -80,10 +80,13 @@ only be applied when it has not been set yet. This is normally the case for `-da
 differing value is ignored with a warning. The same applies to `osgi.framework`.
 
 Properties that influence bundle resolution (for example `osgi.os`, `osgi.ws`, `osgi.arch`
-for platform specific fragments) or framework start-up (for example `osgi.instance.area`
-when it must be known before the first bundle starts, `osgi.console`) have to be given with
-`-runproperties` in the bndrun file. They are then already in place when the framework
-starts.
+for platform specific fragments) have to be given with `-runproperties` in the bndrun file.
+Likewise, `osgi.console`, `osgi.debug`, `osgi.dev` and `osgi.clean` affect framework startup;
+their program-argument forms are too late and are ignored with a warning. `-runproperties`
+puts them in place before framework startup. Locations such as `osgi.instance.area` must
+also be set this way when they need to be known before the first bundle starts. The `-data`
+and `-user` program arguments can be applied later only when their Location services are
+still unset.
 
 Tests
 -----

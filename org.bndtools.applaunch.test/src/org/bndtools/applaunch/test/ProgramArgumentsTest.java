@@ -128,9 +128,9 @@ public class ProgramArgumentsTest {
 		softly.assertThat(context.getProperty("osgi.noShutdown"))
 			.isEqualTo("true");
 		softly.assertThat(context.getProperty("osgi.debug"))
-			.isEmpty();
+			.isNull();
 		softly.assertThat(context.getProperty("osgi.dev"))
-			.isEqualTo("bin/");
+			.isNull();
 	}
 
 	@Test

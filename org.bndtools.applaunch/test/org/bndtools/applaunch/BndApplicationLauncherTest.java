@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentMatchers;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -68,5 +70,20 @@ public class BndApplicationLauncherTest {
 		tracker.apply(environment, "osgi.clean", "true");
 
 		verify(environment, never()).setProperty("osgi.clean", "true");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"osgi.debug, debug.options",
+		"osgi.dev, bin/",
+		"osgi.console, 1234"
+	})
+	public void startupOptionsAreNotAppliedAfterFrameworkStartup(String property, String value) {
+		LauncherTracker tracker = new LauncherTracker(mock(BundleContext.class));
+		EnvironmentInfo environment = mock(EnvironmentInfo.class);
+
+		tracker.apply(environment, property, value);
+
+		verify(environment, never()).setProperty(property, value);
 	}
 }
