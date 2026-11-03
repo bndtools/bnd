@@ -132,7 +132,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 		});
 		availableViewer.setContentProvider(contentProvider);
-		availableViewer.setAutoExpandLevel(2);
 		availableViewer.setAutoExpandLevel(1);
 
 		// Load data
