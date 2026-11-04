@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: indexof ';' STRING (';' LIST )*
 summary: Find the index position of a value in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `indexof` macro searches for a value in combined lists and returns its 0-based index position, or -1 if not found.

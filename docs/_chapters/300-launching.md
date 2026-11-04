@@ -1,9 +1,9 @@
 ---
-order: 300
 title: Launching
-layout: default
+layout: bnd
+parent: Dependency and Launching
+nav_order: 2
 ---
-
 bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a _bndrun_ file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile.
 
 The launching environment is described with a number of instructions that start with `-run`.
@@ -332,5 +332,5 @@ __A few notes about  the example:__
 *  This allows specifying dependencies e.g. in _/cnf/central.maven_ (this is what is referenced above via the [_${repo}_ macro](/macros/repo.html))
 *  the additional parameters _=output=tcpserver,jmx=true_ are [JaCoCo-specific](https://www.eclemma.org/jacoco/trunk/doc/agent.html) to start the agent as tcpserver and also expose functionality via JMX
 
-*  _runvm.coverage_ is a [merged instruction](820-instructions.html#merged-instructions) (because of the suffix .coverage). It gets merged with a _-runvm_ parameter from the included parent myapp.bndrun. Advantage: Avoid repeating all the VM-options the from the parent _-runvm_ again, but just specify the additional parameters.
+*  _runvm.coverage_ is a [merged instruction](/instructions/#merged-instructions) (because of the suffix .coverage). It gets merged with a _-runvm_ parameter from the included parent myapp.bndrun. Advantage: Avoid repeating all the VM-options the from the parent _-runvm_ again, but just specify the additional parameters.
 *  Usage in Eclipse: open "Coverage View" , right click "Import Session", choose "Agent Adress 127.0.0.1 Port 6300", press "Next", Select the project to Monitor, Click "Finish"

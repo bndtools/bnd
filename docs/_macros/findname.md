@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Project
 title:	findname ';' REGEX ( ';' REPLACEMENT )?
 summary: Find bundle resources by filename with optional regex replacement
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `findname` macro finds resources in the current bundle by matching filenames (not full paths) against a regular expression, with optional replacement to transform the results.

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -javaagent BOOLEAN
 class: Project
 summary: |
    Specify if classpath jars with Premain-Class headers are to be used as java agents
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

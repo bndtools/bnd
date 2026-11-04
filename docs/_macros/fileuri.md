@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: fileuri ';' PATH
 summary: Return a file uri for the specified path. Relative paths are resolved against the domain processor base.
+parent: Macro Reference
 ---
-
 ## Summary
 
 Convert a file path to a proper file URI (e.g., `file:///path/to/file`).

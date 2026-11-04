@@ -35,6 +35,7 @@ nav:
   - title: Packaging and Distribution
     subfolderitems:
       - url: /chapters/320-packaging.html
+      - url: /chapters/325-sonatype-central-portal.html
       - url: /chapters/330-jpms.html
       - url: /chapters/390-wrapping.html
   - title: Documentation and Tools

@@ -1,0 +1,5 @@
+-plugin.1.Central: \
+  aQute.bnd.repository.maven.provider.MavenBndRepository; \
+    name = Central; \
+    releaseUrl = https://repo.maven.apache.org/maven2/; \
+    index = ./cnf/deps.maven

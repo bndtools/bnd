@@ -2,6 +2,7 @@ package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
 import static aQute.bnd.service.tags.Tags.parse;
+import static aQute.maven.provider.TrustedChecksums.createTrustedChecksumFile;
 
 import java.io.Closeable;
 import java.io.File;
@@ -92,6 +93,7 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.PomGenerator;
+import aQute.maven.provider.TrustedChecksums;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -120,8 +122,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private File								localRepo;
 	Reporter									reporter;
 	IMavenRepo									storage;
-	private boolean								inited;
-	IndexFile									index;
+	private volatile boolean					inited;
+	volatile IndexFile							index;
 	private ScheduledFuture<?>					indexPoller;
 	private RepoActions							actions							= new RepoActions(this);
 	private String								name;
@@ -133,6 +135,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private final AtomicReference<Throwable>	open							= new AtomicReference<>();
 	Optional<Workspace>							workspace;
 	private AtomicBoolean						polling							= new AtomicBoolean(false);
+	private TrustedChecksums					trustedChecksums;
 
 	/**
 	 * Put result
@@ -659,6 +662,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			List<MavenBackingRepository> snapshot = new ArrayList<MavenBackingRepository>();
 
 			String releaseUrl = configuration.releaseUrl();
+			@SuppressWarnings("removal")
 			SonatypeMode sonatypeMode = configuration.sonatypeMode(SonatypeMode.NONE.name());
 
 			String stagingUrl = configuration.stagingUrl();
@@ -668,6 +672,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			String sonatypeSnapshotUrl = null;
 			switch (sonatypeMode) {
 				case MANUAL, AUTOPUBLISH -> {
+					reporter.warning("Deprecated Sonatype Publishing. This feature will be removed.");
 					logger.info("deployment via Sonatype Central Portal configured in {} mode", sonatypeMode);
 					File releaseDir = registry.getPlugin(Workspace.class)
 						.getFile(SONATYPE_RELEASE_DIR);
@@ -707,6 +712,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				}
 			}
 
+			File indexFile = getIndexFile();
+			this.trustedChecksums = loadTrustedChecksumFile(indexFile);
+			this.trustedChecksums.open();
 
 			for (MavenBackingRepository mbr : release) {
 				if (mbr.isRemote()) {
@@ -730,8 +738,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				storageMvn.setSonatypePublisherUrl(sonatypeReleaseUrl);
 				storageMvn.setSonatypePublishSnapshotUrl(sonatypeSnapshotUrl);
 			}
+			storageMvn.setTrustedChecksums(trustedChecksums);
 
-			File indexFile = getIndexFile();
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
 			String source = configuration.source();
 			if (source != null) {
@@ -739,8 +747,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 			Set<String> multi = Strings.splitAsStream(configuration.multi())
 				.collect(Sets.toSet());
-			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
-			this.index.open();
+			// Set the index only after it completes opening
+			IndexFile newIndex = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
+			newIndex.open();
+			this.index = newIndex;
 
 			try (Formatter f = new Formatter()) {
 				validateUris(release, f);
@@ -753,15 +763,43 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				}
 			}
 
+
+			// Generate trusted checksums file if recording is enabled
+			if (configuration.checksumRecord()) {
+				try {
+					TrustedChecksums.createTrustedChecksumFile(storage, trustedChecksums.getFile(),
+						index.getArchives());
+				} catch (Exception e) {
+					reporter.exception(e, "Failed to record trusted checksums file");
+					// Don't fail init() if optional recording fails
+				}
+			}
+
 			startPoll();
 			logger.debug("initing {}", this);
 			workspace.ifPresent(ws -> ws.refresh(this));
 			return true;
 		} catch (Exception e) {
-			reporter.exception(e, "Init for MavenBndRepository failed %s", configuration);
 			status = Exceptions.getDisplayTypeName(e) + " " + Exceptions.causes(e);
+			reporter.exception(e, "Init for MavenBndRepository failed %s, %s", status, configuration);
 			return false;
 		}
+	}
+
+	private TrustedChecksums loadTrustedChecksumFile(File indexFile) {
+		String checksumFile = configuration.checksumFile();
+		String checksumPolicyStr = configuration.checksumPolicy("lenient");
+		TrustedChecksums.ChecksumPolicy policy = TrustedChecksums.ChecksumPolicy.fromString(checksumPolicyStr);
+
+		File trustedChecksumFile;
+		if (checksumFile != null) {
+			trustedChecksumFile = IO.getFile(base, checksumFile);
+		} else {
+			File indexDir = indexFile.getParentFile() != null ? indexFile.getParentFile() : base;
+			trustedChecksumFile = IO.getFile(indexDir, indexFile.getName() + ".checksums");
+		}
+
+		return new TrustedChecksums(trustedChecksumFile, policy);
 	}
 
 	private void validateUris(List<MavenBackingRepository> release, Formatter f) {
@@ -910,12 +948,21 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					if (status != null)
 						f.format("STATUS = %s", status);
 					else {
+						String status = getStatus();
 						f.format("MavenBndRepository           : %s\n", getName());
+						if (status != null) {
+							f.format("Status           : %s\n", status);
+						}
 						f.format("Tags                         : %s\n", getTags());
 						f.format("Revisions                    : %s\n", index.getArchives()
 							.size());
 						f.format("Storage                      : %s\n", localRepo);
 						f.format("Index                        : %s\n", index.indexFile);
+						f.format("Format                        : %s\n", index.isPom ? "pom.xml" : "text");
+						File trustedChecksumsFile = trustedChecksums.getFile();
+						if (trustedChecksumsFile.exists()) {
+							f.format("Trusted Checksums File                         : %s\n", trustedChecksumsFile);
+						}
 						f.format("Release repos                : \n    %s\n", storage.getReleaseRepositories()
 							.stream()
 							.filter(Objects::nonNull)
@@ -1139,6 +1186,15 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	public HttpClient getClient() {
 		return client;
+	}
+
+	void createTrustedChecksumsFile() {
+		try {
+			createTrustedChecksumFile(storage, trustedChecksums.getFile(), index.archives.keySet());
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+
 	}
 
 }

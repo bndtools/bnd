@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: size ( ';' LIST )*
 summary: Count the total number of elements in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `size` macro counts and returns the total number of elements across one or more comma-separated lists.

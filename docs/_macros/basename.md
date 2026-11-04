@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: basename ( ';' FILEPATH ) +
 summary: Extract the filename from one or more file paths
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `basename` macro extracts the filename (last component) from one or more file paths. It returns only the filenames for files that exist.

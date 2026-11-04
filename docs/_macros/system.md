@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: system ';' STRING ( ';' STRING )?
 summary: Execute a system command and return its output
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `system` macro executes an operating system command and returns its standard output. The command runs in the project's base directory. The build fails if the command returns a non-zero exit code.

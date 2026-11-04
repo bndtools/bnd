@@ -1,11 +1,11 @@
 ---
-order: 395
 title: Generating Documentation
 summary: Discusses how to generate documentation of OSGi projects.
-layout: default
+layout: bnd
 author: Clément Delgrange
+parent: Documentation and Tools
+nav_order: 1
 ---
-
 Bnd can help you to maintain your projects' documentation up-to-date. 
 In a best effort, Bnd can automatically update your documentation according to changes in your programs.
 Whenever it is not possible, you still have an easy way to edit the documentation manually. 

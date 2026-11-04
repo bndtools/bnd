@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Test-Cases CLASS ( ',' CLASS ) *
 class: Header
 summary: |
    Header to automatically execute tests in the bnd JUnit tester
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-Copyright STRING
 class: Header
 summary: |
    The Bundle-Copyright header contains the copyright specification for this bundle. Can be set with the BundleCopyright annotation.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

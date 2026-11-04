@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: version
 summary: |
    Show version information about bnd
+parent: bnd CLI Commands
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 

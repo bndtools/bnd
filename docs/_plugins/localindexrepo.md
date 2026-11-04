@@ -1,9 +1,9 @@
 ---
 title: Local Index Repo
-layout: default
+layout: bnd
 summary: A Plugin for locally indexed repositories 
+parent: Plugins
 ---
-
 Bnd stores information about bundles it knows in an index, following the [OSGi Repository Service Specification](https://docs.osgi.org/specification/osgi.cmpn/8.0.0/service.repository.html). The `LocalIndexedRepo` can be used as a repository to release bundles in or where bundles can be added manually (in bndtools via drag and drop). 
 
 ## Configuration
@@ -45,4 +45,4 @@ For example, to generate both R5 and OBR formats specify `type=R5|OBR`.
 
 ## Tagging
 
-This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.

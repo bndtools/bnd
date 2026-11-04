@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: join ( ';' LIST )+
 summary: Combine multiple lists into a single comma-separated list
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `join` macro combines one or more lists into a single comma-separated list. It flattens all input lists and returns them joined with commas.

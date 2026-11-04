@@ -1,0 +1,2 @@
+-buildpath: org.ow2.asm:asm;version=9.10
+-include= jar:${fileuri;${repo;org.ow2.asm:asm;9.10}}!/META-INF/MANIFEST.MF

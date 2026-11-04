@@ -14,11 +14,11 @@ import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.uri.URIUtil;
@@ -63,7 +63,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	private Promise<TaggedData> fetch(String path, File file, int retries, long delay, boolean force) throws Exception {
 		logger.debug("Fetching {}", path);
 		return client.build()
-			.headers("User-Agent", "Bnd")
+			.headersIfAbsent("User-Agent", "Bnd")
 			.useCache(file, force ? -1 : DEFAULT_MAX_STALE)
 			.asTag()
 			.async(new URL(base + path))

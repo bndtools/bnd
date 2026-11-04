@@ -153,7 +153,7 @@ public interface MavenRunListenerHelper {
 			.map(executionPrefix::concat)
 			.collect(toList());
 
-		MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject, tasks, true, monitor);
+		MavenExecutionPlan plan = projectFacade.calculateExecutionPlan(tasks, monitor);
 		return plan.getMojoExecutions()
 			.stream()
 			.filter(predicate)
@@ -206,8 +206,16 @@ public interface MavenRunListenerHelper {
 		try {
 			Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
 				monitor);
+			if (bndruns == null) {
+				bndruns = new Bndruns();
+			}
 
-			return bndruns.getFiles(mavenProject.getBasedir())
+			File bndrunDir = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndrunDir", File.class, monitor);
+			if (bndrunDir == null) {
+				bndrunDir = mavenProject.getBasedir();
+			}
+
+			return bndruns.getFiles(bndrunDir, "*.bndrun")
 				.contains(bndrunFile);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);

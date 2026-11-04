@@ -148,7 +148,10 @@ public class MessageReporter {
 			if (error == this.error && message.equals(this.message))
 				return this;
 
-			return new Message(sequence, message, error);
+			Message fixed = new Message(sequence, message, error);
+			to(fixed);
+			fixed.message = message;
+			return fixed;
 		}
 
 	}
@@ -181,11 +184,17 @@ public class MessageReporter {
 	}
 
 	Cache fixup() {
+		processor().reportPropertyConflicts();
 		return new Cache();
 	}
 
 	Location getLocation(String msg) {
-		return messages.get(msg);
+		Location location = messages.get(msg);
+		if (location != null)
+			return location;
+		return fixup(messages.values()).stream()
+			.filter(message -> message.message.equals(msg))
+			.findFirst().orElse(null);
 	}
 
 	public SetLocation error(String format, Object... args) {
@@ -238,6 +247,7 @@ public class MessageReporter {
 			return;
 		}
 
+		other.processor().reportPropertyConflicts();
 		ConcurrentHashMap<String, Message> older = other.clear();
 		other.fixup(older.values())
 			.stream()

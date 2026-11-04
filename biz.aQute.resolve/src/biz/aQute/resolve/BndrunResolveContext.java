@@ -38,6 +38,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
@@ -59,6 +60,7 @@ import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.p2.provider.EclipsePlatform;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -104,8 +106,19 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			else
 				bundleTypeResolverHook = (requirement, capabilities) -> {};
 
+			setPlatform(targetPlatform(runModel));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private EclipsePlatform targetPlatform(Processor runModel) {
+		try {
+			return EclipsePlatform.of(OSGiHeader.parseProperties(runModel.mergeProperties(Constants.RUNPROPERTIES)));
+		} catch (IllegalArgumentException e) {
+			log.log(LogService.LOG_WARNING,
+				"Cannot parse " + Constants.RUNPROPERTIES + ", using the running platform: " + e.getMessage());
+			return EclipsePlatform.of(Map.of());
 		}
 	}
 
@@ -221,6 +234,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				.isEmpty()) {
 				Capability cap = OSInformation.getDefaultNativeCapability();
 				system.addCapability(cap);
+			}
+
+			if (system.findCapabilities(EclipsePlatform.NAMESPACE, ALWAYS_TRUE)
+				.isEmpty()) {
+				system.addCapability(getPlatform().capability());
 			}
 			//
 			// We've not gathered all the capabilities of the system

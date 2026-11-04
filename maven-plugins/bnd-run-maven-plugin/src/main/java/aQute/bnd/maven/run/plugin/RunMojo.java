@@ -19,7 +19,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
+import javax.inject.Inject;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -65,13 +65,13 @@ public class RunMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File												targetDir;
 
-	@Component
+	@Inject
 	private RepositorySystem									system;
 
-	@Component
+	@Inject
 	private ProjectDependenciesResolver							resolver;
 
-	@Component
+	@Inject
 	@SuppressWarnings("deprecation")
 	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 

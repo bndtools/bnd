@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -savemanifest FILE
 class: Builder
 summary: |
    Write out the manifest to a separate file after it has been calculated.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

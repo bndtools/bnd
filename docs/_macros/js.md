@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: js (';' JAVASCRIPT )*
 summary: Execute JavaScript expressions and return the result. 
+parent: Macro Reference
 ---
-
 ## Summary
 
 Deprecated: Javascript script engine removed in Java 15. This macro might not work anymore and might be removed in future versions.

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: repos
 summary: Get a list of configured repository names
 class: Project
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `repos` macro returns a comma-separated list of the names of all repositories configured in the current project or workspace.

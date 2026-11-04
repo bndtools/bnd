@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: frange ';' VERSION ( ';' BOOLEAN )?
 summary: Generate an OSGi filter expression for a version range
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `frange` macro generates an OSGi filter expression representing a version range. By default, it creates a consumer-compatible range (major version increment). Optionally, you can request a provider-compatible range (minor version increment).

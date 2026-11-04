@@ -39,6 +39,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -95,6 +96,7 @@ import aQute.bnd.service.BndListener;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.Deploy;
+import aQute.bnd.service.JarLifecycleListener;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
@@ -128,6 +130,7 @@ import aQute.libg.tuple.Pair;
 
 public class Project extends Processor {
 	private final static Logger logger = LoggerFactory.getLogger(Project.class);
+
 
 	class RefreshData implements AutoCloseable {
 		final Memoize<Parameters>				installRepositories;
@@ -191,12 +194,12 @@ public class Project extends Processor {
 		super(workspace);
 		this.workspace = workspace;
 		setFileMustExist(false);
+		repoCollector = new RepoCollector(this);
 		if (buildFile != null)
 			setProperties(buildFile);
 
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
-		repoCollector = new RepoCollector(this);
 		addClose(repoCollector);
 	}
 
@@ -770,66 +773,72 @@ public class Project extends Processor {
 			if (bsnPattern.length() == 0 || bsnPattern.equals("*"))
 				bsnPattern = null;
 		}
+		String useBsnPattern = bsnPattern;
 
-		SortedMap<String, Pair<Version, RepositoryPlugin>> providerMap = new TreeMap<>();
+		// Hold the workspace read lock for the entire resolution. This prevents
+		// a concurrent workspace refresh (write lock) from closing repository
+		// instances between discovery (getRepositories()) and use.
+		return workspace.readLocked(() -> {
+			SortedMap<String, Pair<Version, RepositoryPlugin>> providerMap = new TreeMap<>();
 
-		List<RepositoryPlugin> plugins = getRepositories();
-		for (RepositoryPlugin plugin : plugins) {
+			List<RepositoryPlugin> plugins = getRepositories();
+			for (RepositoryPlugin plugin : plugins) {
 
-			if (repoFilter != null && !repoFilter.match(plugin))
-				continue;
+				if (repoFilter != null && !repoFilter.match(plugin))
+					continue;
 
-			List<String> bsns = plugin.list(bsnPattern);
-			if (bsns != null)
-				for (String bsn : bsns) {
-					SortedSet<Version> versions = plugin.versions(bsn);
-					if (versions != null && !versions.isEmpty()) {
-						Pair<Version, RepositoryPlugin> currentProvider = providerMap.get(bsn);
+				List<String> bsns = plugin.list(useBsnPattern);
+				if (bsns != null)
+					for (String bsn : bsns) {
+						SortedSet<Version> versions = plugin.versions(bsn);
+						if (versions != null && !versions.isEmpty()) {
+							Pair<Version, RepositoryPlugin> currentProvider = providerMap.get(bsn);
 
-						Version candidate;
-						switch (strategyx) {
-							case HIGHEST :
-								candidate = versions.last();
-								if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) > 0) {
-									providerMap.put(bsn, new Pair<>(candidate, plugin));
-								}
-								break;
+							Version candidate;
+							switch (strategyx) {
+								case HIGHEST :
+									candidate = versions.last();
+									if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) > 0) {
+										providerMap.put(bsn, new Pair<>(candidate, plugin));
+									}
+									break;
 
-							case LOWEST :
-								candidate = versions.first();
-								if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) < 0) {
-									providerMap.put(bsn, new Pair<>(candidate, plugin));
-								}
-								break;
-							default :
-								// we shouldn't have reached this point!
-								throw new IllegalStateException(
-									"Cannot use exact version strategy with wildcard matches");
+								case LOWEST :
+									candidate = versions.first();
+									if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) < 0) {
+										providerMap.put(bsn, new Pair<>(candidate, plugin));
+									}
+									break;
+								default :
+									// we shouldn't have reached this point!
+									throw new IllegalStateException(
+										"Cannot use exact version strategy with wildcard matches");
+							}
 						}
 					}
-				}
 
-		}
-
-		List<Container> containers = new ArrayList<>(providerMap.size());
-
-		for (Entry<String, Pair<Version, RepositoryPlugin>> entry : providerMap.entrySet()) {
-			String bsn = entry.getKey();
-			Version version = entry.getValue()
-				.getFirst();
-			RepositoryPlugin repo = entry.getValue()
-				.getSecond();
-
-			DownloadBlocker downloadBlocker = new DownloadBlocker(this);
-			File bundle = repo.get(bsn, version, attrs, downloadBlocker);
-			if (bundle != null && !bundle.getName()
-				.endsWith(".lib")) {
-				containers
-					.add(new Container(this, bsn, range, Container.TYPE.REPO, bundle, null, attrs, downloadBlocker));
 			}
-		}
 
-		return containers;
+			List<Container> containers = new ArrayList<>(providerMap.size());
+
+			for (Entry<String, Pair<Version, RepositoryPlugin>> entry : providerMap.entrySet()) {
+				String bsn = entry.getKey();
+				Version version = entry.getValue()
+					.getFirst();
+				RepositoryPlugin repo = entry.getValue()
+					.getSecond();
+
+				DownloadBlocker downloadBlocker = new DownloadBlocker(this);
+				File bundle = repo.get(bsn, version, attrs, downloadBlocker);
+				if (bundle != null && !bundle.getName()
+					.endsWith(".lib")) {
+					containers
+						.add(new Container(this, bsn, range, Container.TYPE.REPO, bundle, null, attrs, downloadBlocker));
+				}
+			}
+
+			return containers;
+		});
 	}
 
 	static void mergeNames(String names, Set<String> set) {
@@ -1281,145 +1290,163 @@ public class Project extends Processor {
 	 * in the build.bnd file).
 	 *
 	 * @param bsn The bundle symbolic name
-	 * @param range The version range
+	 * @param _range The version range
 	 * @param strategy set to LOWEST or HIGHEST
 	 * @return the Container that points to the bundle what might be {code}Container.TYPE.ERROR{code} in case it can not be found.
 	 * @throws Exception when something goes wrong
 	 */
 
-	public Container getBundle(String bsn, String range, Strategy strategy, Map<String, String> attrs)
+	public Container getBundle(String bsn, String _range, Strategy strategy, Map<String, String> _attrs)
 		throws Exception {
 
-		if (range == null)
-			range = "0";
-		if (attrs == null) {
-			attrs = Collections.emptyMap();
+		if (_range == null)
+			_range = "0";
+		if (_attrs == null) {
+			_attrs = Collections.emptyMap();
 		}
+
+		String range = _range;
+		Map<String, String> attrs = _attrs;
 
 		if (VERSION_ATTR_SNAPSHOT.equals(range) || VERSION_ATTR_PROJECT.equals(range)) {
 			return getBundleFromProject(bsn, attrs);
-		} else if (VERSION_ATTR_HASH.equals(range)) {
-			return getBundleByHash(bsn, attrs);
 		}
-
-		Strategy useStrategy = strategy;
+		if (VERSION_ATTR_HASH.equals(range)) {
+			return workspace.readLocked(() -> {
+				// Hold the workspace read lock when calling getBundleByHash(). This prevents
+				// a concurrent workspace refresh (write lock) from closing repository
+				// instances between discovery (getRepositories()) and use.
+				return getBundleByHash(bsn, attrs);
+			});
+		}
 
 		if (VERSION_ATTR_LATEST.equals(range)) {
 			Container c = getBundleFromProject(bsn, attrs);
 			if (c != null)
 				return c;
 
-			useStrategy = Strategy.HIGHEST;
+			strategy = Strategy.HIGHEST;
 		}
 
-		useStrategy = overrideStrategy(attrs, useStrategy);
+		Strategy useStrategy = overrideStrategy(attrs, strategy);
 		RepoFilter repoFilter = parseRepoFilter(attrs);
+		String requestedType = attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
 
-		List<RepositoryPlugin> plugins = getRepositories();
 
-		if (useStrategy == Strategy.EXACT) {
-			if (!Verifier.isVersion(range))
-				return new Container(this, bsn, range, Container.TYPE.ERROR, null,
-					bsn + ";version=" + range + " Invalid version", attrs, null);
+		// Hold the workspace read lock for the entire resolution. This prevents
+		// a concurrent workspace refresh (write lock) from closing repository
+		// instances between discovery (getRepositories()) and use.
+		return workspace.readLocked(() -> {
+			List<RepositoryPlugin> plugins = getRepositories();
 
-			// For an exact range we just iterate over the repos
-			// and return the first we find.
-			Version version = new Version(range);
-			for (RepositoryPlugin plugin : plugins) {
-				DownloadBlocker blocker = new DownloadBlocker(this);
-				File result = plugin.get(bsn, version, attrs, blocker);
-				if (result != null)
-					return toContainer(bsn, range, attrs, result, blocker);
-			}
-		} else {
-			VersionRange versionRange = VERSION_ATTR_LATEST.equals(range) ? new VersionRange("0")
-				: new VersionRange(range);
+			if (useStrategy == Strategy.EXACT) {
+				if (!Verifier.isVersion(range))
+					return new Container(this, bsn, range, Container.TYPE.ERROR, null,
+						bsn + ";version=" + range + " Invalid version", attrs, null);
 
-			// We have a range search. Gather all the versions in all the repos
-			// and make a decision on that choice. If the same version is found
-			// in
-			// multiple repos we take the first
+				// For an exact range we just iterate over the repos
+				// and return the first we find.
+				Version version = new Version(range);
+				for (RepositoryPlugin plugin : plugins) {
+					DownloadBlocker blocker = new DownloadBlocker(this);
+					File result = plugin.get(bsn, version, attrs, blocker);
+					if (result != null)
+						return toContainer(bsn, range, attrs, result, blocker);
+				}
+			} else {
+				VersionRange versionRange = VERSION_ATTR_LATEST.equals(range) ? new VersionRange("0")
+					: new VersionRange(range);
 
-			SortedMap<Version, RepositoryPlugin> versions = new TreeMap<>();
-			for (RepositoryPlugin plugin : plugins) {
+				// We have a range search. Gather all the versions in all the repos
+				// and make a decision on that choice. If the same version is found
+				// in
+				// multiple repos we take the first
 
-				if (repoFilter != null && !repoFilter.match(plugin))
-					continue;
+				SortedMap<Version, RepositoryPlugin> versions = new TreeMap<>();
+				for (RepositoryPlugin plugin : plugins) {
 
-				try {
-					SortedSet<Version> vs = plugin.versions(bsn);
-					if (vs != null) {
-						for (Version v : vs) {
-							if (!versions.containsKey(v) && versionRange.includes(v))
-								versions.put(v, plugin);
+					if (repoFilter != null && !repoFilter.match(plugin))
+						continue;
+
+					try {
+						SortedSet<Version> vs = versionsOf(plugin, bsn, requestedType);
+						if (vs != null) {
+							for (Version v : vs) {
+								if (!versions.containsKey(v) && versionRange.includes(v))
+									versions.put(v, plugin);
+							}
+						}
+					} catch (UnsupportedOperationException ose) {
+						// We have a plugin that cannot list versions, try
+						// if it has this specific version
+						// The main reaosn for this code was the Maven Remote
+						// Repository
+						// To query, we must have a real version
+						if (!versions.isEmpty() && Verifier.isVersion(range)) {
+							Version version = new Version(range);
+							DownloadBlocker blocker = new DownloadBlocker(this);
+							File file = plugin.get(bsn, version, attrs, blocker);
+							// and the entry must exist
+							// if it does, return this as a result
+							if (file != null)
+								return toContainer(bsn, range, attrs, file, blocker);
 						}
 					}
-				} catch (UnsupportedOperationException ose) {
-					// We have a plugin that cannot list versions, try
-					// if it has this specific version
-					// The main reaosn for this code was the Maven Remote
-					// Repository
-					// To query, we must have a real version
-					if (!versions.isEmpty() && Verifier.isVersion(range)) {
-						Version version = new Version(range);
+				}
+
+				//
+				// We have to augment the list of returned versions
+				// with info from the workspace. We use null as a marker
+				// to indicate that it is a workspace project. Workspace
+				// projects deliver bundles, so they cannot provide typed
+				// resources like Eclipse features.
+				//
+
+				if (requestedType == null) {
+					SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository()
+						.versions(bsn);
+					for (Version v : localVersions) {
+						if (!versions.containsKey(v) && versionRange.includes(v))
+							versions.put(v, null);
+					}
+				}
+
+				// Verify if we found any, if so, we use the strategy to pick
+				// the first or last
+
+				if (!versions.isEmpty()) {
+					Version provider = switch (useStrategy) {
+						case HIGHEST -> versions.lastKey();
+						case LOWEST -> versions.firstKey();
+						// TODO need to handle exact better
+						case EXACT -> null;
+					};
+					if (provider != null) {
+						RepositoryPlugin repo = versions.get(provider);
+						if (repo == null) {
+							// A null provider indicates that we have a local
+							// project
+							return getBundleFromProject(bsn, attrs);
+						}
+
+						String version = provider.toString();
 						DownloadBlocker blocker = new DownloadBlocker(this);
-						File file = plugin.get(bsn, version, attrs, blocker);
-						// and the entry must exist
-						// if it does, return this as a result
-						if (file != null)
-							return toContainer(bsn, range, attrs, file, blocker);
+						File result = repo.get(bsn, provider, attrs, blocker);
+						if (result != null)
+							return toContainer(bsn, version, attrs, result, blocker);
+					} else {
+						msgs.FoundVersions_ForStrategy_ButNoProvider(versions, useStrategy);
 					}
 				}
 			}
 
 			//
-			// We have to augment the list of returned versions
-			// with info from the workspace. We use null as a marker
-			// to indicate that it is a workspace project
+			// If we get this far we ran into an error somewhere
 			//
 
-			SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository()
-				.versions(bsn);
-			for (Version v : localVersions) {
-				if (!versions.containsKey(v) && versionRange.includes(v))
-					versions.put(v, null);
-			}
-
-			// Verify if we found any, if so, we use the strategy to pick
-			// the first or last
-
-			if (!versions.isEmpty()) {
-				Version provider = switch (useStrategy) {
-					case HIGHEST -> versions.lastKey();
-					case LOWEST -> versions.firstKey();
-					// TODO need to handle exact better
-					case EXACT -> null;
-				};
-				if (provider != null) {
-					RepositoryPlugin repo = versions.get(provider);
-					if (repo == null) {
-						// A null provider indicates that we have a local
-						// project
-						return getBundleFromProject(bsn, attrs);
-					}
-
-					String version = provider.toString();
-					DownloadBlocker blocker = new DownloadBlocker(this);
-					File result = repo.get(bsn, provider, attrs, blocker);
-					if (result != null)
-						return toContainer(bsn, version, attrs, result, blocker);
-				} else {
-					msgs.FoundVersions_ForStrategy_ButNoProvider(versions, useStrategy);
-				}
-			}
-		}
-
-		//
-		// If we get this far we ran into an error somewhere
-		//
-
-		return new Container(this, bsn, range, Container.TYPE.ERROR, null,
-			bsn + ";version=" + range + " Not found in " + plugins, attrs, null);
+			return new Container(this, bsn, range, Container.TYPE.ERROR, null,
+				bsn + ";version=" + range + " Not found in " + plugins, attrs, null);
+		});
 
 	}
 
@@ -1509,10 +1536,83 @@ public class Project extends Processor {
 		if (f.getName()
 			.endsWith(".lib"))
 			container = new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs, db);
+		else if (attrs != null && attrs.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE) != null)
+			// any identity type attribute (e.g. an Eclipse or Karaf feature) marks a
+			// typed resource; which repository can expand it is not core's concern
+			container = new Container(this, bsn, range, Container.TYPE.TYPED_RESOURCE, f, null, attrs, db);
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
 
 		return container;
+	}
+
+	/**
+	 * List the available versions of a bsn in a repository. When a type is
+	 * requested (e.g. {@code org.eclipse.update.feature}), the normal
+	 * {@link RepositoryPlugin#versions(String)} cannot be used since it only
+	 * lists bundles. In that case we query the repository via the OSGi
+	 * Repository API for identity capabilities carrying the requested type.
+	 *
+	 * @param plugin the repository
+	 * @param bsn the identity to look up
+	 * @param requestedType the requested identity type or null for the
+	 *            default bundle lookup
+	 */
+	private SortedSet<Version> versionsOf(RepositoryPlugin plugin, String bsn, String requestedType) throws Exception {
+		if (requestedType == null)
+			return plugin.versions(bsn);
+
+		SortedSet<Version> versions = new TreeSet<>();
+		if (!(plugin instanceof Repository repo))
+			return versions;
+
+		Requirement identity = CapReqBuilder.createIdentityRequirement(bsn, requestedType, null);
+		Map<Requirement, Collection<Capability>> providers = repo.findProviders(Collections.singleton(identity));
+		Collection<Capability> capabilities = providers != null ? providers.get(identity) : null;
+		if (capabilities == null)
+			return versions;
+
+		for (Capability capability : capabilities) {
+			Object version = capability.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			if (version != null) {
+				versions.add(Version.parseVersion(version.toString()));
+			}
+		}
+		return versions;
+	}
+
+	/**
+	 * Expand a {@link Container.TYPE#TYPED_RESOURCE} container into its
+	 * member containers. Core bnd does not know how to interpret any
+	 * particular identity type (e.g. an Eclipse feature); it merely asks each
+	 * repository, in declaration order, whether it recognizes the container's
+	 * type, see {@link RepositoryPlugin#getTypedResourceMembers}. The first
+	 * repository that returns a non-null result wins.
+	 *
+	 * @param container the typed resource container to expand
+	 * @param visited guard against expansion cycles, keyed by {@code bsn:version}
+	 */
+	List<Container> getTypedResourceMembers(Container container, Set<String> visited) throws Exception {
+		String key = container.getBundleSymbolicName() + ":" + container.getVersion();
+		if (!visited.add(key)) {
+			warning("Detected a cycle while expanding %s, ignoring repeated occurrence", key);
+			return newList();
+		}
+
+		for (RepositoryPlugin plugin : getRepositories()) {
+			List<Container> members = plugin.getTypedResourceMembers(container, visited);
+			if (members != null)
+				return members;
+		}
+
+		List<Container> result = newList();
+		result.add(new Container(this, container.getBundleSymbolicName(), container.getVersion(), Container.TYPE.ERROR,
+			null,
+			"No repository could expand " + key + " of type "
+				+ container.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE),
+			container.getAttributes(), null));
+		return result;
 	}
 
 	/**
@@ -1539,6 +1639,14 @@ public class Project extends Processor {
 		}
 	}
 
+	/**
+	 * Currently this method is only called by getBundle() and as
+	 * such is already holding a read lock so getting a read lock is not done as
+	 * part of this method. If any other place ends up calling this method, it
+	 * needs to ensure that the read lock is held or update this method to get
+	 * the read lock and change getBundle() to call this method outside the read
+	 * lock as was done before.
+	 */
 	private Container getBundleByHash(String bsn, Map<String, String> attrs) throws Exception {
 		String hashStr = attrs.get("hash");
 		String algo = SHA_256;
@@ -2076,8 +2184,21 @@ public class Project extends Processor {
 	private File saveBuildWithoutClose(Jar jar) throws Exception {
 		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
 
+		// Notify BEFORE listeners
+		List<JarLifecycleListener> listeners = getPlugins(JarLifecycleListener.class);
+		Map<String, Object> context = null;
+		if (!listeners.isEmpty()) {
+			context = new HashMap<String, Object>();
+			beforeJarWrite(jar, outputFile, context, listeners);
+		}
+
 		reportNewer(outputFile.lastModified(), jar);
 		File logicalFile = write(jar::write, outputFile);
+
+		// Notify AFTER listeners
+		if (!listeners.isEmpty()) {
+			afterJarWrite(this, outputFile, jar, context, listeners);
+		}
 
 		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
 			.size());
@@ -2106,6 +2227,31 @@ public class Project extends Processor {
 			getWorkspace().changedFile(canonical);
 		}
 		return logicalFile;
+	}
+
+	private void beforeJarWrite(Jar jar, File outputFile, Map<String, Object> context,
+		List<JarLifecycleListener> listeners) throws Exception {
+
+		for (JarLifecycleListener listener : listeners) {
+			try {
+				listener.beforeWrite(this, jar, outputFile, context);
+			} catch (Exception e) {
+				logger.debug("Exception in JarLifecycleListener.beforeWrite", e);
+			}
+		}
+	}
+
+	private void afterJarWrite(Project project, File outputFile, Jar jar, Map<String, Object> context,
+		List<JarLifecycleListener> listeners)
+		throws Exception {
+
+		for (JarLifecycleListener listener : listeners) {
+			try {
+				listener.afterWrite(project, outputFile, jar, context);
+			} catch (Exception e) {
+				logger.debug("Exception in JarArtifactLifecycleListener.afterJarWrite", e);
+			}
+		}
 	}
 
 	private File write(ConsumerWithException<File> jar, File outputFile)
@@ -2538,32 +2684,37 @@ public class Project extends Processor {
 
 	public void test(File reportDir, List<String> tests) throws Exception {
 		ProjectTester tester = getProjectTester();
-		if (reportDir != null) {
-			logger.debug("Setting reportDir {}", reportDir);
-			IO.delete(reportDir);
-			tester.setReportDir(reportDir);
-		}
-		if (tests != null) {
-			logger.debug("Adding tests {}", tests);
-			for (String test : tests) {
-				tester.addTest(test);
+		try {
+			if (reportDir != null) {
+				logger.debug("Setting reportDir {}", reportDir);
+				IO.delete(reportDir);
+				tester.setReportDir(reportDir);
 			}
-		}
-		tester.prepare();
+			if (tests != null) {
+				logger.debug("Adding tests {}", tests);
+				for (String test : tests) {
+					tester.addTest(test);
+				}
+			}
+			tester.prepare();
 
-		if (!isOk()) {
-			logger.error("Tests not run because project has errors");
-			return;
-		}
-		int errors = tester.test();
-		if (errors == 0) {
-			logger.info("No Errors");
-		} else {
-			if (errors > 0) {
-				logger.info("{} Error(s)", errors);
-			} else {
-				logger.info("Error {}", errors);
+			if (!isOk()) {
+				logger.error("Tests not run because project has errors");
+				return;
 			}
+			int errors = tester.test();
+			if (errors == 0) {
+				logger.info("No Errors");
+			} else {
+				if (errors > 0) {
+					logger.info("{} Error(s)", errors);
+				} else {
+					logger.info("Error {}", errors);
+				}
+			}
+		} finally {
+			tester.getProjectLauncher()
+				.cleanup();
 		}
 	}
 
@@ -3161,8 +3312,8 @@ public class Project extends Processor {
 	// TODO test format parametsr
 
 	public void compile(boolean test) throws Exception {
-
-		Command javac = getCommonJavac(false);
+		JavacCommand jr = new JavacCommand(this);
+		Command javac = jr.getCommonJavac(false);
 		javac.add("-d", IO.absolutePath(getOutput()));
 
 		StringBuilder buildpath = new StringBuilder();
@@ -3206,7 +3357,7 @@ public class Project extends Processor {
 			compile(javac, "src");
 
 		if (test) {
-			javac = getCommonJavac(true);
+			javac = jr.getCommonJavac(true);
 			javac.add("-d", IO.absolutePath(getTestOutput()));
 
 			Collection<Container> tp = Container.flatten(getTestpath());
@@ -3249,7 +3400,7 @@ public class Project extends Processor {
 				.stream()
 				.mapToInt(arg -> arg.length() + 3) // +1 for space, +2 for potential quotes
 				.sum();
-			
+
 			// Windows command line limit is ~8191 characters
 			// Use arg file if we're getting close (allow some margin)
 			if (cmdLineLength > 6000) {
@@ -3282,7 +3433,7 @@ public class Project extends Processor {
 	private File createJavacArgumentFile(Command javac) throws Exception {
 		File argFile = IO.createTempFile(getTarget(), "javac-args", ".txt");
 		List<String> args = javac.getArguments();
-		
+
 		try (PrintWriter writer = new PrintWriter(argFile, "UTF-8")) {
 			// Skip the first argument (javac executable path)
 			for (int i = 1; i < args.size(); i++) {
@@ -3296,59 +3447,11 @@ public class Project extends Processor {
 				writer.println(arg);
 			}
 		}
-		
+
 		return argFile;
 	}
 
-	private Command getCommonJavac(boolean test) throws Exception {
-		Command javac = new Command();
-		javac.add(getJavaExecutable("javac"));
-		String target = getProperty("javac.target", "1.6");
-		String profile = getProperty("javac.profile", "");
-		String source = getProperty("javac.source", "1.6");
-		String debug = getProperty("javac.debug");
-		if ("on".equalsIgnoreCase(debug) || "true".equalsIgnoreCase(debug))
-			debug = "vars,source,lines";
 
-		Parameters options = new Parameters(getProperty("java.options"), this);
-
-		boolean deprecation = isTrue(getProperty("java.deprecation"));
-
-		javac.add("-encoding", "UTF-8");
-
-		javac.add("-source", source);
-
-		javac.add("-target", target);
-
-		if (!profile.isEmpty())
-			javac.add("-profile", profile);
-
-		if (deprecation)
-			javac.add("-deprecation");
-
-		if (test || debug == null) {
-			javac.add("-g:source,lines,vars");
-		} else {
-			javac.add("-g:" + debug);
-		}
-
-		javac.addAll(options.keyList());
-
-		StringBuilder bootclasspath = new StringBuilder();
-		String bootclasspathDel = "-Xbootclasspath/p:";
-
-		Collection<Container> bcp = Container.flatten(getBootclasspath());
-		for (Container c : bcp) {
-			bootclasspath.append(bootclasspathDel)
-				.append(IO.absolutePath(c.getFile()));
-			bootclasspathDel = File.pathSeparator;
-		}
-
-		if (bootclasspath.length() != 0) {
-			javac.add(bootclasspath.toString());
-		}
-		return javac;
-	}
 
 	public String _ide(String[] args) throws IOException {
 		if (args.length < 2) {

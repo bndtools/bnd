@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: reject ';' LIST ';' REGEX
 summary: Rejects a list by matching it against a regular expression
+parent: Macro Reference
 ---
-
 ## Summary
 
 Filter a list to exclude elements that match a regular expression. This macro is an alias for the [filterout](filterout.html) macro.

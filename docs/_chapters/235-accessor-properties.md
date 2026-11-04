@@ -1,14 +1,14 @@
 ---
-order: 235
 title: Accessor Properties
-layout: default
+layout: bnd
+parent: Build and Development
+nav_order: 10
 ---
-
 When working with _custom bundle annotations_ one may find that `@Attribute` and `@Directive` have limitations in scenarios where multiple _bundle annotations_ are added to a single _custom bundle annotation_ because there are no discriminators expressing which _bundle annotation_ to associate the attribute or directive; and it's likely that associating these with all _bundle annotations_ produces unexpected or even incorrect results. Bnd provides a solution which takes advantage of its macro support during annotation processing.
 
 ## Accessor Properties
 
-When an annotation is meta-annotated with a _bundle annotation_ the values and defaults of the host are loaded as properties, prefixed with `#`, into the macro processing scope. The effect is that these values are accessible using a [macro pattern](/chapters/850-macros.html#macro-patterns) (like `${}`).
+When an annotation is meta-annotated with a _bundle annotation_ the values and defaults of the host are loaded as properties, prefixed with `#`, into the macro processing scope. The effect is that these values are accessible using a [macro pattern](/macros/#macro-patterns) (like `${}`).
 
 ```java
 @Capability(

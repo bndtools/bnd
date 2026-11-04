@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -nomanifest  BOOLEAN
 class: Ant
 summary: |
    Do not safe the manifest in the JAR.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

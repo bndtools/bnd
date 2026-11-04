@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Constants;
@@ -21,6 +23,7 @@ import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.configuration.BuildFeatures;
 import org.gradle.api.file.Directory;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.internal.plugins.DslObject;
@@ -30,6 +33,7 @@ import org.gradle.api.tasks.Delete;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.DynamicObject;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
+import org.gradle.util.GradleVersion;
 
 /**
  * BndWorkspacePlugin for Gradle.
@@ -228,6 +232,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	}
 
 	private void configureWorkspaceProject(Project workspace) throws Exception {
+		failFastOnConfigurationCache(workspace);
 		Workspace bndWorkspace = getBndWorkspace(workspace);
 
 		/* Configure the Bnd projects */
@@ -237,6 +242,45 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 					.apply(BndPlugin.class);
 			}
 		}
+	}
+
+	/**
+	 * Fail fast when the configuration cache is requested since the Bnd
+	 * Workspace plugin does not support the Gradle configuration cache. The Bnd
+	 * Workspace model objects are not serializable by the configuration cache.
+	 */
+	private static void failFastOnConfigurationCache(Project workspace) {
+		if (isConfigurationCacheRequested(workspace)) {
+			throw new GradleException(
+				"The Bnd Workspace plugin does not support the Gradle configuration cache. "
+					+ "Build with --no-configuration-cache and make sure the configuration cache is not enabled in a gradle.properties file (org.gradle.configuration-cache).");
+		}
+	}
+
+	private static boolean isConfigurationCacheRequested(Project workspace) {
+		if (GradleVersion.current()
+			.getBaseVersion()
+			.compareTo(GradleVersion.version("8.5")) < 0) {
+			/* The BuildFeatures service is not available before Gradle 8.5 */
+			return false;
+		}
+		return workspace.getObjects()
+			.newInstance(BuildFeaturesQuery.class)
+			.getBuildFeatures()
+			.getConfigurationCache()
+			.getRequested()
+			.getOrElse(Boolean.FALSE);
+	}
+
+	/**
+	 * Holder type to obtain the {@link BuildFeatures} service via injection.
+	 */
+	static abstract class BuildFeaturesQuery {
+		@Inject
+		public BuildFeaturesQuery() {}
+
+		@Inject
+		public abstract BuildFeatures getBuildFeatures();
 	}
 
 	/**

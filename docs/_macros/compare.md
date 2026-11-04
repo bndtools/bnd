@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: compare STRING STRING
 summary: Compare two strings by using the compareTo method of the String class.
+parent: Macro Reference
 ---
-
 ## Summary
 
 Compare two strings lexicographically using Java's `String.compareTo()` method, returning -1, 0, or 1.

@@ -14,7 +14,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -45,10 +44,10 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		RUNREQUIRE, Constants.RUNREQUIRES, Constants.RESOLVE
 	};
 
-	private final static Image		resolveIcon		= Icons.image("resolve");
 	private Button					btnResolveNow;
 	private JobChangeAdapter		resolveJobListener;
 	private Combo					comboResolveMode;
+	private Label					lblResolveModeDescription;
 
 	public RunRequirementsPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -58,6 +57,11 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	@Override
 	protected String[] getProperties() {
 		return SUBSCRIBE_PROPS;
+	}
+
+	@Override
+	protected String getPrimaryPropertyKey() {
+		return Constants.RUNREQUIRES;
 	}
 
 	private void createSection(Section section, FormToolkit tk) {
@@ -94,6 +98,7 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 				return;
 			}
 			model.setResolveMode(selected);
+			updateResolveModeDescription();
 		}));
 		Syntax syntax = Syntax.HELP.get(Constants.RESOLVE);
 		if (syntax != null) {
@@ -102,7 +107,7 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		resolveModeComposite.setLayout(new FillLayout());
 
 		btnResolveNow = tk.createButton(composite, "Resolve", SWT.PUSH);
-		btnResolveNow.setImage(resolveIcon);
+		setResolveButtonImage();
 
 		btnResolveNow.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -128,6 +133,8 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		Job.getJobManager()
 			.addJobChangeListener(resolveJobListener);
 
+		lblResolveModeDescription = tk.createLabel(composite, "", SWT.WRAP);
+
 		// Layout
 		GridLayout layout;
 		GridData gd;
@@ -147,6 +154,9 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 
 		gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
 		btnResolveNow.setLayoutData(gd);
+
+		gd = new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1);
+		lblResolveModeDescription.setLayoutData(gd);
 	}
 
 	@Override
@@ -173,7 +183,12 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	@Override
 	protected void doCommitToModel(List<Requirement> requires) {
 		if (isDirty()) {
-			model.setRunRequires(requires);
+			String key = getLocalKey();
+			if (Constants.RUNREQUIRES.equals(key)) {
+				model.setRunRequires(requires);
+			} else {
+				BndEditModelAccessor.setRequirementListByKey(model, key, requires);
+			}
 		}
 	}
 
@@ -181,8 +196,47 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	public List<Requirement> doRefreshFromModel() {
 		comboResolveMode.select(model.getResolveMode()
 			.ordinal());
+		updateResolveModeDescription();
+		// Return only requirements defined in this file's own merge keys (inherited items are
+		// computed separately by the base class and displayed in gray).
+		return BndEditModelAccessor.getLocalMergeRequirements(model, Constants.RUNREQUIRES);
+	}
 
-		return model.getRunRequires();
+	private void updateResolveModeDescription() {
+		if (lblResolveModeDescription == null || lblResolveModeDescription.isDisposed())
+			return;
+		if (btnResolveNow != null && !btnResolveNow.isDisposed()) {
+			setResolveButtonImage();
+		}
+		ResolveMode mode = model.getResolveMode();
+		String description = getResolveModeDescription(mode);
+		lblResolveModeDescription.setText(description != null ? description : "");
+		Composite parent = lblResolveModeDescription.getParent();
+		if (parent != null && !parent.isDisposed()) {
+			parent.layout();
+		}
+	}
+
+	private void setResolveButtonImage() {
+		if (btnResolveNow == null || btnResolveNow.isDisposed())
+			return;
+		if (btnResolveNow.getImage() == null || btnResolveNow.getImage()
+			.isDisposed()) {
+			btnResolveNow.setImage(Icons.image("resolve"));
+		}
+	}
+
+	private static String getResolveModeDescription(ResolveMode mode) {
+		Syntax resolveSyntax = Syntax.HELP.get(Constants.RESOLVE);
+		if (resolveSyntax != null) {
+			for (Syntax child : resolveSyntax.getChildren()) {
+				if (mode.name()
+					.equals(child.getHeader())) {
+					return child.getLead();
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -pom BOOLEAN | PROPERTIES
 class: Processor
 summary: |
    Generate a maven pom in the JAR
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

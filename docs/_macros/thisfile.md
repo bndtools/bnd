@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Processor
 title: thisfile
 summary: Get the absolute path of the current properties file
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `thisfile` macro returns the absolute path to the properties file being processed. This provides the full path to the current `.bnd`, `.bndrun`, or other bnd configuration file.

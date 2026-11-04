@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: nsort (';' LIST )+
 summary: Sort lists numerically by treating values as numbers
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `nsort` macro combines one or more lists and sorts their contents numerically. Unlike alphabetic sorting, it treats values as numbers, so "2" comes before "10".

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: max (';' LIST )*
 summary: Find the maximum string in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `max` macro compares strings lexicographically using Java's `String.compareTo()` and returns the maximum (highest) value.

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runee EE
 class: Builder
 summary: |
    Define the  runtime Execution Environment capabilities, default Java 6.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

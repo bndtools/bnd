@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: toclasspath ';' LIST ( ';' BOOLEAN )?
 summary: Convert class names to file paths
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `toclasspath` macro converts fully qualified class names to file paths by replacing dots with path separators and optionally adding `.class` extension.

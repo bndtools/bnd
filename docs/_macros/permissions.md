@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Builder
 title: permissions (';' ( 'packages' | 'admin' | 'permissions' ) )+
 summary: Generate OSGi permission declarations for the bundle
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `permissions` macro generates OSGi permission declarations in the format required for the OSGi permissions resource (OSGI-INF/permissions.perm). It can generate package permissions and admin permissions.

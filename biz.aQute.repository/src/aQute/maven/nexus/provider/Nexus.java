@@ -82,7 +82,7 @@ public class Nexus {
 	public HttpRequest<Object> request() {
 		return client.build()
 			.headers("Accept", "application/json")
-			.headers("User-Agent", "bnd");
+			.headersIfAbsent("User-Agent", "bnd");
 	}
 
 	public List<URI> files() throws Exception {
@@ -317,7 +317,7 @@ public class Nexus {
 		URI upload = getUri().resolve("service/local/staging/deployByRepositoryId/" + repositoryId + "/" + remotePath);
 		TaggedData go = client.build()
 			.upload(file)
-			.headers("User-Agent", "Bnd")
+			.headersIfAbsent("User-Agent", "Bnd")
 			.headers("Content-Type", "application/xml")
 			.asTag()
 			.put()
@@ -346,7 +346,7 @@ public class Nexus {
 	public TaggedData fetchStaging(String repositoryId, String remotePath, boolean force) throws Exception {
 		URI uri = getUri().resolve("service/local/staging/deployByRepositoryId/" + repositoryId + "/" + remotePath);
 		return client.build()
-			.headers("User-Agent", "Bnd")
+			.headersIfAbsent("User-Agent", "Bnd")
 			.asTag()
 			.get()
 			.go(uri);
@@ -355,7 +355,7 @@ public class Nexus {
 	public TaggedData deleteStaging(String repositoryId, String remotePath) throws Exception {
 		URI uri = getUri().resolve("service/local/staging/deployByRepositoryId/" + repositoryId + "/" + remotePath);
 		return client.build()
-			.headers("User-Agent", "Bnd")
+			.headersIfAbsent("User-Agent", "Bnd")
 			.asTag()
 			.delete()
 			.go(uri);

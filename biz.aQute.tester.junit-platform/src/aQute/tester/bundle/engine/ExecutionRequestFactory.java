@@ -38,11 +38,18 @@ public class ExecutionRequestFactory {
 	 */
 	static final Method CREATE_5;
 
+	/**
+	 * reference to static create() methods with 6-arguments (JUnit 6+)
+	 * org.junit.platform.engine.ExecutionRequest.create(TestDescriptor,
+	 * EngineExecutionListener, ConfigurationParameters, OutputDirectoryCreator,
+	 * NamespacedHierarchicalStore, CancellationToken)
+	 */
+	static final Method CREATE_6;
 
 	static {
 		boolean useReflection = false;
 		Method getStoreMethod = null;
-		Method c3 = null, c5 = null;
+		Method c3 = null, c5 = null, c6 = null;
 
 		try {
 
@@ -73,6 +80,13 @@ public class ExecutionRequestFactory {
 					// 5-arg version
 		            c5 = m;
 		        }
+		        else if (p.length == 6
+		            && p[0] == TestDescriptor.class
+		            && p[1] == EngineExecutionListener.class
+		            && p[2] == ConfigurationParameters.class) {
+					// 6-arg version (JUnit 6+)
+		            c6 = m;
+		        }
 		    }
 
 
@@ -91,7 +105,7 @@ public class ExecutionRequestFactory {
 			Class<?> storeClass = getStoreMethod.getReturnType();
 
 			// Only use reflection if we found both the getter one of the create methods
-			useReflection = (getStoreMethod != null && (c3 != null || c5 != null));
+			useReflection = (getStoreMethod != null && (c3 != null || c5 != null || c6 != null));
 		} catch (Exception e) {
 			// Reflection not available or not needed, fall back to public
 			// constructor
@@ -101,6 +115,7 @@ public class ExecutionRequestFactory {
 		GET_STORE_METHOD = getStoreMethod;
 		CREATE_3 = c3;
 	    CREATE_5 = c5;
+	    CREATE_6 = c6;
 
 	}
 
@@ -123,7 +138,18 @@ public class ExecutionRequestFactory {
 
 				// Create a new ExecutionRequest with the Store
 
-				if (CREATE_5 != null) {
+				if (CREATE_6 != null) {
+					// JUnit 6+: OutputDirectoryCreator as 4th and
+					// CancellationToken as 6th param
+					Object outputCreator = ExecutionRequest.class.getMethod("getOutputDirectoryCreator")
+						.invoke(parentRequest);
+					Object cancellationToken = ExecutionRequest.class.getMethod("getCancellationToken")
+						.invoke(parentRequest);
+
+					return (ExecutionRequest) CREATE_6.invoke(parentRequest, descriptor, listener, params,
+						outputCreator, store, cancellationToken);
+				}
+				else if (CREATE_5 != null) {
 					// JUnit Platform 1.13+: need to pass
 					// OutputDirectoryProvider as 4th param
 					// Get the OutputDirectoryProvider from parent request

@@ -676,7 +676,7 @@ public class DSAnnotationTest {
 
 	@Component(service = Object.class, configurationPolicy = ConfigurationPolicy.IGNORE, enabled = false, factory = "factory", immediate = false, name = "name", property = {
 		"a=1", "a=2", "b=3"
-	}, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns")
+	}, properties = "resource.props", scope = ServiceScope.SINGLETON, configurationPid = "configuration-pid", xmlns = "xmlns")
 	public static class Explicit_basic implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
 

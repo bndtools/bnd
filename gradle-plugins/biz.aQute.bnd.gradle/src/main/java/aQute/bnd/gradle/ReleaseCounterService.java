@@ -18,6 +18,12 @@ public abstract class ReleaseCounterService
 	 */
 	public ReleaseCounterService() {}
 
+	/**
+	 * Set the initial number of artifacts/tasks 
+	 * from which is counted down.
+	 * 
+	 * @param n the count
+	 */
 	public void setInitialCount(int n) {
 		remaining.set(n);
 	}
@@ -33,6 +39,8 @@ public abstract class ReleaseCounterService
     }
 
 	/**
+	 * Returs the remaining tasks count.
+	 * 
 	 * @return the current count of remaining.
 	 */
 	public int getRemaining() {

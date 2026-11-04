@@ -53,7 +53,12 @@ class RepoActions {
 		map.put("Update Revisions :: To higher MAJOR revision", () -> {
 			upgradeRevisions(major);
 		});
-
+		map.put("Convert :: Text <--> pom.xml", () -> {
+			convertTextXmlRevisions();
+		});
+		map.put("Create Trusted Checksums file", () -> {
+			createTrustedChecksumsFile();
+		});
 		map.put("Update Revisions :: Dry run to clipboard - Update to higher MICRO revision", () -> {
 			clipboard.copy(preview(micro));
 		});
@@ -261,6 +266,24 @@ class RepoActions {
 				repo.refresh();
 			}
 
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	private void convertTextXmlRevisions() {
+		try {
+			mbr.convertTextXml();
+			repo.refresh();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	private void createTrustedChecksumsFile() {
+		try {
+			mbr.createTrustedChecksumsFile();
+			repo.refresh();
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}

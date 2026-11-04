@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: literal ';' STRING
 summary: Prevent macro expansion by wrapping a value with macro delimiters
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `literal` macro prevents macro expansion by wrapping a value with the macro prefix `${` and suffix `}`. This effectively creates a literal macro reference that won't be expanded in the current pass.

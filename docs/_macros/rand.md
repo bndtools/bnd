@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: rand (';' MIN ' (;' MAX )?)?
 summary: Generate a random number within a specified range
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `rand` macro generates a random integer. By default it returns a number between 0 and 100, or within a specified min/max range (inclusive).

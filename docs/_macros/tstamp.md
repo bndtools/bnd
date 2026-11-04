@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: tstamp ( ';' DATEFORMAT ( ';' TIMEZONE ( ';' LONG )? )? )?
 summary: Generate a formatted timestamp
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `tstamp` macro creates a formatted timestamp string using a custom date format pattern, timezone, and optional timestamp value.

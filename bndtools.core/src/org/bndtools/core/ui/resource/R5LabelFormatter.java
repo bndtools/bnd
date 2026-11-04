@@ -2,8 +2,11 @@ package org.bndtools.core.ui.resource;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.jface.BoldStyler;
@@ -37,11 +40,17 @@ import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
 import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.unmodifiable.Maps;
+import aQute.p2.provider.Feature;
 import bndtools.Plugin;
 
 public class R5LabelFormatter {
 
 	private final static Pattern				EE_PATTERN		= Pattern.compile("osgi.ee=([^)]*).*version=([^)]*)");
+	private final static Pattern				FEATURE_IDENTITY_PATTERN = Pattern.compile("osgi\\.identity=([^)]+)");
+	private final static Pattern				FEATURE_VERSION_PATTERN = Pattern.compile("version=([^)]+)");
+	private final static Pattern				FEATURE_VERSION_GTE_PATTERN = Pattern.compile("\\(version>=([^)]+)\\)");
+	private final static Pattern				FEATURE_VERSION_LT_NEGATED_PATTERN = Pattern.compile("\\(!\\(version>=([^)]+)\\)\\)");
+	private final static Pattern				FEATURE_VERSION_LTE_PATTERN = Pattern.compile("\\(version<=([^)]+)\\)");
 
 	private static final Map<String, Pattern>	FILTER_PATTERNS	= Maps.of(
 		ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, EE_PATTERN, PackageNamespace.PACKAGE_NAMESPACE,
@@ -112,6 +121,8 @@ public class R5LabelFormatter {
 			r = "icons/whiteboard.png";
 		else if ("bnd.multirelease".equals(ns))
 			r = "icons/multijar.png";
+		else if ("org.eclipse.update.feature".equals(ns))
+			r = Icons.path("feature");
 		else if ("osgi.unresolvable".equalsIgnoreCase(ns) || "osgi.missing".equalsIgnoreCase(ns)
 			|| "donotresolve".equalsIgnoreCase(ns) || "compile-only".equalsIgnoreCase(ns))
 			r = "icons/prohibition.png";
@@ -269,7 +280,35 @@ public class R5LabelFormatter {
 		} else {
 			try {
 				Expression exp = fp.parse(filter);
-				if (exp instanceof WithRangeExpression) {
+
+				// Handle osgi.identity namespace specially for clean display
+				if (IdentityNamespace.IDENTITY_NAMESPACE.equals(namespace)) {
+					// Extract identity name and show a specific version or version range
+					Matcher identityMatcher = FEATURE_IDENTITY_PATTERN.matcher(filter);
+					Matcher versionMatcher = FEATURE_VERSION_PATTERN.matcher(filter);
+
+					if (identityMatcher.find()) {
+						String identityName = identityMatcher.group(1);
+						label.append(identityName, BoldStyler.INSTANCE_DEFAULT);
+
+						String versionDisplay = getIdentityVersionDisplay(filter, exp, versionMatcher);
+						if (versionDisplay != null) {
+							label.append(" ")
+								.append(versionDisplay, StyledString.COUNTER_STYLER);
+						}
+					} else if (exp instanceof WithRangeExpression) {
+						// Fallback to standard WithRangeExpression handling
+						String identityName = ((WithRangeExpression) exp).printExcludingRange();
+						label.append(identityName, BoldStyler.INSTANCE_DEFAULT);
+						RangeExpression range = ((WithRangeExpression) exp).getRangeExpression();
+						if (range != null)
+							label.append(" ")
+								.append(formatRangeString(range), StyledString.COUNTER_STYLER);
+					} else {
+						// Final fallback
+						label.append(filter, BoldStyler.INSTANCE_DEFAULT);
+					}
+				} else if (exp instanceof WithRangeExpression) {
 					appendNamespaceWithValue(label, namespace, ((WithRangeExpression) exp).printExcludingRange(),
 						shorten);
 					RangeExpression range = ((WithRangeExpression) exp).getRangeExpression();
@@ -296,6 +335,8 @@ public class R5LabelFormatter {
 			}
 		}
 
+		appendPlatform(label, requirement);
+
 		boolean first = true;
 		for (Entry<String, String> directive : requirement.getDirectives()
 			.entrySet()) {
@@ -316,6 +357,52 @@ public class R5LabelFormatter {
 			label.setStyle(0, label.length(), StyledString.QUALIFIER_STYLER);
 			label.append(" <optional>", ItalicStyler.INSTANCE_DEFAULT);
 		}
+	}
+
+	private static void appendPlatform(StyledString label, Requirement requirement) {
+		Map<String, Object> attributes = requirement.getAttributes();
+		if (!attributes.containsKey(Feature.RELATION_ATTRIBUTE))
+			return;
+
+		String platform = Stream.of("os", "ws", "arch")
+			.map(attributes::get)
+			.filter(Objects::nonNull)
+			.map(Object::toString)
+			.collect(Collectors.joining("/"));
+		if (!platform.isEmpty())
+			label.append(" [" + platform + "]", StyledString.QUALIFIER_STYLER);
+	}
+
+	private static String getIdentityVersionDisplay(String filter, Expression exp, Matcher versionMatcher) {
+		if (exp instanceof WithRangeExpression) {
+			RangeExpression range = ((WithRangeExpression) exp).getRangeExpression();
+			if (range != null) {
+				return formatRangeString(range);
+			}
+		}
+
+		if (versionMatcher.find()) {
+			return versionMatcher.group(1);
+		}
+
+		Matcher lowMatcher = FEATURE_VERSION_GTE_PATTERN.matcher(filter);
+		if (lowMatcher.find()) {
+			String low = lowMatcher.group(1);
+
+			Matcher upperExclusiveMatcher = FEATURE_VERSION_LT_NEGATED_PATTERN.matcher(filter);
+			if (upperExclusiveMatcher.find()) {
+				return "[" + low + "," + upperExclusiveMatcher.group(1) + ")";
+			}
+
+			Matcher upperInclusiveMatcher = FEATURE_VERSION_LTE_PATTERN.matcher(filter);
+			if (upperInclusiveMatcher.find()) {
+				return "[" + low + "," + upperInclusiveMatcher.group(1) + "]";
+			}
+
+			return low;
+		}
+
+		return null;
 	}
 
 	public static String formatRangeString(RangeExpression range) {

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: osfile ';' DIR ';' NAME
 summary: Create an OS-specific absolute file path
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `osfile` macro constructs an absolute file path by combining a base directory and a relative path, using the operating system's native path separator (e.g., backslash on Windows, forward slash on Unix).

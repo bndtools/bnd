@@ -17,11 +17,13 @@ import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
+import biz.aQute.resolve.Slf4jResolverLogger;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
+import javax.inject.Inject;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -109,17 +111,17 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.basedir}")
 	private File 												bndrunDir;
 
-	@Component
+	@Inject
 	private RepositorySystem									system;
 
-	@Component
+	@Inject
 	private ProjectDependenciesResolver							resolver;
 
-	@Component
+	@Inject
 	@SuppressWarnings("deprecation")
 	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
-	@Component
+	@Inject
 	private ToolchainManager									toolchainManager;
 
 	private Glob												glob	= Glob.ALL;
@@ -196,8 +198,8 @@ public class TestingMojo extends AbstractMojo {
 				return 0;
 			}
 			if (resolve) {
-				try {
-					String runBundles = run.resolve(failOnChanges, false);
+				try (ResolverLogger rl = new Slf4jResolverLogger()) {
+					String runBundles = run.resolve(failOnChanges, false, rl);
 					if (run.isOk()) {
 						logger.info("{}: {}", Constants.RUNBUNDLES, runBundles);
 						run.setProperty(Constants.RUNBUNDLES, runBundles);

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: extension ';' PATH
 summary: The file extension of the given path or empty string if no extension
+parent: Macro Reference
 ---
-
 ## Summary
 
 Extract the file extension from a file path, returning the part after the last dot in the filename.

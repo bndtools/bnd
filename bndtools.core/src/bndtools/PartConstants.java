@@ -19,5 +19,7 @@ public final class PartConstants {
 	public static final String	WIZARD_ID_NEWPACKAGE_INFO	= PREFIX + "newPackageInfo";
 	public static final String	WIZARD_ID_NEWDSCOMPONENT	= PREFIX + "newDsComponentWizard";
 
+	public static final String	WIZARD_ID_IMPORT_WORKSPACE	= PREFIX + "importProject";
+
 	private PartConstants() {}
 }

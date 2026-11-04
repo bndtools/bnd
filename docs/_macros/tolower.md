@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: tolower STRING
 summary: Convert a string to lowercase
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `tolower` macro converts a string to lowercase using the default locale.

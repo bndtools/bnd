@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Workspace
 title: driver ( ';' NAME )?
 summary: Get or check the build environment driver (gradle, eclipse, intellij, etc.)
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `driver` macro identifies the build environment (driver) that is running bnd, such as Gradle, Ant, Eclipse, or IntelliJ. It can be used to return the driver name or check if the current driver matches specific names.

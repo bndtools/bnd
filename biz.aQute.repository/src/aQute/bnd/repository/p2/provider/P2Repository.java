@@ -11,12 +11,14 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
@@ -31,6 +33,8 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import aQute.p2.packed.Unpack200;
+import aQute.p2.provider.Feature;
+import aQute.p2.provider.FeatureExpander;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -70,14 +74,56 @@ public class P2Repository extends BaseRepository
 
 		try {
 			name = config.name(client.toName(url));
-			File location = workspace.getFile(config.location("cnf/cache/p2-" + name));
-			IO.mkdirs(location);
-			File indexFile = new File(location, "index.xml.gz");
+			String configuredLocation = config.location("cnf/cache/p2-" + name + "/");
+			File configuredFile = workspace.getFile(configuredLocation);
+			File indexFile;
+			File location;
+			boolean directoryLocation = configuredLocation.endsWith("/") || configuredLocation.endsWith("\\")
+				|| (configuredFile.isDirectory() && !isIndexFileName(configuredFile.getName()));
+			if (directoryLocation) {
+				location = configuredFile;
+				indexFile = new File(location, "index.xml.gz");
+			} else {
+				indexFile = configuredFile;
+				location = indexFile.getParentFile();
+				if (indexFile.isDirectory())
+					removeLegacyIndexDirectory(indexFile);
+			}
 
-			return new P2Indexer(new Unpack200(this.workspace), reporter, location, client, url, name);
+			String cache = config.cache();
+			if (cache != null)
+				location = workspace.getFile(cache);
+
+			return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	private static boolean isIndexFileName(String name) {
+		return name.endsWith(".xml") || name.endsWith(".xml.gz");
+	}
+
+	/**
+	 * Earlier bnd versions always treated the location as a directory and
+	 * created {@code <location>/index.xml.gz}. Remove such a directory when
+	 * it only holds the generated index and bundle links so the index file
+	 * can be written at the configured location.
+	 */
+	private void removeLegacyIndexDirectory(File directory) throws IOException {
+		File[] children = directory.listFiles();
+		if (children != null) {
+			for (File child : children) {
+				String childName = child.getName();
+				if (!child.isFile() || !(childName.equals("index.xml.gz") || childName.endsWith(".jar")))
+					throw new IllegalArgumentException(directory
+						+ " is a directory, not an index file, and contains other files than a generated index; remove it or change the location");
+			}
+		}
+		if (reporter != null)
+			reporter.warning("Replacing the index directory %s of an earlier bnd version by an index file",
+				directory);
+		IO.delete(directory);
 	}
 
 	@Override
@@ -134,6 +180,15 @@ public class P2Repository extends BaseRepository
 		return getP2Index().getBridge()
 			.getRepository()
 			.findProviders(requirements);
+	}
+
+	/**
+	 * Expand an Eclipse feature container into its member bundles, see
+	 * {@link FeatureExpander#getMembers}.
+	 */
+	@Override
+	public List<Container> getTypedResourceMembers(Container container, Set<String> visited) throws Exception {
+		return FeatureExpander.getMembers(this, container, visited);
 	}
 
 	@Override
@@ -196,5 +251,26 @@ public class P2Repository extends BaseRepository
 		return null;
 	}
 
+	/**
+	 * Get all features available in this P2 repository.
+	 *
+	 * @return a list of features, or empty list if none available
+	 * @throws Exception if an error occurs while fetching features
+	 */
+	public List<Feature> getFeatures() throws Exception {
+		return getP2Index().getFeatures();
+	}
+
+	/**
+	 * Get a specific feature by ID and version.
+	 *
+	 * @param id the feature ID
+	 * @param version the feature version
+	 * @return the feature, or null if not found
+	 * @throws Exception if an error occurs while fetching the feature
+	 */
+	public Feature getFeature(String id, String version) throws Exception {
+		return getP2Index().getFeature(id, version);
+	}
 
 }

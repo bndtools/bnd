@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: workspace
 summary: Get the absolute path to the workspace directory
 class: Workspace
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `workspace` macro returns the absolute file path to the current bnd workspace directory.

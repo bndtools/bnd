@@ -136,6 +136,14 @@ public class MbrUpdater {
 		return changes;
 	}
 
+	void convertTextXml() throws Exception {
+		repo.index.convertTextXml();
+	}
+
+	void createTrustedChecksumsFile() throws Exception {
+		repo.createTrustedChecksumsFile();
+	}
+
 	private String format(MultiMap<Archive, MavenVersion> overlap) {
 		Justif j = new Justif(140, 50, 60, 70, 80, 90, 100, 110);
 		j.formatter()

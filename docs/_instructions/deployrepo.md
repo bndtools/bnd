@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -deployrepo
 class: Project
 summary: |
    Specifies to which repo the project should be deployed.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

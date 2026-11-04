@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: startswith ';' STRING ';' PREFIX
 summary: Check if a string starts with a specific prefix
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `startswith` macro checks if a given string starts with a specified prefix. Returns the string if it matches, empty string otherwise.

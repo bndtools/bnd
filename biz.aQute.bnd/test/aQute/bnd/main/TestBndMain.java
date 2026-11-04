@@ -328,4 +328,16 @@ public class TestBndMain extends TestBndMainBase {
 		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
 		expectFileStatus(FileStatus.CREATED, "p3/generated/p3.jar");
 	}
+
+	@Test
+	public void testBaselineWorkspace() throws Exception {
+		initTestData(WORKSPACE);
+
+		executeBndCmd("baseline", "--workspace", ".");
+
+		// The workspace is found and projects are iterated; since the test
+		// projects do not have -baseline configured, the expected error is
+		// "No baseline JAR available" - indicating workspace iteration happened
+		expectErrorContains("No baseline JAR available");
+	}
 }

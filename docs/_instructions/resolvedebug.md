@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -resolvedebug INTEGER
 class: Workspace
 summary: |
    Display debugging information for a resolve operation
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

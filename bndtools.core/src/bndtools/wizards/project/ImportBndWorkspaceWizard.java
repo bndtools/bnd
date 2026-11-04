@@ -49,6 +49,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
+import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -60,7 +61,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 
-public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
+public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard, INewWizard {
 
 	private IWorkbench						workbench;
 

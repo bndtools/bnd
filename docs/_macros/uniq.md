@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: uniq (';' LIST )*
 summary: Remove duplicate elements from one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `uniq` macro combines one or more lists and removes all duplicate elements, preserving insertion order (first occurrence is kept).

@@ -1,11 +1,11 @@
 ---
-order: 330
 title: JPMS Libraries
 summary: Discusses how to use bnd to create JPMS libraries
-layout: default
+layout: bnd
 author: Raymond Augé
+parent: Packaging and Distribution
+nav_order: 2
 ---
-
 Java developers face a challenge today of building JPMS libraries, let alone when adding a secondary goal that those libraries be usable OSGi bundles. Accuracy and consistency of metadata can often become a problem reducing the time spent focusing on more productive aspect of the library.
 
 A key **OSGi** innovation is the use of annotations to significantly reduce (in many cases to completely eliminate) the configuration needed to describe an OSGi bundle in build descriptors. See [Bundle Annotations](230-manifest-annotations.html).

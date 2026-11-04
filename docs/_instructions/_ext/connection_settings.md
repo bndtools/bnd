@@ -154,6 +154,26 @@ getting a remote file.
 or in the `eclipse.ini` file or through some other means. In that case, make sure not specify the `<trust/>` nor `<verify/>` element 
 in a `connection-settings.xml`. The reason is that once you specify those element, the built-in Java mechanism is replaced with bnd code.
 
+## Overriding HTTP Request Headers
+
+The internal `HTTPClient` sets some HTTP requests headers by default, for example `"User-Agent=bnd"`.
+To customize the HTTP headers, you can use a plugin. 
+
+**Example: Customize User-Agent**
+
+
+
+```
+# e.g. in your /cnf/build.bnd
+-plugin.my-override-useragent: \
+  aQute.bnd.url.ConnectionSettings; \
+    match="https://repo.maven.apache.org/maven2/*"; \
+    User-Agent="My own User Agent"
+```
+
+With this configuration each HTTP requests by bnd (e.g. when downloading a dependency from Maven Central) will use that User-Agent instead of the default one. 
+
+
 
 [1]: https://bnd.discourse.group/t/using-client-certificate-for-server-authentication/85
 

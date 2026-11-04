@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: split ';' REGEX (';' STRING )*
 summary: Split strings into a list using a regular expression
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `split` macro splits one or more strings into a list using a regular expression as the delimiter. Empty segments are filtered out.

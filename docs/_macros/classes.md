@@ -1,11 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: classes ( ; QUERY ( ; PATTERN )? )*
 summary: A list of class names filtered by a query language
+parent: Macro Reference
 ---
-
-
 The classes macro provides a query function in an analyzed bundle. While analyzing, the Analyzer stores each found class on the Bundle-Classpath with some key information. A simple query language is used to query this dictionary. For example, if you want to make a manifest header with all public classes in the bundle:
 
     Public-Classes: ${classes;PUBLIC}

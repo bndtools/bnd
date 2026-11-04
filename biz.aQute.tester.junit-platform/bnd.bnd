@@ -12,11 +12,14 @@ Bundle-Description: \
 # The dependency on aQute packages is only for the
 # launcher side. When launched, those dependencies
 # are not necessary
+# JUnit 6 renumbered junit-platform from 1.x to 6.x, so the range spans both.
+# JUnit 6 exports its internal packages (e.g. org.junit.platform.commons.util)
+# with mandatory:=status, so this bundle must not use them.
 Import-Package: \
 	aQute.*;resolution:=optional,\
 	junit.*;version="${range;[==,5);${junit3.version}}";resolution:=optional,\
 	org.apache.felix.service.command;resolution:=optional,\
-	org.junit.platform.*;version="${range;[==,+);${junit.platform.tester.version}}",\
+	org.junit.platform.*;version="${range;[==,7);${junit.platform.tester.version}}",\
 	org.junit.*;version="${range;[==,+);${junit4.tester.version}}";resolution:=optional,\
 	*
 

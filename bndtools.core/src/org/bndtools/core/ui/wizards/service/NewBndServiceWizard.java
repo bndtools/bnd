@@ -30,6 +30,8 @@ public class NewBndServiceWizard extends AbstractNewBndServiceMultiProjectWizard
 	protected NewBndServiceWizardNonApiProjectPage	implPage;
 	protected NewBndServiceWizardNonApiProjectPage	consumerPage;
 	protected String								templateName;
+	protected String								implProjectSuffix;
+	protected String								consumerProjectSuffix;
 
 	protected TemplateParamsWizardPage createParamsPage() {
 		return new TemplateParamsWizardPage(ProjectTemplateParam.valueStrings());
@@ -37,27 +39,39 @@ public class NewBndServiceWizard extends AbstractNewBndServiceMultiProjectWizard
 
 	protected NewBndServiceWizardNonApiProjectPage createImplPage() {
 		return new NewBndServiceWizardNonApiProjectPage(
-			new NewBndServiceWizardPageOne(pageOne, ServiceTemplateConstants.DEFAULT_IMPL_SUFFIX, templateName));
+			new NewBndServiceWizardPageOne(pageOne,
+				implProjectSuffix == null ? ServiceTemplateConstants.DEFAULT_IMPL_SUFFIX : implProjectSuffix,
+				templateName));
 	}
 
 	protected NewBndServiceWizardNonApiProjectPage createConsumerPage() {
 		return new NewBndServiceWizardNonApiProjectPage(
-			new NewBndServiceWizardPageOne(pageOne, ServiceTemplateConstants.DEFAULT_CONSUMER_SUFFIX, templateName));
+			new NewBndServiceWizardPageOne(pageOne,
+				consumerProjectSuffix == null ? ServiceTemplateConstants.DEFAULT_CONSUMER_SUFFIX
+					: consumerProjectSuffix,
+				templateName));
 	}
 
 	public NewBndServiceWizard(final NewBndServiceWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo,
-		String templateName) {
+		String templateName, String implProjectSuffix, String consumerProjectSuffix) {
 		super(pageOne, pageTwo);
 		this.pageOne = pageOne;
 		this.templateName = templateName;
 		if (this.templateName != null) {
 			this.pageOne.setTemplateName(this.templateName);
 		}
+		this.implProjectSuffix = implProjectSuffix;
+		this.consumerProjectSuffix = consumerProjectSuffix;
 		// setup params page with normal bnd template project params
 		this.paramsPage = createParamsPage();
 		// setup impl page to use .impl project suffix
 		this.implPage = createImplPage();
 		this.consumerPage = createConsumerPage();
+	}
+
+	public NewBndServiceWizard(final NewBndServiceWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo,
+		String templateName) {
+		this(pageOne, pageTwo, templateName, null, null);
 	}
 
 	@SuppressWarnings("restriction")

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -maven-release ('local'|'remote') ( ',' option )*
 class: Project
 summary: |
    Set the Maven release options for the Maven Bnd Repository
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

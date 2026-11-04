@@ -889,10 +889,11 @@ public class AnalyzerTest {
 		try {
 			Properties p = new Properties();
 			p.put("Private-Package", "org.objectweb.*");
-			p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
+			p.put("Bundle-Activator", "test.activator.Activator");
 			a.setClasspath(new Jar[] {
 				new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
 			});
+			a.addClasspath(new File("bin_test"));
 			a.setProperties(p);
 			a.build();
 			Manifest manifest = a.getJar()
@@ -903,12 +904,12 @@ public class AnalyzerTest {
 			assertEquals(1, a.getWarnings()
 				.size());
 			assertTrue(
-				a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
+				a.check("Bundle-Activator test.activator.Activator is being imported into the bundle"));
 
 			String imports = manifest.getMainAttributes()
 				.getValue("Import-Package");
 			assertNotNull(imports);
-			assertTrue(imports.contains("org.osgi.framework"));
+			assertTrue(imports.contains("test.activator"));
 		} finally {
 			a.close();
 		}
@@ -1504,4 +1505,116 @@ public class AnalyzerTest {
 			return null;
 		return clauses.get(attr);
 	}
+
+	/**
+	 * Test Import-Packages marked with resolution:=conditional.
+	 * When package is from an OSGi bundle, it should be imported normally.
+	 */
+	@Test
+	public void testConditionalImportWithOSGiBundle() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			// Use resolution:=conditional for OSGi packages
+			p.put("Import-Package", "*;resolution:=conditional");
+			p.put("Private-Package", "test.conditionalimport");
+
+			a.addClasspath(new File("bin_test"));
+			a.addClasspath(IO.getFile("jar/osgi.jar")); // OSGi bundle
+
+			a.setProperties(p);
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			String imports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Import-Package");
+
+			// org.osgi.framework should be imported normally (from OSGi bundle)
+			assertNotNull(imports);
+			assertTrue(imports.contains("org.osgi.framework"));
+			// Should have version from OSGi bundle
+			assertTrue(imports.contains("version="));
+			assertFalse(imports.contains("resolution:=optional"));
+			assertFalse(imports.contains("resolution:=conditional"));
+
+		} finally {
+			a.close();
+		}
+	}
+
+	/**
+	 * Test Import-Packages marked with resolution:=conditional for non-OSGi jar.
+	 * The package should be embedded, not imported.
+	 */
+	@Test
+	public void testConditionalImportWithNonOSGiJar() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			// Use resolution:=conditional which should embed packages from non-OSGi jars
+			p.put("Import-Package", "*;resolution:=conditional");
+			p.put("Private-Package", "test.dynamicimport");
+
+			a.addClasspath(new File("bin_test"));
+			a.addClasspath(IO.getFile("jar/asm.jar")); // Non-OSGi jar
+			a.addClasspath(IO.getFile("jar/osgi.jar")); // OSGi bundle
+
+			a.setProperties(p);
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			String imports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Import-Package");
+
+			// org.osgi.framework should be imported (from OSGi bundle)
+			assertNotNull(imports);
+			assertTrue(imports.contains("org.osgi.framework"));
+
+			// ASM classes come from a non-OSGi jar, so they should be embedded
+			assertNotNull(jar.getResource("org/objectweb/asm/ClassReader.class"));
+			// and NOT imported
+			assertFalse(imports.contains("org.objectweb.asm"));
+
+		} finally {
+			a.close();
+		}
+	}
+
+	@Test
+	public void testConditionalImportWithTransitiveNonOSGiJar() throws Exception {
+		try (Jar dependency = new Jar("dependency")) {
+			dependency.putResource("test/conditionalimportlibrary/a/A.class",
+				new FileResource(IO.getFile("bin_test/test/conditionalimportlibrary/a/A.class")));
+			dependency.putResource("test/conditionalimportlibrary/b/B.class",
+				new FileResource(IO.getFile("bin_test/test/conditionalimportlibrary/b/B.class")));
+
+			try (Builder a = new Builder()) {
+				Properties p = new Properties();
+				p.put("Import-Package", "*;resolution:=conditional");
+				p.put("Private-Package", "test.conditionalimporttransitive");
+
+				a.addClasspath(new File("bin_test"));
+				a.addClasspath(dependency);
+
+				a.setProperties(p);
+				Jar jar = a.build();
+				assertTrue(a.check());
+
+				assertNotNull(jar.getResource("test/conditionalimportlibrary/a/A.class"));
+				assertNotNull(jar.getResource("test/conditionalimportlibrary/b/B.class"));
+
+				String imports = jar.getManifest()
+					.getMainAttributes()
+					.getValue("Import-Package");
+				if (imports != null) {
+					assertFalse(imports.contains("test.conditionalimportlibrary.a"));
+					assertFalse(imports.contains("test.conditionalimportlibrary.b"));
+				}
+			}
+		}
+	}
+
+
 }

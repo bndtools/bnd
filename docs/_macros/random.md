@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Processor
 title: random
 summary: Generate a random string that is a valid Java identifier
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `random` macro generates a random string that is guaranteed to be a valid Java identifier. The first character is always a letter, and subsequent characters are letters or numbers.

@@ -1,5 +1,8 @@
 package bndtools.preferences;
 
+import static bndtools.central.RebuildTriggerPolicy.REBUILDTRIGGERPOLICY_ALWAYS;
+import static bndtools.central.RebuildTriggerPolicy.REBUILDTRIGGERPOLICY_API;
+
 import java.io.Closeable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
@@ -20,6 +24,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.team.TeamUtils;
@@ -42,8 +47,10 @@ public class BndPreferences {
 	private static final String		PREF_BUILDBEFORELAUNCH			= "buildBeforeLaunch";
 	private static final String		PREF_ENABLE_TEMPLATE_REPO		= "enableTemplateRepo";
 	private static final String		PREF_TEMPLATE_REPO_URI_LIST		= "templateRepoUriList";
+	public static final String		PREF_WORKSPACE_TEMPLATE_INDEXES	= "workspaceTemplateIndexes";
 	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
 	private static final String		PREF_PARALLEL					= "parallel";
+	private static final String		PREF_REBUILD_TRIGGER_POLICY		= "rebuildTriggerPolicy";
 
 	static final String				PREF_WORKSPACE_OFFLINE			= "workspaceIsOffline";
 
@@ -63,8 +70,10 @@ public class BndPreferences {
 		store.setDefault(PREF_ENABLE_TEMPLATE_REPO, false);
 		store.setDefault(PREF_TEMPLATE_REPO_URI_LIST,
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
+		store.setDefault(PREF_WORKSPACE_TEMPLATE_INDEXES, FragmentTemplateEngine.DEFAULT_INDEX);
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
 		store.setDefault(PREF_PARALLEL, false);
+		store.setDefault(PREF_REBUILD_TRIGGER_POLICY, REBUILDTRIGGERPOLICY_ALWAYS);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
 		store.setDefault(QuickFixVersioning.PREFERENCE_KEY, QuickFixVersioning.DEFAULT.toString());
 		store.setDefault(PREF_EXPLORER_PROMPT, "");
@@ -210,6 +219,29 @@ public class BndPreferences {
 		store.setValue(PREF_TEMPLATE_REPO_URI_LIST, sb.toString());
 	}
 
+	public List<String> getWorkspaceTemplateIndexes() {
+		return parseUriList(store.getString(PREF_WORKSPACE_TEMPLATE_INDEXES));
+	}
+
+	public void setWorkspaceTemplateIndexes(List<String> uris) {
+		store.setValue(PREF_WORKSPACE_TEMPLATE_INDEXES, formatUriList(uris));
+	}
+
+	static List<String> parseUriList(String urisStr) {
+		if (urisStr == null || urisStr.isBlank())
+			return Collections.emptyList();
+		return Arrays.stream(urisStr.trim()
+			.split("\\s+"))
+			.filter(s -> !s.isBlank())
+			.collect(Collectors.toList());
+	}
+
+	static String formatUriList(List<String> uris) {
+		return uris.stream()
+			.filter(s -> s != null && !s.isBlank())
+			.collect(Collectors.joining(" "));
+	}
+
 	public IPreferenceStore getStore() {
 		return store;
 	}
@@ -305,6 +337,33 @@ public class BndPreferences {
 		return store.getBoolean(PREF_PARALLEL);
 	}
 
+	/**
+	 * Returns the stored rebuild trigger policy preference.
+	 *
+	 * @return the stored policy string; defaults to {@code "always"}.
+	 */
+	public String getRebuildTriggerPolicy() {
+		return store.getString(PREF_REBUILD_TRIGGER_POLICY);
+	}
+
+	/**
+	 * Sets the rebuild trigger policy.
+	 *
+	 * @param policy the policy to use; accepted values are {@code "always"}
+	 *            (rebuild on every change), {@code "api"} (skip rebuild when
+	 *            only non-API changes are detected), or Any other non-empty
+	 *            value is stored as-is but treated as {@code "always"} by the
+	 *            build infrastructure.
+	 */
+	public void setRebuildTriggerPolicy(String policy) {
+		String normalized = REBUILDTRIGGERPOLICY_API.equals(policy) ? policy : REBUILDTRIGGERPOLICY_ALWAYS;
+		store.setValue(PREF_REBUILD_TRIGGER_POLICY, normalized);
+
+		Workspace ws = Central.getWorkspaceIfPresent();
+		if (ws != null) {
+			Central.applyRebuildTriggerPolicy(ws);
+		}
+	}
 
 	public Closeable onString(String key, Consumer<String> listener) {
 		IPropertyChangeListener l = e -> {

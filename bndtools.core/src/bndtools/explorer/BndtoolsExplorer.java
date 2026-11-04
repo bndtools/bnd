@@ -1,5 +1,7 @@
 package bndtools.explorer;
 
+import static bndtools.central.RebuildTriggerPolicy.REBUILDTRIGGERPOLICY_ALWAYS;
+import static bndtools.central.RebuildTriggerPolicy.REBUILDTRIGGERPOLICY_API;
 import static org.eclipse.jface.layout.GridLayoutFactory.fillDefaults;
 
 import java.beans.PropertyChangeListener;
@@ -242,6 +244,9 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		toolBarManager.add(HelpButtons.HELP_BTN_BNDTOOLS_EXPLORER);
 		toolBarManager.update(true);
 
+		// Add rebuild trigger policy indicator
+		addRebuildTriggerPolicyIndicator(toolBarManager);
+
 		return header;
 	}
 
@@ -470,6 +475,52 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		runnable.run();
 		model.onUpdate(runnable);
 		return pin;
+	}
+
+	private void addRebuildTriggerPolicyIndicator(ToolBarManager toolBarManager) {
+		// Create a custom action that displays the current rebuild trigger
+		// policy
+		Action rebuildPolicyAction = new Action("Rebuild Trigger Policy") {
+			@Override
+			public void run() {
+				// Optional: Open preferences or show a menu
+				PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(null,
+					BndPreferencePage.PAGE_ID_BUILD, new String[] {}, null);
+				dialog.open();
+			}
+		};
+
+		// Update the action based on preferences
+		Runnable updatePolicyIndicator = () -> {
+			String policy = preferences.getRebuildTriggerPolicy();
+
+			if (REBUILDTRIGGERPOLICY_API.equals(policy)) {
+				rebuildPolicyAction.setText("Rebuild: Optimized");
+				rebuildPolicyAction.setToolTipText(
+					"Rebuild Trigger Policy: API-based rebuild optimization enabled - non-API changes just rebuild the current project and won't trigger cascades");
+				rebuildPolicyAction.setImageDescriptor(null);
+			} else if (REBUILDTRIGGERPOLICY_ALWAYS.equals(policy)) {
+				rebuildPolicyAction.setText("Rebuild: Always");
+				rebuildPolicyAction.setToolTipText("Rebuild Trigger Policy: All changes trigger downstream rebuilds");
+				rebuildPolicyAction.setImageDescriptor(null);
+			} else {
+				rebuildPolicyAction.setText("Rebuild: Unknown");
+				rebuildPolicyAction.setToolTipText("Rebuild Trigger Policy: Unknown value '" + policy + "'");
+				rebuildPolicyAction.setImageDescriptor(Icons.desc("errors"));
+			}
+			toolBarManager.update(true);
+		};
+
+		// Update on preference changes
+		closeables.add(preferences.onString("rebuildTriggerPolicy", (value) -> {
+			updatePolicyIndicator.run();
+		}));
+
+		// Initial update
+		updatePolicyIndicator.run();
+
+		// Add to toolbar
+		toolBarManager.add(rebuildPolicyAction);
 	}
 
 	private void fixupRefactoringPasteAction(FilterPanelPart filterPart) {

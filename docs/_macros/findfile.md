@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Project
 title:	findfile ';' PATH ( ';' FILTER )
 summary: Get filtered list of file paths from a directory tree
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `findfile` macro recursively searches a directory and returns a filtered list of relative file paths matching the specified filter pattern.

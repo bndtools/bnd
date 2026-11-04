@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -pedantic BOOLEAN
 class: Processor
 summary: |
    Warn about things that are not really wrong but still not right.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: vmax (';' LIST )*
 summary: Find the maximum version in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `vmax` macro compares version strings using OSGi semantic versioning rules and returns the maximum (highest) version.

@@ -22,13 +22,15 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
+import biz.aQute.resolve.Slf4jResolverLogger;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
+import javax.inject.Inject;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -102,13 +104,13 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.basedir}")
 	private File 												bndrunDir;
 
-	@Component
+	@Inject
 	private RepositorySystem									system;
 
-	@Component
+	@Inject
 	private ProjectDependenciesResolver							resolver;
 
-	@Component
+	@Inject
 	@SuppressWarnings("deprecation")
 	protected org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
@@ -154,8 +156,8 @@ public class ExportMojo extends AbstractMojo {
 	private Operation getOperation() {
 		return (file, bndrun, run) -> {
 			if (resolve) {
-				try {
-					String runBundles = run.resolve(failOnChanges, false);
+				try (ResolverLogger rl = new Slf4jResolverLogger()) {
+					String runBundles = run.resolve(failOnChanges, false, rl);
 					if (run.isOk()) {
 						logger.info("{}: {}", Constants.RUNBUNDLES, runBundles);
 						run.setProperty(Constants.RUNBUNDLES, runBundles);

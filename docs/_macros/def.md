@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: def ';' KEY (';' STRING)?
 summary: Get a property value with an optional default
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `def` macro looks up a property by key and returns its value, or returns a default value if the property is not set. The default is an empty string if not specified.

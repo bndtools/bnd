@@ -3,6 +3,8 @@ package bndtools.model.repo;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.osgi.framework.namespace.IdentityNamespace;
+
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
@@ -75,5 +77,31 @@ public class RepositoryBundle extends RepositoryEntry implements Actionable {
 		} catch (Exception e) {
 			return getBsn();
 		}
+	}
+
+	@Override
+	protected Map<String, String> getProperties() {
+		return Map.of(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE);
+	}
+
+	/**
+	 * Override to filter out features when looking up bundles. When a feature
+	 * and bundle share the same ID, we want the bundle, not the feature.
+	 */
+	@Override
+	protected boolean acceptResourceType(org.osgi.resource.Resource resource) {
+		// Reject resources that are features
+		return !isFeatureResource(resource);
+	}
+
+	/**
+	 * Check if a resource represents an Eclipse feature rather than a bundle.
+	 */
+	private boolean isFeatureResource(org.osgi.resource.Resource resource) {
+		return resource.getCapabilities(org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE)
+			.stream()
+			.anyMatch(cap -> "org.eclipse.update.feature"
+				.equals(cap.getAttributes()
+					.get(org.osgi.framework.namespace.IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE)));
 	}
 }

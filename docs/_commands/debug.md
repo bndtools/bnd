@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: debug
 summary: |
    Show a lot of info about the project you're in
+parent: bnd CLI Commands
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -manifest-name  RESOURCE
 class: Ant
 summary: |
    Set the resource path to the manifest, for certain standards the manifest has a different name.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

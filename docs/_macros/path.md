@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: path ( ';' FILES )+
 summary: Join file paths with the OS path separator
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `path` macro joins one or more lists of file paths using the operating system's path separator (`:` on Unix, `;` on Windows). This is useful for creating classpaths and other path lists.

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runframework ( 'none' | 'services' | ANY )?
 class: Launcher
 summary: |
    Sets the type of framework to run. If 'none', an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.annotation.baseline.BaselineIgnore;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.memoize.Memoize;
 import aQute.bnd.unmodifiable.Maps;
@@ -50,6 +51,7 @@ import aQute.lib.utf8properties.UTF8Properties;
  * <hr />
  * Ensure you only add Major and minor versions (the 7.2.1 below was a mistake)
  */
+@BaselineIgnore("8.0.0")
 public class About {
 	private final static Logger					logger		= LoggerFactory.getLogger(About.class);
 	public static final Version					_2_3		= new Version(2, 3, 0);
@@ -77,9 +79,23 @@ public class About {
 	public static final Version					_7_1		= new Version(7, 1, 0);
 	public static final Version					_7_2		= new Version(7, 2, 0);
 	public static final Version					_7_2_1			= new Version(7, 2, 1);
+	public static final Version					_7_2_2			= new Version(7, 2, 2);
+	public static final Version					_7_2_3			= new Version(7, 2, 3);
 	public static final Version					_7_3		= new Version(7, 3, 0);
-	public static final Version					CURRENT		= _7_3;
+	public static final Version					_7_4		= new Version(7, 4, 0);
+	public static final Version					_7_5		= new Version(7, 5, 0);
+	public static final Version					_7_6		= new Version(7, 6, 0);
+	public static final Version					CURRENT		= _7_6;
 
+	public static final String[]				CHANGES_7_6	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.6.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_7_5	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.5.0 for a list of changes."
+	};
+	public static final String[]				CHANGES_7_4	= {
+		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.4.0 for a list of changes."
+	};
 	public static final String[]				CHANGES_7_3	= {
 		"See https://github.com/bndtools/bnd/wiki/Changes-in-7.3.0 for a list of changes."
 	};
@@ -299,6 +315,9 @@ public class About {
 
 	public static final Map<Version, String[]>	CHANGES		= Maps.ofEntries(
 		// In decreasing order
+		Maps.entry(_7_6, CHANGES_7_6),
+		Maps.entry(_7_5, CHANGES_7_5),																																							//
+		Maps.entry(_7_4, CHANGES_7_4),																																							//
 		Maps.entry(_7_2, CHANGES_7_2),																																							//
 		Maps.entry(_7_1, CHANGES_7_1),																																							//
 		Maps.entry(_7_0, CHANGES_7_0),																																							//

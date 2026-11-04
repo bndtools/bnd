@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: filter ';' LIST ';' REGEX
 summary: Filter a list to include only entries matching a regular expression
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `filter` macro filters a list to include only those entries that match a specified regular expression pattern. Entries that don't match are removed from the result.

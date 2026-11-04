@@ -1,9 +1,10 @@
 ---
 title: Tips for Windows users
-layout: default
+layout: bnd
 author: Fr Jeremy Krieg
+parent: Documentation and Tools
+nav_order: 5
 ---
-
 Bnd and Bndtools runs on any system that can run Eclipse. However, every operating system is different and has its own quirks. Windows in particular has a few that impact developers using Bnd. While the Bnd experience may never be as smooth on Windows as it is on macOS or Linux, there are a few tweaks that make it a lot smoother than what comes out of the box.
 
 It is possible that some of the tips listed here will also help for Eclipse development work in general, or perhaps any development work on Windows. 

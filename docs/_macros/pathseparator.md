@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 summary: Get the operating system's path separator character
 title: pathseparator
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `pathseparator` macro returns the operating system's path separator character used to separate entries in path lists like classpaths.

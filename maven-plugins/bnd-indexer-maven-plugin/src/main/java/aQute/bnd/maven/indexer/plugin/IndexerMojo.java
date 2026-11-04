@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.maven.lib.resolve.LocalURLs;
 import aQute.bnd.maven.lib.resolve.RemotePostProcessor;
@@ -34,11 +36,9 @@ import org.apache.maven.artifact.repository.metadata.io.MetadataReader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -123,17 +123,14 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "altDeploymentRepository")
 	private String						altDeploymentRepository;
 
-	@Component
+	@Inject
 	private RepositorySystem			system;
 
-	@Component
+	@Inject
 	private ProjectDependenciesResolver	resolver;
 
-	@Component
+	@Inject
 	private MetadataReader				metadataReader;
-
-	@Component
-	private MavenProjectHelper			projectHelper;
 
 	private boolean						fail;
 

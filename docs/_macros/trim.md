@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: trim ';' STRING 
 summary: Remove leading and trailing whitespace from a string
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `trim` macro removes leading and trailing whitespace from a string. It uses Java's `String.trim()` method, which removes spaces, tabs, newlines, and other whitespace characters.

@@ -60,7 +60,9 @@ public class DiffPluginImpl implements Differ {
 		Constants.BUNDLE_NATIVECODE,																						//
 		Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT,																		//
 		Constants.DYNAMICIMPORT_PACKAGE,																					//
-		Constants.BUNDLE_VERSION);
+		Constants.BUNDLE_VERSION,								//
+		Constants.REQUIRE_CAPABILITY,							//
+		Constants.PROVIDE_CAPABILITY);
 
 	/**
 	 * Headers that are considered not major enough to be considered

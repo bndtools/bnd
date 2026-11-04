@@ -1,9 +1,9 @@
 ---
 title: Bnd Gradle Plugins
-layout: default
+layout: bnd
 summary: The Bnd Gradle Plugins from the Bnd developers.
+parent: Tools bound to bnd
 ---
-
 See the [documentation on GitHub][1] for details on how to configure and
 use the Bnd Gradle plugins.
 

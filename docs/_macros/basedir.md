@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Processor
 title: basedir
 summary: Get the base directory of the current processor context
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `basedir` macro returns the absolute path to the base directory of the current processor (project, workspace, or build context). This is the root directory from which relative paths are resolved.

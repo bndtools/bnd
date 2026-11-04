@@ -5,7 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,18 +27,25 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.RepoCollector;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
@@ -39,6 +55,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.service.JarLifecycleListener;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
@@ -55,6 +72,48 @@ public class ProjectTest {
 	File tmp;
 
 	@Test
+	public void testTestingCleansUpLauncherWhenPreparationReportsError() throws Exception {
+		IO.mkdirs(new File(tmp, Workspace.CNFDIR));
+		try (Workspace workspace = new Workspace(tmp); Project project = spy(new Project(workspace, tmp))) {
+			ProjectTester tester = mock(ProjectTester.class);
+			ProjectLauncher launcher = mock(ProjectLauncher.class);
+			doReturn(tester).when(project)
+				.getProjectTester();
+			when(tester.getProjectLauncher()).thenReturn(launcher);
+			doAnswer(invocation -> {
+				project.error("Test preparation failed");
+				return true;
+			}).when(tester)
+				.prepare();
+
+			project.test(null, null);
+
+			verify(launcher).cleanup();
+			verify(tester, never()).test();
+		}
+	}
+
+	@Test
+	public void testTestingCleansUpLauncherWhenPreparationThrows() throws Exception {
+		IO.mkdirs(new File(tmp, Workspace.CNFDIR));
+		try (Workspace workspace = new Workspace(tmp); Project project = spy(new Project(workspace, tmp))) {
+			ProjectTester tester = mock(ProjectTester.class);
+			ProjectLauncher launcher = mock(ProjectLauncher.class);
+			doReturn(tester).when(project)
+				.getProjectTester();
+			when(tester.getProjectLauncher()).thenReturn(launcher);
+			doThrow(new IOException("Test preparation failed")).when(tester)
+				.prepare();
+
+			assertThrows(IOException.class, () -> project.test(null, null));
+
+			verify(launcher).cleanup();
+			verify(tester, never()).test();
+		}
+	}
+
+	@Test
+	@DisabledOnOs(OS.WINDOWS)
 	public void testAliasbuild() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p3");
@@ -493,7 +552,8 @@ public class ProjectTest {
 		top.clear();
 		top.setProperty("-runbundles", "org.apache.felix.configadmin,org.apache.felix.configadmin");
 		Collection<Container> runbundles = top.getRunbundles();
-		assertTrue(top.check("Multiple bundles with the same final URL", "Duplicate name"));
+		assertTrue(top.check("Multiple bundles with the same final URL", "Duplicate name",
+			"\\[Property Conflict\\]: `Header-1` is defined more than once"));
 		assertNotNull(runbundles);
 		assertEquals(1, runbundles.size());
 	}
@@ -547,6 +607,72 @@ public class ProjectTest {
 	}
 
 	/**
+	 * Verify that JarLifecycleListener plugins are called at the right times.
+	 */
+	@Test
+	public void testJarLifecycleListenerIntegration() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p-stale");
+		assertNotNull(project);
+
+		// Register a mock listener to verify it's called
+		AtomicBoolean beforeCalled = new AtomicBoolean();
+		AtomicBoolean afterCalled = new AtomicBoolean();
+
+		JarLifecycleListener mockListener = new JarLifecycleListener() {
+			@Override
+			public void beforeWrite(Project p, Jar jar, File outputFile, Map<String, Object> context) {
+				beforeCalled.set(true);
+			}
+
+			@Override
+			public void afterWrite(Project p, File outputFile, Jar jar, Map<String, Object> context) {
+				afterCalled.set(true);
+			}
+		};
+
+		ws.addBasicPlugin(mockListener);
+
+		// Build
+		File[] built = project.build();
+		assertNotNull(built);
+		assertThat(built.length).isGreaterThan(0);
+
+		// Verify listeners were called
+		assertThat(beforeCalled).isTrue();
+		assertThat(afterCalled).isTrue();
+	}
+
+	/**
+	 * Verify that the context map is passed correctly and allows data exchange.
+	 */
+	@Test
+	public void testJarArtifactWriteContextDataExchange() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p-stale");
+
+		AtomicReference<String> afterData = new AtomicReference<>();
+
+		JarLifecycleListener testListener = new JarLifecycleListener() {
+			@Override
+			public void beforeWrite(Project p, Jar jar, File outputFile, Map<String, Object> context) {
+				context.put("testKey", "testValue");
+			}
+
+			@Override
+			public void afterWrite(Project p, File outputFile, Jar jar, Map<String, Object> context) {
+				afterData.set((String) context.get("testKey"));
+			}
+		};
+
+		ws.addBasicPlugin(testListener);
+		project.build();
+
+		assertThat(afterData.get()).isEqualTo("testValue");
+	}
+
+
+	/**
 	 * Check multiple repos
 	 *
 	 * @throws Exception
@@ -562,7 +688,8 @@ public class ProjectTest {
 
 		List<Container> bundles = project.getBundles(Strategy.LOWEST,
 			"org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
-		assertTrue(project.check("Multiple bundles with the same final URL", "Duplicate name"));
+		assertTrue(project.check("Multiple bundles with the same final URL", "Duplicate name",
+			"\\[Property Conflict\\]: `Header-1` is defined more than once"));
 		assertEquals(1, bundles.size());
 	}
 
@@ -868,6 +995,25 @@ public class ProjectTest {
 			assertThat(two.toString()).endsWith("org.apache.felix.ipojo-1.0.0.jar");
 
 		}
+	}
+
+	/**
+	 * Test for https://github.com/bndtools/bnd/issues/7303 that no NPE is
+	 * thrown.
+	 */
+	@Test
+	public void testRepoCollectorNoNPEWorkspaceOpenNotCalled() throws Exception {
+
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws-repocollector"), "cnf").setOffline(false);
+			Project project = ws.getProject("p1");
+		) {
+			List<String> errors = project.getErrors();
+			List<String> warnings = project.getWarnings();
+
+			assertThat(errors).hasSize(0);
+			assertThat(warnings).hasSize(0);
+		}
+
 	}
 
 	@Test
@@ -1310,6 +1456,16 @@ public class ProjectTest {
 		return new Workspace(tmp);
 	}
 
+	/**
+	 * This method calles the 2-arg constructor of Workspace, which was
+	 * important for a bugfix, because this constructor does not call
+	 * Workspace.open()
+	 */
+	private Workspace getWorkspace(File file, String bndDir) throws Exception {
+		IO.copy(file, tmp);
+		return new Workspace(tmp, bndDir);
+	}
+
 	private Workspace getWorkspace(String dir) throws Exception {
 		return getWorkspace(new File(dir));
 	}
@@ -1426,7 +1582,7 @@ public class ProjectTest {
 
 			softly.assertThat(a.getWarnings())
 				.as("pedantic warnings")
-				.containsExactly("Duplicate property key: `Header-1`: <<Header-1: b>>");
+				.singleElement().asString().contains("[Property Conflict]: `Header-1` is defined more than once");
 			softly.assertThat(a.getErrors()).as("pedantic errors").isEmpty();
 
 		}
@@ -1442,6 +1598,29 @@ public class ProjectTest {
 			softly.assertThat(a.getErrors())
 				.as("non-pedantic errors")
 				.isEmpty();
+		}
+	}
+
+	@Test
+	public void testPropertyConflictsFailBuild() throws Exception {
+		IO.mkdirs(new File(tmp, "cnf"));
+		File directory = new File(tmp, "conflicts");
+		IO.mkdirs(directory);
+		IO.store("resource", new File(directory, "data.txt"));
+		File file = new File(directory, "bnd.bnd");
+		String content = "-resourceonly: true\n-includeresource: data.txt\nname: first\nname: last\n";
+		IO.store(content + "-propertyconflicts: error\n", file);
+		try (Workspace workspace = new Workspace(tmp)) {
+			Project project = workspace.getProject("conflicts");
+			assertThat(project.build()).isNull();
+			assertThat(project.getErrors()).anySatisfy(message -> assertThat(message).contains("[Property Conflict]"));
+			assertThat(project.build()).isNull();
+			IO.store(content + "-propertyconflicts: warning\n", file);
+			project.clear();
+			project.forceRefresh();
+			assertThat(project.build()).isNotEmpty();
+			assertThat(project.getErrors()).isEmpty();
+			assertThat(project.getWarnings()).anySatisfy(message -> assertThat(message).contains("[Property Conflict]"));
 		}
 	}
 }

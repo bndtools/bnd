@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: lsr ';' DIR (';' SELECTORS )
 summary: List files with relative paths, optionally filtered
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `lsr` macro returns a comma-separated list of relative file paths from a directory, with optional filtering using selectors.

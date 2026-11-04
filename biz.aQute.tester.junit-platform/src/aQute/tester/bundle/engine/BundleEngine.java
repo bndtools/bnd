@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.platform.commons.JUnitException;
-import org.junit.platform.commons.util.Preconditions;
+import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -70,13 +70,16 @@ public class BundleEngine implements TestEngine {
 		final EngineExecutionListener listener = request.getEngineExecutionListener();
 		final ConfigurationParameters params = request.getConfigurationParameters();
 
-		Preconditions.condition(root instanceof BundleEngineDescriptor,
-			"Root descriptor should be an instance of BundleEngineDescriptor, was " + root.getClass());
-		Preconditions.condition(root.getChildren()
+		if (!(root instanceof BundleEngineDescriptor)) {
+			throw new PreconditionViolationException(
+				"Root descriptor should be an instance of BundleEngineDescriptor, was " + root.getClass());
+		}
+		if (!root.getChildren()
 			.stream()
 			.allMatch(
-				descriptor -> descriptor instanceof BundleDescriptor || descriptor instanceof StaticFailureDescriptor),
-			"Child descriptors should all be BundleDescriptors or StaticFailureDescriptors");
+				descriptor -> descriptor instanceof BundleDescriptor || descriptor instanceof StaticFailureDescriptor)) {
+			throw new PreconditionViolationException("Child descriptors should all be BundleDescriptors or StaticFailureDescriptors");
+		}
 		listener.executionStarted(root);
 		try {
 			Optional<StaticFailureDescriptor> staticFailureDescriptor = root.getChildren()

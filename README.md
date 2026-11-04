@@ -10,7 +10,7 @@ https://github.com/bndtools/bnd/releases/latest
 
 # bnd & bndtools 
 
-Bnd/Bndtools is a swiss army knife for OSGi. It creates manifest headers for you based on analyzing the class code, it verifies your settings, it manages project dependencies, diffs jars, and much more. At the core is a library with all the functions. The library is then used in a myriad of subsystems to provide the core functionality to the rest of the world.
+Bnd/Bndtools is a swiss army knife for OSGi. It creates manifest headers for you based on analyzing the class code, it verifies your settings, it manages project dependencies, diffs jars, and much more. At the core is a library with all the functions (see our [bnd cheatsheet](https://github.com/bndtools/workspace-templates/blob/master/cheatsheet/org.bndtools.cheatsheet/bnd.bnd)). The library is then used in a myriad of subsystems to provide the core functionality to the rest of the world.
 
 * [bndlib and friends](https://bnd.bndtools.org) – The core library plus repository, resolve, etc.
 * [maven plugins](maven-plugins/README.md) – A full set of maven plugins that make bnd useful for maven users
@@ -18,6 +18,13 @@ Bnd/Bndtools is a swiss army knife for OSGi. It creates manifest headers for you
 * [bnd](biz.aQute.bnd) – a command line utility with a hodgepodge of sometimes extremely useful functions. Can even be used instead of a build tool. is available through [Homebrew formula](https://formulae.brew.sh/formula/bnd).
 * [gradle plugin(s)](gradle-plugins/README.md) – A bnd workspace plugin that builds identical to Eclipse's bndtool as well as a gradle plugin that provides bnd support for non-workspace projects
 * ant – well ...
+
+## Eclipse Feature Browsing
+
+Bndtools displays Eclipse features from both P2 repositories and their generated
+OSGi indexes. The Repositories view toolbar provides **Show Eclipse Features**
+to show or hide them; the setting is remembered. Feature selections also expose
+their capabilities and requirements in the resolution view.
 
 ## Feedback
 
@@ -89,7 +96,7 @@ Use the latest **stable release** for normal development.
 <plugin>
   <groupId>biz.aQute.bnd</groupId>
   <artifactId>bnd-maven-plugin</artifactId>
-  <version>7.2.1</version>
+  <version></version>
 </plugin>
 ```
 
@@ -97,7 +104,7 @@ Use the latest **stable release** for normal development.
 
 ```gradle
 plugins {
-  id "biz.aQute.bnd.builder" version "7.2.1"
+  id "biz.aQute.bnd.builder" version "7.4.0"
 }
 ```
 
@@ -118,7 +125,7 @@ pluginManagement {
 }
 
 plugins {
-  id "biz.aQute.bnd.builder" version "X.Y.Z.RC1"
+  id "biz.aQute.bnd.builder" version "X.Y.Z-RC1"
 }
 ```
 
@@ -133,7 +140,7 @@ plugins {
 <plugin>
   <groupId>biz.aQute.bnd</groupId>
   <artifactId>bnd-maven-plugin</artifactId>
-  <version>X.Y.Z.RC1</version>
+  <version>X.Y.Z-RC1</version>
 </plugin>
 ```
 

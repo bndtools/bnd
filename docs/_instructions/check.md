@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -check 'ALL' | ( 'IMPORTS' | 'EXPORTS' ) *
 class: Analyzer
 summary: |
    Enable additional checking
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

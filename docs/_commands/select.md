@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: select
 summary: |
    Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.
+parent: bnd CLI Commands
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 

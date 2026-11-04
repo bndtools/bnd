@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: exports
 summary: Get the list of packages exported by the current bundle
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `exports` macro returns a comma-separated list of packages that will be exported by the current bundle. The list can be optionally filtered by providing filter arguments.

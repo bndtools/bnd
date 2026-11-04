@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
@@ -98,6 +99,9 @@ public class BaselineCommands {
 
 		@Description("Packages to baseline (comma delimited)")
 		String packages();
+
+		@Description("Baseline all projects in the workspace at the given path")
+		String workspace();
 	}
 
 	/**
@@ -110,32 +114,22 @@ public class BaselineCommands {
 
 		List<String> args = opts._arguments();
 		if (args.isEmpty()) {
+			if (opts.workspace() != null) {
+				Workspace ws = bnd.getWorkspace(opts.workspace());
+				if (ws == null) {
+					bnd.error("No workspace found at %s", opts.workspace());
+					return;
+				}
+				for (Project project : ws.getAllProjects()) {
+					baselineProject(opts, project);
+					bnd.getInfo(project);
+				}
+				bnd.getInfo(ws);
+				return;
+			}
 			Project project = bnd.getProject();
 			if (project != null) {
-				try (ProjectBuilder parentBuilder = project.getBuilder(null)) {
-					for (Builder b : parentBuilder.getSubBuilders()) {
-						ProjectBuilder pb = (ProjectBuilder) b;
-						try (Jar older = pb.getBaselineJar()) {
-							if (older == null) {
-								bnd.error("No baseline JAR available. Did you set " + Constants.BASELINE);
-								return;
-							}
-							pb.setProperty(Constants.BASELINE, ""); // do not do
-																	// baselining
-																	// in
-																	// build
-							// make sure disabling is after getting the baseline
-							// jar
-
-							try (Jar newer = pb.build()) {
-								differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
-								baseline(opts, newer, older,
-									opts.packages() != null ? new Instructions(opts.packages()) : null);
-								bnd.getInfo(b);
-							}
-						}
-					}
-				}
+				baselineProject(opts, project);
 				bnd.getInfo(project);
 				return;
 			}
@@ -155,6 +149,33 @@ public class BaselineCommands {
 		Jar nj = new Jar(newer);
 		Jar oj = new Jar(older);
 		baseline(opts, nj, oj, opts.packages() != null ? new Instructions(opts.packages()) : null);
+	}
+
+	private void baselineProject(baseLineOptions opts, Project project) throws Exception {
+		try (ProjectBuilder parentBuilder = project.getBuilder(null)) {
+			for (Builder b : parentBuilder.getSubBuilders()) {
+				ProjectBuilder pb = (ProjectBuilder) b;
+				try (Jar older = pb.getBaselineJar()) {
+					if (older == null) {
+						bnd.error("No baseline JAR available. Did you set " + Constants.BASELINE);
+						return;
+					}
+					pb.setProperty(Constants.BASELINE, ""); // do not do
+																// baselining
+																// in
+																// build
+					// make sure disabling is after getting the baseline
+					// jar
+
+					try (Jar newer = pb.build()) {
+						differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
+						baseline(opts, newer, older,
+							opts.packages() != null ? new Instructions(opts.packages()) : null);
+						bnd.getInfo(b);
+					}
+				}
+			}
+		}
 	}
 
 	private void baseline(baseLineOptions opts, Jar newer, Jar older, Instructions packages)

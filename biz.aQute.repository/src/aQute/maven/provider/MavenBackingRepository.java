@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.bnd.http.HttpClient;
@@ -36,14 +35,14 @@ public abstract class MavenBackingRepository implements Closeable {
 	// MD5(xercesImpl-2.9.0.jar)= 33ec8d237cbaceeffb2c2a7f52afd79a
 	// SHA1(xercesImpl-2.9.0.jar)= 868c0792233fc78d8c9bac29ac79ade988301318
 
-	final static Pattern					DIGEST_POLLUTED	= Pattern
-		.compile("(.+=\\s*)?(?<digest>([0-9A-F][0-9A-F])+)\\s*", Pattern.CASE_INSENSITIVE);
+	final static Pattern					DIGEST_POLLUTED	= DigestValidator.DIGEST_POLLUTED;
 
 	final Map<Revision, RevisionMetadata>	revisions		= new ConcurrentHashMap<>();
 	final Map<Program, ProgramMetadata>		programs		= new ConcurrentHashMap<>();
 	final String							id;
 	final File								local;
 	final Reporter							reporter;
+
 
 	public MavenBackingRepository(File root, String base, Reporter reporter) throws Exception {
 		this.local = root;
@@ -64,33 +63,7 @@ public abstract class MavenBackingRepository implements Closeable {
 	public abstract TaggedData fetch(String path, File file, boolean force) throws Exception;
 
 	protected void checkDigest(String fileDigest, String remoteDigest, File file) {
-		if (remoteDigest == null)
-			return;
-
-		Matcher m = DIGEST_POLLUTED.matcher(remoteDigest);
-		if (m.matches())
-			remoteDigest = m.group("digest");
-
-		try {
-			int start = 0;
-			while (start < remoteDigest.length() && Character.isWhitespace(remoteDigest.charAt(start)))
-				start++;
-
-			for (int i = 0; i < fileDigest.length(); i++) {
-				if (start + i < remoteDigest.length()) {
-					char us = fileDigest.charAt(i);
-					char them = remoteDigest.charAt(start + i);
-					if (us == them || Character.toLowerCase(us) == Character.toLowerCase(them))
-						continue;
-				}
-				throw new IllegalArgumentException(
-					"Invalid content checksum " + fileDigest + " for " + file + "; expected " + remoteDigest);
-			}
-
-		} catch (Exception e) {
-			IO.delete(file);
-			throw e;
-		}
+		DigestValidator.checkDigest(file, fileDigest, remoteDigest);
 	}
 
 	public abstract void store(File file, String path) throws Exception;

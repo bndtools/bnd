@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: imports
 summary: Get the list of packages imported by the current bundle
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `imports` macro returns a comma-separated list of packages that will be imported by the current bundle. The list can be optionally filtered by providing filter arguments.

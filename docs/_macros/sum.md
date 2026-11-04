@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: sum (';' LIST )*
 summary: Calculate the sum of numeric values in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `sum` macro calculates the sum of all numeric values provided in one or more lists. Each element is parsed as a double-precision floating-point number.

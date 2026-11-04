@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -pluginpath* PARAMETERS
 class: Processor
 summary: |
    Define JARs to be loaded in the local classloader for plugins.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

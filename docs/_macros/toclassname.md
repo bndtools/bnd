@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: toclassname ';' FILES
 summary: Convert file paths to fully qualified class names
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `toclassname` macro converts a list of file paths (`.class` or `.java` files) to fully qualified class names by removing the extension and converting path separators to dots.

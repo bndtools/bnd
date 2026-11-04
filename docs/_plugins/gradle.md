@@ -1,5 +1,6 @@
 ---
 title: Gradle Workspace Plugin
-layout: default
+layout: bnd
 summary: Provides the proper setup for a project when it is used in gradle 
+parent: Plugins
 ---

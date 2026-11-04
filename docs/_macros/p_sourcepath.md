@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: 	Project
 title: p_sourcepath
 summary: Get the project's source directories
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `p_sourcepath` macro returns the project's source directories as a comma-separated list of paths.

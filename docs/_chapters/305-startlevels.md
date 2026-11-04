@@ -1,9 +1,9 @@
 ---
-order: 305
 title: Startlevels
-layout: default
+layout: bnd
+parent: Dependency and Launching
+nav_order: 3
 ---
-
 One of the primary authors of bnd has always objected to startlevels. His motivation was twofold:
 
 * A dynamic OSGi system should be able to startup in any order. Startlevels are often abused to hide bundles

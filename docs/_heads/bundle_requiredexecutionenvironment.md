@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-RequiredExecutionEnvironment ::= ee-name ( ',' ee-name )*
 class: Header
 summary: |
    The Bundle-RequiredExecutionEnvironment contains a comma-separated list of execution environ- ments that must be present on the OSGi framework. See Execution Environment on page 44. This header is deprecated.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

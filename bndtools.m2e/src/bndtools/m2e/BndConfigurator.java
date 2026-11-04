@@ -38,6 +38,8 @@ import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.lifecyclemapping.model.IPluginExecutionMetadata;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
+import org.eclipse.m2e.core.project.IProjectConfiguration;
+import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant;
 import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant2;
 import org.eclipse.m2e.core.project.configurator.MojoExecutionBuildParticipant;
@@ -298,8 +300,10 @@ public class BndConfigurator extends ServiceAwareM2EConfigurator {
 	private void execJarMojo(IMaven maven, IMavenProjectRegistry projectRegistry,
 		final IMavenProjectFacade projectFacade, IProgressMonitor monitor, boolean isTest)
 		throws CoreException {
-		projectFacade.getResolverConfiguration()
-			.setResolveWorkspaceProjects(true);
+		IProjectConfiguration configuration = projectFacade.getConfiguration();
+		if (configuration instanceof ResolverConfiguration rc) {
+			rc.setResolveWorkspaceProjects(true);
+		}
 
 		projectRegistry.execute(projectFacade, (context1, monitor1) -> {
 			SubMonitor progress = SubMonitor.convert(monitor1);

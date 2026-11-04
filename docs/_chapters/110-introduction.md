@@ -1,8 +1,9 @@
 ---
 title: Introduction
-layout: default
+layout: bnd
+parent: Getting Started
+nav_order: 1
 ---
-
 bnd is the Swiss army knife of OSGi, it is used for creating and working with OSGi bundles. 
 Its primary goal is take the pain out of developing bundles.
 

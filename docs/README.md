@@ -77,39 +77,10 @@ Please add file with the same name in that `_ext` sub-folder and then this conte
 
 
 
-## Local development with Pagefind search
+## Local search
 
-We use https://pagefind.app/ for our search field full text search. 
-But it is currently not automatically working when using `./run.sh` above, because it works on the 
-actual build-output on the `_site` folder (which contains the actual `.html` pages). 
-
-To test the search locally based on the `_site` folder content, run:
-
-
-`./run-pagefind-linux.sh`
-
-or
-
-`run-pagefind-macos.sh`
-
-depending on which operating system you are using. 
-
-The result should look like:
-
-`Serving "_site" at http://localhost:1414`
-
-
-The script will download and execute the pagefind executable binary after the build.
-Then it will start a small server where you test the result. 
-Note, that this is different than the `./run.sh` and does not support real-time editing of the content.
-
-Feel free to adjust / extend the start-scripts if you have a different architecture 
-or to use a different `pagefind` version. 
-
-### pagefind for production build via github actions
-
-See the files `.github/workflows/cibuild.yml` and `.github/scripts/docs.sh` for how 
-building the site and executing `pagefind` is done in the final build on github.
+Search uses the built-in Just-the-Docs/Lunr integration configured in `_config.yml`.
+It works when running `./run.sh` locally and in the standard docs build in CI.
 
 
 ### CSS Styling for Code Highlighter

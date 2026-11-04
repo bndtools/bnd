@@ -29,6 +29,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -49,7 +50,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -76,31 +77,39 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.resource.Requirement;
 import org.osgi.service.event.Event;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.osgi.resource.FilterParser.PackageExpression;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Actionable;
+import aQute.bnd.repository.p2.provider.P2Repository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RemoteRepositoryPlugin;
@@ -108,15 +117,22 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.clipboard.Clipboard;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
+import aQute.p2.provider.Feature;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
 import bndtools.dnd.gav.GAVIPageListener;
+import bndtools.editor.BndEditor;
 import bndtools.editor.common.HelpButtons;
+import bndtools.model.repo.FeatureVersionNode;
+import bndtools.model.repo.IncludedBundleItem;
+import bndtools.model.repo.IncludedFeatureItem;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
+import bndtools.model.repo.RepositoryFeature;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.BndPreferences;
@@ -150,9 +166,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	private Action									downloadAction;
 	private String									advancedSearchState;
 	private Action									offlineAction;
+	private Action showFeaturesAction;
 	private final IEventBroker						eventBroker					= PlatformUI.getWorkbench()
 		.getService(IEventBroker.class);
-
 
 	private final BndPreferences					prefs						= new BndPreferences();
 
@@ -262,7 +278,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}
 		};
 		viewer.setContentProvider(contentProvider);
-		ColumnViewerToolTipSupport.enableFor(viewer);
+		StickyToolTipSupport.enableFor(viewer);
 
 		viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
 		getViewSite().setSelectionProvider(viewer);
@@ -411,7 +427,150 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				.isEmpty()) {
 				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 				final Object element = selection.getFirstElement();
-				if (element instanceof IAdaptable) {
+				if (element instanceof FeatureVersionNode) {
+					FeatureVersionNode versionNode = (FeatureVersionNode) element;
+					RepositoryFeature featureEntry = versionNode.getParent();
+					File featureFile = featureEntry.getFile(false);
+					if (featureFile != null && featureFile.exists()) {
+						openFeatureURI(featureFile.toURI());
+					} else {
+						boolean download = MessageDialog.openQuestion(getSite().getShell(), "Repositories",
+							"This feature has not been downloaded. Download and open it now?");
+						if (download) {
+							Job downloadJob = new Job("Downloading repository feature " + featureEntry.getBsn()) {
+								@Override
+								protected IStatus run(IProgressMonitor monitor) {
+									final File repoFile = featureEntry.getFile(true);
+									if (repoFile != null && repoFile.exists()) {
+										getSite().getShell()
+											.getDisplay()
+											.asyncExec(() -> openFeatureURI(repoFile.toURI()));
+									}
+									return Status.OK_STATUS;
+								}
+							};
+							downloadJob.setUser(true);
+							downloadJob.schedule();
+						}
+					}
+				} else if (element instanceof RepositoryFeature) {
+					RepositoryFeature featureEntry = (RepositoryFeature) element;
+					File featureFile = featureEntry.getFile(false);
+					if (featureFile != null && featureFile.exists()) {
+						openFeatureURI(featureFile.toURI());
+					} else {
+						boolean download = MessageDialog.openQuestion(getSite().getShell(), "Repositories",
+							"This feature has not been downloaded. Download and open it now?");
+						if (download) {
+							Job downloadJob = new Job("Downloading repository feature " + featureEntry.getBsn()) {
+								@Override
+								protected IStatus run(IProgressMonitor monitor) {
+									final File repoFile = featureEntry.getFile(true);
+									if (repoFile != null && repoFile.exists()) {
+										getSite().getShell()
+											.getDisplay()
+											.asyncExec(() -> openFeatureURI(repoFile.toURI()));
+									}
+									return Status.OK_STATUS;
+								}
+							};
+							downloadJob.setUser(true);
+							downloadJob.schedule();
+						}
+					}
+				} else if (element instanceof IncludedFeatureItem) {
+					// Handle IncludedFeatureItem by resolving the feature and
+					// opening its JAR
+					IncludedFeatureItem featureItem = (IncludedFeatureItem) element;
+					RepositoryPlugin repo = featureItem.getParent()
+						.getParent()
+						.getRepo();
+					Feature.Includes includes = featureItem.getIncludes();
+					String featureId = includes.id;
+					try {
+						if (repo instanceof org.osgi.service.repository.Repository repository) {
+							org.osgi.resource.Requirement requirement = bndtools.model.repo.RepositoryFeatureResource
+								.getMemberRequirement(featureItem.getParent().getParent().getParent(),
+									includes.id, Feature.RELATION_INCLUDE);
+							java.util.Collection<org.osgi.resource.Capability> providers = requirement == null
+								? java.util.List.of() : repository.findProviders(java.util.List.of(requirement))
+									.getOrDefault(requirement, java.util.List.of());
+							if (!providers.isEmpty()) {
+								// Try to get the feature JAR file
+								RepositoryFeature featureBundle = new bndtools.model.repo.RepositoryFeatureResource(repo,
+									providers.stream().map(org.osgi.resource.Capability::getResource)
+										.max(java.util.Comparator.comparing(aQute.bnd.osgi.resource.ResourceUtils::getVersion))
+										.orElseThrow());
+								File featureFile = featureBundle.getFile(false);
+								if (featureFile != null && featureFile.exists()) {
+									openFeatureURI(featureFile.toURI());
+								} else {
+									boolean download = MessageDialog.openQuestion(getSite().getShell(), "Repositories",
+										"The feature '" + featureId
+											+ "' has not been downloaded. Download and open it now?");
+									if (download) {
+										Job downloadJob = new Job("Downloading feature " + featureId) {
+											@Override
+											protected IStatus run(IProgressMonitor monitor) {
+												final File repoFile = featureBundle.getFile(true);
+												if (repoFile != null && repoFile.exists()) {
+													getSite().getShell()
+														.getDisplay()
+														.asyncExec(() -> openFeatureURI(repoFile.toURI()));
+												}
+												return Status.OK_STATUS;
+											}
+										};
+										downloadJob.setUser(true);
+										downloadJob.schedule();
+									}
+								}
+							}
+						}
+					} catch (Exception e) {
+						logger.logError("Error opening feature " + featureId, e);
+						MessageDialog.openError(getSite().getShell(), "Error",
+							"Failed to open feature: " + e.getMessage());
+					}
+				} else if (element instanceof IncludedBundleItem) {
+					// Handle IncludedBundleItem by resolving the bundle and
+					// opening it
+					IncludedBundleItem bundleItem = (IncludedBundleItem) element;
+					RepositoryPlugin repo = bundleItem.getParent()
+						.getParent()
+						.getRepo();
+					String bundleId = bundleItem.getPlugin().id;
+					try {
+						RepositoryBundle bundle = new RepositoryBundle(repo, bundleId);
+						File bundleFile = bundle.getFile(false);
+						if (bundleFile != null && bundleFile.exists()) {
+							openURI(bundleFile.toURI());
+						} else {
+							boolean download = MessageDialog.openQuestion(getSite().getShell(), "Repositories",
+								"The bundle '" + bundleId + "' has not been downloaded. Download and open it now?");
+							if (download) {
+								Job downloadJob = new Job("Downloading bundle " + bundleId) {
+									@Override
+									protected IStatus run(IProgressMonitor monitor) {
+										final File repoFile = bundle.getFile(true);
+										if (repoFile != null && repoFile.exists()) {
+											getSite().getShell()
+												.getDisplay()
+												.asyncExec(() -> openURI(repoFile.toURI()));
+										}
+										return Status.OK_STATUS;
+									}
+								};
+								downloadJob.setUser(true);
+								downloadJob.schedule();
+							}
+						}
+					} catch (Exception e) {
+						logger.logError("Error opening bundle " + bundleId, e);
+						MessageDialog.openError(getSite().getShell(), "Error",
+							"Failed to open bundle: " + e.getMessage());
+					}
+				} else if (element instanceof IAdaptable) {
 					final URI uri = ((IAdaptable) element).getAdapter(URI.class);
 					if (uri == null && element instanceof RepositoryEntry) {
 						boolean download = MessageDialog.openQuestion(getSite().getShell(), "Repositories",
@@ -513,12 +672,15 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	protected void openURI(URI uri) {
 		IWorkbenchPage page = getSite().getPage();
 		try {
-			IFileStore fileStore = EFS.getLocalFileSystem()
-				.getStore(uri);
+			IFileStore fileStore = EFS.getStore(uri);
 			IDE.openEditorOnFileStore(page, fileStore);
-		} catch (PartInitException e) {
+		} catch (CoreException e) {
 			logger.logError("Error opening editor for " + uri, e);
 		}
+	}
+
+	protected void openFeatureURI(URI jarUri) {
+		openURI(jarUri);
 	}
 
 	@Override
@@ -601,6 +763,20 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	}
 
 	void createActions() {
+		showFeaturesAction = new Action("Show Eclipse Features", IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				contentProvider.setShowFeatures(isChecked());
+				Plugin.getDefault().getDialogSettings().put("repositories.showFeatures", isChecked());
+				viewer.refresh();
+			}
+		};
+		String showFeatures = Plugin.getDefault().getDialogSettings().get("repositories.showFeatures");
+		showFeaturesAction.setChecked(showFeatures == null || Boolean.parseBoolean(showFeatures));
+		contentProvider.setShowFeatures(showFeaturesAction.isChecked());
+		showFeaturesAction.setToolTipText("Show or hide Eclipse features");
+		showFeaturesAction.setImageDescriptor(Icons.desc("feature"));
+
 		collapseAllAction = new Action() {
 			@Override
 			public void run() {
@@ -818,24 +994,30 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 				if (!selection.isEmpty()) {
 					final Object firstElement = selection.getFirstElement();
-					if (firstElement instanceof Actionable) {
+					if (firstElement instanceof Actionable || firstElement instanceof RepositoryPlugin) {
 
 						final RepositoryPlugin rp = getRepositoryPlugin(firstElement);
+
+						// use HierarchicalMenu to build up a menue with SubMenu
+						// entries
+						HierarchicalMenu hmenu = new HierarchicalMenu();
+
+						if (firstElement instanceof RepositoryPlugin) {
+							addOpenDefinitionMenuEntry(rp, hmenu);
+						}
 
 						//
 						// Use the Actionable interface to fill the menu
 						// Should extend this to allow other menu entries
 						// from the view, but currently there are none
 						//
-						final Actionable act = (Actionable) firstElement;
-
-						// use HierarchicalMenu to build up a menue with SubMenu
-						// entries
-						HierarchicalMenu hmenu = new HierarchicalMenu();
-						addCopyToClipboardSubMenueEntries(act, rp, hmenu);
+						final Actionable act = firstElement instanceof Actionable a ? a : null;
+						if (act != null) {
+							addCopyToClipboardSubMenueEntries(act, rp, hmenu);
+						}
 
 						// add the other actions
-						Map<String, Runnable> actions = act.actions();
+						Map<String, Runnable> actions = act != null ? act.actions() : null;
 
 						if (actions != null) {
 
@@ -866,6 +1048,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 	private void fillToolBar(IToolBarManager toolBar) {
 		toolBar.add(advancedSearchAction);
+		toolBar.add(showFeaturesAction);
 		toolBar.add(downloadAction);
 		toolBar.add(new Separator());
 		toolBar.add(refreshAction);
@@ -1055,6 +1238,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	private RepositoryPlugin getRepositoryPlugin(Object element) {
 		if (element instanceof RepositoryPlugin)
 			return (RepositoryPlugin) element;
+		else if (element instanceof RepositoryFeature)
+			// Check RepositoryFeature BEFORE RepositoryBundle since both extend
+			// RepositoryEntry
+			return ((RepositoryFeature) element).getRepo();
 		else if (element instanceof RepositoryBundle)
 			return ((RepositoryBundle) element).getRepo();
 		else if (element instanceof RepositoryBundleVersion)
@@ -1128,6 +1315,113 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		return a;
 	}
 
+	private void addOpenDefinitionMenuEntry(RepositoryPlugin rp, HierarchicalMenu hmenu) {
+		FileLine definition = findPluginDefinition(rp);
+		if (definition == null) {
+			return;
+		}
+		hmenu.add(new HierarchicalLabel<Action>("Open definition", label -> {
+			Action a = new Action(label.getLeaf()) {
+				@Override
+				public void run() {
+					openDefinition(definition);
+				}
+			};
+			a.setDescription("Open the -plugin definition of this repository in an editor.");
+			a.setToolTipText(definition.file.getAbsolutePath());
+			return a;
+		}));
+	}
+
+	/**
+	 * Locate the {@code -plugin} clause in the workspace properties that
+	 * created the given repository plugin. Matches on the plugin class name
+	 * and, when present, the {@code name} attribute.
+	 */
+	private FileLine findPluginDefinition(RepositoryPlugin rp) {
+		Workspace ws = Central.getWorkspaceIfPresent();
+		if (ws == null || rp == null) {
+			return null;
+		}
+		String className = rp.getClass()
+			.getName();
+		String repoName = rp.getName();
+		try {
+			for (String key : ws.getPropertyKeys(true)) {
+				if (!key.equals(Constants.PLUGIN) && !key.startsWith(Constants.PLUGIN + ".")) {
+					continue;
+				}
+				Parameters parameters = new Parameters(ws.getProperty(key), ws);
+				for (Entry<String, Attrs> e : parameters.entrySet()) {
+					String clauseClass = Processor.removeDuplicateMarker(e.getKey());
+					String clauseName = e.getValue()
+						.get("name");
+					boolean classMatches = className.equals(clauseClass);
+					boolean nameMatches = clauseName != null && clauseName.equals(repoName);
+					if (!(nameMatches || (classMatches && clauseName == null))) {
+						continue;
+					}
+					File magic = getMagicExtFile(ws, key);
+					if (magic != null) {
+						return new FileLine(magic, 0, 0);
+					}
+					FileLine fl = ws.getHeader(key, clauseClass);
+					if (fl != null && fl.file != null && fl.file.isFile()) {
+						return fl;
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.logError("Error locating plugin definition for repository " + repoName, e);
+		}
+		return null;
+	}
+
+	/**
+	 * {@code cnf/ext/*.pmvn} and {@code *.pobr} files are converted by
+	 * {@code MagicBnd} into a synthetic {@code -plugin.ext.<file>} property;
+	 * the file itself is the definition.
+	 */
+	private static File getMagicExtFile(Workspace ws, String key) {
+		String prefix = Constants.PLUGIN + ".ext.";
+		if (!key.startsWith(prefix)) {
+			return null;
+		}
+		String fileName = key.substring(prefix.length());
+		String[] parts = Strings.extension(fileName);
+		if (parts == null || !("pmvn".equals(parts[1]) || "pobr".equals(parts[1]))) {
+			return null;
+		}
+		File f = IO.getFile(ws.getBuildDir(), Workspace.EXT + "/" + fileName);
+		return f.isFile() ? f : null;
+	}
+
+	private void openDefinition(FileLine definition) {
+		IWorkbenchPage page = getSite().getPage();
+		try {
+			IFile[] files = ResourcesPlugin.getWorkspace()
+				.getRoot()
+				.findFilesForLocationURI(definition.file.toURI());
+			IEditorPart editor = files.length > 0 ? IDE.openEditor(page, files[0], true)
+				: IDE.openEditorOnFileStore(page, EFS.getStore(definition.file.toURI()));
+
+			ITextEditor textEditor = null;
+			if (editor instanceof BndEditor bndEditor) {
+				IFormPage sourcePage = bndEditor.setActivePage(BndEditor.SOURCE_PAGE);
+				if (sourcePage instanceof ITextEditor te) {
+					textEditor = te;
+				}
+			} else if (editor != null) {
+				textEditor = editor.getAdapter(ITextEditor.class);
+			}
+			if (textEditor != null && definition.end > definition.start) {
+				textEditor.selectAndReveal(definition.start, definition.end - definition.start);
+			}
+		} catch (CoreException e) {
+			logger.logError("Error opening editor for " + definition.file, e);
+		}
+	}
+
 	private void addCopyToClipboardSubMenueEntries(Actionable act, final RepositoryPlugin rp, HierarchicalMenu hmenu) {
 
 		final Registry registry = Central.getWorkspaceIfPresent();
@@ -1180,26 +1474,24 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}));
 	}
 
-	private HierarchicalLabel<Action> createContextMenueCopyBundlesWithSelfImports(Actionable act, final RepositoryPlugin rp,
-		final Clipboard clipboard) {
+	private HierarchicalLabel<Action> createContextMenueCopyBundlesWithSelfImports(Actionable act,
+		final RepositoryPlugin rp, final Clipboard clipboard) {
 		return new HierarchicalLabel<Action>("Copy to clipboard :: Bundles with substitution packages (self-imports)",
 			(label) -> createAction(label.getLeaf(),
 				"Add list of bundles containing packages which are imported and exported in their Manifest.", true,
 				false, rp, () -> {
 
-					final StringBuilder sb = new StringBuilder(
-						"Shows list of bundles in the repository '" + rp.getName()
-							+ "' containing substitution packages / self-imports (i.e. same package imported and exported) in their Manifest. \n"
-							+ "Note: a missing version range can cause wiring / resolution problems.\n"
-							+ "See https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3238802 "
-							+ "and https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.module-import.export.same.package "
-							+ "for more information."
-							+ "\n\n");
+					final StringBuilder sb = new StringBuilder("Shows list of bundles in the repository '"
+						+ rp.getName()
+						+ "' containing substitution packages / self-imports (i.e. same package imported and exported) in their Manifest. \n"
+						+ "Note: a missing version range can cause wiring / resolution problems.\n"
+						+ "See https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#i3238802 "
+						+ "and https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.module-import.export.same.package "
+						+ "for more information." + "\n\n");
 
 					for (RepositoryBundleVersion rpv : contentProvider.allRepoBundleVersions(rp)) {
 						org.osgi.resource.Resource r = rpv.getResource();
-						Collection<PackageExpression> selfImports = ResourceUtils
-							.getSubstitutionPackages(r);
+						Collection<PackageExpression> selfImports = ResourceUtils.getSubstitutionPackages(r);
 
 						if (!selfImports.isEmpty()) {
 							long numWithoutRange = selfImports.stream()
@@ -1243,10 +1535,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						clipboard.copy(sb.toString());
 					}
 
-			}));
+				}));
 	}
-
-
 
 	private HierarchicalLabel<Action> createContextMenueCopyInfoRepoBundle(Actionable act, final RepositoryPlugin rp,
 		final Clipboard clipboard, RepositoryBundle rb) {
@@ -1263,8 +1553,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 					if (tooltipContent != null && !tooltipContent.isBlank()) {
 						info.append(tooltipContent);
 						clipboard.copy(info.toString());
-					}
-			else {
+					} else {
 						// bundle does not seem to have a tooltip
 						// let's just add general bundle info
 						info.append(rb.toString());
@@ -1279,8 +1568,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	}
 
 	private HierarchicalLabel<Action> createContextMenueCopyInfoRepoBundleVersion(Actionable act,
-		final RepositoryPlugin rp,
-		final Clipboard clipboard, RepositoryBundleVersion rbr) {
+		final RepositoryPlugin rp, final Clipboard clipboard, RepositoryBundleVersion rbr) {
 
 		return new HierarchicalLabel<Action>("Copy to clipboard :: Copy info", (label) -> createAction(label.getLeaf(),
 			"Add general info about this entry to clipboard.", true, false, rp, () -> {

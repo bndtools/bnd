@@ -553,6 +553,9 @@ public class Syntax implements Constants {
 			JAVAAGENT + ": true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(JAVAC, "Java Compiler Specific Settings.", null, null, null),
 		new Syntax(JAVAC_ENCODING, "Sets the Java Compiler Encoding Type.", JAVAC_ENCODING + ": UTF-8", null, null),
+		new Syntax(JAVAC_RELEASE,
+			"Compiles against the documented Java SE and JDK API of the specified release and generates class files for that release using javac --release. This prevents accidental use of newer platform APIs. It takes precedence over javac.source and javac.target. It cannot be combined with javac.profile or a bootclasspath. Set to an empty value to force legacy -source/-target behaviour.",
+			JAVAC_RELEASE + ": 17", null, null),
 		new Syntax(JAVAC_SOURCE, "Sets the Java source compatibility version.", JAVAC_SOURCE + ": 1.8", null, null),
 		new Syntax(JAVAC_PROFILE, "When using compact profiles, this option specifies the profile name when compiling.",
 			JAVAC_PROFILE + ": compact1", null, null),
@@ -645,6 +648,10 @@ public class Syntax implements Constants {
 			"Warn about things that are not really wrong but still not right. Note: Currently a change to this instruction requires a restart of Eclipse.",
 			PEDANTIC + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(PROPERTYCONFLICTS,
+			"Report duplicate property definitions and shadowed plain merged properties. Defaults to off, or warning with -pedantic. Error fails the build.",
+			PROPERTYCONFLICTS + ": error", "off,warning,error", Pattern.compile("off|warning|error")),
 
 		new Syntax(PLUGIN, "Define the plugins.",
 			PLUGIN + "=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}", null, null),

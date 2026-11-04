@@ -1,9 +1,9 @@
 ---
 title: For Developers
-layout: default
+layout: bnd
+parent: Documentation and Tools
+nav_order: 3
 ---
-
-
 ## API
 It is quite easy to use bnd from Java, you only need to include biz.aQute.bndlib on your class path. This chapter shows you some samples of how to use bndlib.
 

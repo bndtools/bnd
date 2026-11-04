@@ -1,6 +1,10 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd, icons.properties
 
+# Runtime-only bundle of the IDE .bndrun launches; -dependson makes the
+# Gradle build include and build it before any run task of this project.
+-dependson: bndtools.m2e.debug.fragment
+
 Bundle-SymbolicName: ${p};singleton:=true
 Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
@@ -122,6 +126,7 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.eclipse.jdt.core.compiler.batch
 
 -testpath: \
+	biz.aQute.bnd.test;version=project,\
 	slf4j.api,\
 	slf4j.simple,\
 	${junit},\

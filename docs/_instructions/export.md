@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*
 class: Project
 summary: |
    Turns a bndrun file into its deployable format
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -workspace-templates
 class: Workspace
 summary: |
    Define workspace templates for a new workspace
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

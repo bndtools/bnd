@@ -158,12 +158,11 @@ public class BndUtils {
 	 * attribute, the {@code jar} variant will also be available, making any resources packaged in the jar
 	 * visible.  The provided configuration itself will <strong>NOT</strong> be modified.
 	 *
-	 * @param task The Task.
+	 * @param project The Project.
 	 * @param configurationName The configuration name.
 	 * @return A {@link FileCollection} of the {@code jar} variants of the specified configuration.
 	 */
-	public static FileCollection jarLibraryElements(Task task, String configurationName) {
-		Project project = task.getProject();
+	public static FileCollection jarLibraryElements(Project project, String configurationName) {
 		Configuration configuration = project.getConfigurations()
 			.getByName(configurationName);
 		ArtifactView artifactView = configuration.getIncoming()
@@ -172,10 +171,10 @@ public class BndUtils {
 				try {
 					attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects()
 						.named(LibraryElements.class, LibraryElements.JAR));
-					task.getLogger()
+					project.getLogger()
 						.info("Using jars for configuration {}:{}", project.getPath(), configurationName);
 				} catch (IllegalArgumentException e) {
-					task.getLogger()
+					project.getLogger()
 						.info("Unable to use jars for configuration {}:{}", project.getPath(), configurationName, e);
 				}
 			});

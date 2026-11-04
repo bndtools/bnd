@@ -72,6 +72,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.JarLifecycleListener;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
@@ -282,6 +283,7 @@ public class Central implements IStartupParticipant {
 					ws.forceRefresh();
 					ws.refresh();
 					ws.refreshProjects();
+					applyRebuildTriggerPolicy(ws);
 					return tryResolve(cnfWorkspaceDeferred);
 				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
 					// There is no "cnf" project and the current workspace is
@@ -291,6 +293,7 @@ public class Central implements IStartupParticipant {
 					ws.forceRefresh();
 					ws.refresh();
 					ws.refreshProjects();
+					applyRebuildTriggerPolicy(ws);
 					return null;
 				}
 				return null;
@@ -329,6 +332,7 @@ public class Central implements IStartupParticipant {
 			}
 
 			ws.setOffline(new BndPreferences().isWorkspaceOffline());
+			applyRebuildTriggerPolicy(ws);
 
 			ws.addBasicPlugin(new SWTClipboard());
 			ws.addBasicPlugin(getInstance().repoListenerTracker);
@@ -348,6 +352,25 @@ public class Central implements IStartupParticipant {
 			logger.error("Workspace creation failure", e);
 			throw Exceptions.duck(e);
 		}
+	}
+
+	/**
+	 * Applies the Eclipse rebuild trigger policy preference to the workspace.
+	 * <p>
+	 * This must be called after every {@link Workspace#refresh()} because refresh recreates the
+	 * workspace property map from {@code build.bnd}, wiping any in-memory overrides.
+	 * <p>
+	 *
+	 * @param ws the workspace to configure
+	 */
+	public static void applyRebuildTriggerPolicy(Workspace ws) {
+		BndPreferences prefs = new BndPreferences();
+		String policy = prefs.getRebuildTriggerPolicy();
+		ws.getPlugins(JarLifecycleListener.class)
+			.stream()
+			.filter(p -> p instanceof RebuildTriggerPolicyPlugin)
+			.forEach(ws::removeBasicPlugin);
+		ws.addBasicPlugin(new RebuildTriggerPolicyPlugin(policy));
 	}
 
 	public static Promise<Workspace> onAnyWorkspace(Consumer<? super Workspace> callback) {

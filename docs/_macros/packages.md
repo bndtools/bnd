@@ -1,11 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Analyzer
 title: packages 
 summary: A list of package names filtered by a query language
+parent: Macro Reference
 ---
-
-
 The `packages` macro provides a query function over the contained packages of a bundle. A simple query language is used to query the packages and filter them.
 For example if you want to export all packages that are annotated with the `@org.example.Export` annotation:
 

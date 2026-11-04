@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: isfile (';' FILE )+
 summary: Check if all specified paths are regular files
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `isfile` macro checks whether all specified file paths are regular files (not directories or special files). It returns "true" only if all paths exist and are regular files; otherwise, it returns "false".

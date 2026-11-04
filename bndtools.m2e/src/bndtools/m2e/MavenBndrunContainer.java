@@ -61,8 +61,11 @@ public class MavenBndrunContainer {
 					bundles = new Bundles();
 				}
 
-				useMavenDependencies = maven.getMojoParameterValue(mavenProject, mojoExecution, "useMavenDependencies",
-					Boolean.class, monitor);
+				Boolean configuredUseMavenDependencies = maven.getMojoParameterValue(mavenProject, mojoExecution,
+					"useMavenDependencies", Boolean.class, monitor);
+				if (configuredUseMavenDependencies != null) {
+					useMavenDependencies = configuredUseMavenDependencies;
+				}
 
 				// Comparing OSGi versions makes '4.2.0.SNAPSHOT' > '4.2.0'.
 				// Comparing Maven versions fails because '4.2.0-SNAPSHOT' is <
@@ -70,8 +73,11 @@ public class MavenBndrunContainer {
 				Version mojoVersion = new MavenVersion(mojoExecution.getVersion()).getOSGiVersion();
 
 				if (mojoVersion.compareTo(scopesVersion) >= 0) {
-					includeDependencyManagement = maven.getMojoParameterValue(mavenProject, mojoExecution,
-						"includeDependencyManagement", Boolean.class, monitor);
+					Boolean configuredIncludeDependencyManagement = maven.getMojoParameterValue(mavenProject,
+						mojoExecution, "includeDependencyManagement", Boolean.class, monitor);
+					if (configuredIncludeDependencyManagement != null) {
+						includeDependencyManagement = configuredIncludeDependencyManagement;
+					}
 
 					@SuppressWarnings({
 						"rawtypes", "unchecked"

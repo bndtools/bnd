@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: matches STRING REGEX
 summary: Check if a string matches a regular expression pattern
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `matches` macro tests whether a string matches a given regular expression pattern. Returns true if the entire string matches, false otherwise.

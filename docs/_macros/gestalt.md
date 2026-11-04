@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Workspace
 title: gestalt ';' NAME ( ';' NAME (';' ANY )? )? 
 summary: Access environment description properties (gestalt)
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `gestalt` macro provides access to gestalt properties that describe the build environment. Gestalt is a set of parts describing the environment, where each part has a name and optional attributes. This can be configured globally or per-workspace via the `-gestalt` property.

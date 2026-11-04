@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -launcher
 class: Project
 summary: |
    Options for the runtime launcher
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

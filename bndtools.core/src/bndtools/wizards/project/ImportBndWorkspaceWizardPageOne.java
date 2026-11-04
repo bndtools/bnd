@@ -260,8 +260,16 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
 				try {
 					bndWorkspace = Workspace.getWorkspace(chosenDirectory);
 					setErrorMessage(null);
-					List<Object> tableEntries = new ArrayList<>(bndWorkspace.getAllProjects());
-					tableEntries.add(bndWorkspace.getBuildDir());
+					File buildDir = bndWorkspace.getBuildDir();
+					List<Object> tableEntries = new ArrayList<>();
+					// avoid listing the cnf project twice, as it is also returned by getAllProjects()
+					for (Project project : bndWorkspace.getAllProjects()) {
+						if (!project.getBase()
+							.equals(buildDir)) {
+							tableEntries.add(project);
+						}
+					}
+					tableEntries.add(buildDir);
 					tableViewer.setInput(tableEntries);
 					result = true;
 				} catch (Exception e) {

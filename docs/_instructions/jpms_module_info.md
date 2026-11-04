@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -jpms-module-info modulename [; version=<version>] [; access=OPEN|SYNTHETIC|MANDATED]
 class: JPMS
 summary: |
    Used to generate the `module-info.class`
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

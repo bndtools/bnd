@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: removeall ';' LIST ';' LIST
 summary: Return the first list where items from the second list are removed
+parent: Macro Reference
 ---
-
 ## Summary
 
 Remove all elements from the first list that are present in the second list, returning the filtered result.

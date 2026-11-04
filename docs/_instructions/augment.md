@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -augment PARAMETER ( ',' PARAMETER ) *
 class: Workspace
 summary: |
    Add requirements and capabilities to the resources during resolving.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

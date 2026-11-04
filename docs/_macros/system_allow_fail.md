@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: system_allow_fail ';' STRING ( ';' STRING )?
 summary: Execute a system command, returning output and ignoring failures
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `system-allow-fail` macro executes an operating system command and returns its output, but unlike `${system}`, it does not fail the build if the command returns a non-zero exit code. Failed commands generate a warning instead.

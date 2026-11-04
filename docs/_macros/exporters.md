@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: exporters ';' PACKAGE
 class: Analyzer
 summary: List JARs on the classpath that export a given package
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `exporters` macro returns a comma-separated list of JAR names from the classpath that contain (export) a specified package. This is useful for discovering which dependencies provide a particular package.

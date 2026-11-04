@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: map ';' MACRO (';' LIST)* 
 summary: Transform each element of a list using a macro function
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `map` macro applies a transformation function (specified as a macro name) to each element of one or more lists, collecting the results into a new comma-separated list. This is similar to the functional programming map operation.

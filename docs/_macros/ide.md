@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: ide ';' ( 'javac.target' | 'javac.source' )
 class: Project
 summary: Read Java compiler settings from Eclipse IDE configuration
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `ide` macro reads Java compiler source and target version settings from the Eclipse IDE's project preferences. This allows bnd builds to use the same Java version settings configured in the IDE.

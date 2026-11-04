@@ -1470,6 +1470,7 @@ public class bnd extends Processor {
 	 *
 	 * @throws Exception
 	 */
+	@SuppressWarnings("removal")
 	@Description("Release this project")
 	public void _release(releaseOptions options) throws Exception {
 		Set<Project> projects = new LinkedHashSet<>();

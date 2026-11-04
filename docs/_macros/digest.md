@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: digest ';' ALGORITHM ';' FILE
 summary: Calculate a cryptographic digest (hash) of a file
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `digest` macro computes a cryptographic hash of a file using a specified algorithm (such as MD5, SHA-1, SHA-256, etc.). The result is returned as a hexadecimal string.

@@ -383,15 +383,47 @@ public class CapReqBuilder {
 					.get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
 				String versionRange = Objects.toString(requirement.getAttributes()
 					.get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB), null);
-				if (name == null) {
-					throw new IllegalArgumentException(
-						String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
-							REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
+			String type = Objects.toString(requirement.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE), null);
+			if (name == null) {
+				throw new IllegalArgumentException(
+					String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
+						REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
+			}
+			CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).from(requirement)
+				.removeAttribute(REQ_ALIAS_IDENTITY_NAME_ATTRIB)
+				.removeAttribute(REQ_ALIAS_IDENTITY_VERSION_ATTRIB)
+				.removeAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
+			
+			// Build filter with identity, optional type, and optional version
+			StringBuilder filter = new StringBuilder();
+			boolean needsAnd = (type != null || versionRange != null);
+			if (needsAnd) {
+				filter.append("(&");
+			}
+			filter.append('(').append(IdentityNamespace.IDENTITY_NAMESPACE).append('=').append(name).append(')');
+			
+			// Add type filter if present
+			if (type != null) {
+				filter.append('(').append(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE).append('=').append(type).append(')');
+			}
+			
+			// Add version range filter if present
+			if (versionRange != null && VersionRange.isOSGiVersionRange(versionRange)) {
+				String versionFilter = VersionRange.parseOSGiVersionRange(versionRange).toFilter(Constants.VERSION_ATTRIBUTE);
+				// versionFilter is already wrapped in (&...) for ranges, so extract inner parts
+				if (versionFilter.length() > 1 && versionFilter.charAt(0) == '(' && versionFilter.charAt(1) == '&') {
+					filter.append(versionFilter, 2, versionFilter.length() - 1);
+				} else {
+					filter.append(versionFilter);
 				}
-				CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).from(requirement)
-					.removeAttribute(REQ_ALIAS_IDENTITY_NAME_ATTRIB)
-					.removeAttribute(REQ_ALIAS_IDENTITY_VERSION_ATTRIB);
-				builder.addFilter(IdentityNamespace.IDENTITY_NAMESPACE, name, versionRange, null);
+			}
+			
+			if (needsAnd) {
+				filter.append(')');
+			}
+			
+			builder.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 				return builder.buildSyntheticRequirement();
 			}
 			default : {
@@ -753,6 +785,28 @@ public class CapReqBuilder {
 
 		builder.filter(filter);
 		return builder;
+	}
+
+	/**
+	 * Create a synthetic requirement on an {@code osgi.identity} capability,
+	 * optionally restricted to an identity type, e.g.
+	 * {@code org.eclipse.update.feature}, and an exact version.
+	 *
+	 * @param name the identity name, never {@code null}
+	 * @param type the identity type or {@code null} for any type
+	 * @param version the exact version or {@code null} for any version
+	 * @return the requirement {@code (&(osgi.identity=name)(type=type)(version=version))}
+	 */
+	public static Requirement createIdentityRequirement(String name, String type, String version) {
+		FilterBuilder filter = new FilterBuilder().eq(IdentityNamespace.IDENTITY_NAMESPACE, name);
+		if (type != null) {
+			filter.eq(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, type);
+		}
+		if (version != null) {
+			filter.eq(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		}
+		return new RequirementBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addFilter(filter)
+			.synthetic();
 	}
 
 	@Override

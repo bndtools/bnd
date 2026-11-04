@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: bnd
 title: action
 summary: |
    Execute an action on a repo, or if no name is give, list the actions
+parent: bnd CLI Commands
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. 
 ---
 

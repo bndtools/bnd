@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -nouses  BOOLEAN
 class: Project
 summary: |
    Do not calculate uses directives on package exports or on capabilities.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

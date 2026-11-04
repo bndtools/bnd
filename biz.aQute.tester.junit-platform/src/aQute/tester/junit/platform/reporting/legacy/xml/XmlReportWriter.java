@@ -12,12 +12,12 @@ package aQute.tester.junit.platform.reporting.legacy.xml;
 
 import static java.text.MessageFormat.format;
 import static java.util.stream.Collectors.toList;
-import static org.junit.platform.commons.util.ExceptionUtils.readStackTrace;
-import static org.junit.platform.commons.util.StringUtils.isNotBlank;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 import static org.junit.platform.launcher.LauncherConstants.STDERR_REPORT_ENTRY_KEY;
 import static org.junit.platform.launcher.LauncherConstants.STDOUT_REPORT_ENTRY_KEY;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -196,7 +196,8 @@ class XmlReportWriter {
 	}
 
 	private void writeSkippedElement(String reason, XMLStreamWriter writer) throws XMLStreamException {
-		if (isNotBlank(reason)) {
+		if (reason != null && !reason.trim()
+			.isEmpty()) {
 			writer.writeStartElement("skipped");
 			writeCDataSafely(writer, reason);
 			writer.writeEndElement();
@@ -229,6 +230,16 @@ class XmlReportWriter {
 		writeAttributeSafely(writer, "type", throwable.getClass()
 			.getName());
 		writeCDataSafely(writer, readStackTrace(throwable));
+	}
+
+	// Replaces JUnit's ExceptionUtils.readStackTrace, whose package is
+	// internal (mandatory:=status) as of JUnit 6.
+	static String readStackTrace(Throwable throwable) {
+		StringWriter stringWriter = new StringWriter();
+		try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+			throwable.printStackTrace(printWriter);
+		}
+		return stringWriter.toString();
 	}
 
 	private void collectReportEntries(TestIdentifier testIdentifier, List<String> systemOutElements,

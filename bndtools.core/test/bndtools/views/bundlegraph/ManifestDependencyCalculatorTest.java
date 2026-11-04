@@ -217,4 +217,73 @@ public class ManifestDependencyCalculatorTest {
 		assertEquals(2, edges.stream().filter(e -> e.from().equals(a)).count(),
 			"Exactly two edges from bundle.a (one per exporter of the split package)");
 	}
+
+	// ---- Tests for contributingPackage field ----
+
+	@Test
+	public void contributingPackageIsSetOnEdge() throws Exception {
+		BundleNode a = node("bundle.a");
+		BundleNode b = node("bundle.b");
+
+		// b exports com.example.api; a imports it
+		Map<BundleNode, File> nodeToJar = new HashMap<>();
+		nodeToJar.put(a, createJar("bundle.a", null, "com.example.api"));
+		nodeToJar.put(b, createJar("bundle.b", "com.example.api", null));
+
+		Set<BundleEdge> edges = ManifestDependencyCalculator.calculateEdges(nodeToJar);
+
+		assertEquals(1, edges.size(), "Should be exactly one edge");
+		BundleEdge edge = edges.iterator()
+			.next();
+		assertEquals("com.example.api", edge.contributingPackage(),
+			"The contributing package should be the imported/exported package");
+	}
+
+	@Test
+	public void contributingPackageIsFirstImportedPackageWhenMultipleMatch() throws Exception {
+		BundleNode a = node("bundle.a");
+		BundleNode b = node("bundle.b");
+
+		// b exports two packages; a imports both — contributingPackage should
+		// be the first one processed
+		Map<BundleNode, File> nodeToJar = new HashMap<>();
+		// Use a LinkedHashMap-friendly ordering: first entry in Import-Package
+		// is pkg.one
+		nodeToJar.put(a, createJar("bundle.a", null, "pkg.one,pkg.two"));
+		nodeToJar.put(b, createJar("bundle.b", "pkg.one,pkg.two", null));
+
+		Set<BundleEdge> edges = ManifestDependencyCalculator.calculateEdges(nodeToJar);
+
+		assertEquals(1, edges.size(), "Should be exactly one edge between a and b");
+		BundleEdge edge = edges.iterator()
+			.next();
+		// contributingPackage is the first package that established the edge
+		assertFalse(edge.contributingPackage()
+			.isEmpty(), "Contributing package should not be empty when packages are matched");
+		assertTrue(edge.contributingPackage()
+			.equals("pkg.one")
+			|| edge.contributingPackage()
+				.equals("pkg.two"),
+			"Contributing package should be one of the matched packages");
+	}
+
+	@Test
+	public void contributingPackageNotNullForOptionalEdge() throws Exception {
+		BundleNode a = node("bundle.a");
+		BundleNode b = node("bundle.b");
+
+		// b exports com.example.api; a imports it as optional
+		Map<BundleNode, File> nodeToJar = new HashMap<>();
+		nodeToJar.put(a, createJar("bundle.a", null, "com.example.api;resolution:=optional"));
+		nodeToJar.put(b, createJar("bundle.b", "com.example.api", null));
+
+		Set<BundleEdge> edges = ManifestDependencyCalculator.calculateEdges(nodeToJar);
+
+		assertEquals(1, edges.size());
+		BundleEdge edge = edges.iterator()
+			.next();
+		assertTrue(edge.optional(), "Edge should be optional");
+		assertEquals("com.example.api", edge.contributingPackage(),
+			"Contributing package should be set even for optional edges");
+	}
 }

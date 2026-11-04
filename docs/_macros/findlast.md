@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: findlast ';' VALUE ';' SEARCHED
 summary: Find the last occurrence of a substring in a string
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `findlast` macro returns the index position of the last occurrence of a substring within a target string, or -1 if not found. Searches from the end backwards.

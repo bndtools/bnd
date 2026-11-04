@@ -61,6 +61,17 @@ public interface PomConfiguration {
 	String pom();
 
 	/**
+	 * The path to the trusted checksum file corresponding to index file
+	 */
+	String checksumFile();
+
+	/**
+	 * If <code>true</code> the checksumFile will be automatically generated on
+	 * initialization.
+	 */
+	boolean checksumRecord();
+
+	/**
 	 * The name of the repo. Required.
 	 */
 	String name();
@@ -107,5 +118,13 @@ public interface PomConfiguration {
 	 * @return a comma separated list of tags.
 	 */
 	String tags();
+
+	/**
+	 * The policy for validating trusted checksums
+	 *
+	 * @param deflt default value if not specified
+	 * @return the checksum policy: "strict" or "lenient"
+	 */
+	String checksumPolicy(String deflt);
 
 }

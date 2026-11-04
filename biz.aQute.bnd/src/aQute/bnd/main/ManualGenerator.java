@@ -35,11 +35,11 @@ class ManualGenerator {
 				// instruction
 				String filename = normalizeFilename(sx.getHeader()
 					.substring(1)) + ".md";
-				writeSyntaxMD(sx, instrFolder, filename);
+				writeSyntaxMD(sx, instrFolder, filename, "Instruction Reference");
 			} else {
 				// header
 				String filename = normalizeFilename(sx.getHeader()) + ".md";
-				writeSyntaxMD(sx, headerFolder, filename);
+				writeSyntaxMD(sx, headerFolder, filename, "Headers");
 			}
 		}
 
@@ -73,7 +73,7 @@ class ManualGenerator {
 				}
 
 				f.format("---\n");
-				f.format("layout: default\n");
+				f.format("layout: bnd\n");
 				f.format("title: %s\n", overrideFrontmatter.getOrDefault("title", command));
 
 				@SuppressWarnings("unchecked")
@@ -84,6 +84,7 @@ class ManualGenerator {
 				if (summary != null) {
 					f.format("summary: |\n   %s\n", summary);
 				}
+				f.format("parent: %s%n", "bnd CLI Commands");
 
 				f.format(
 					"note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in _ext sub-folder. ");
@@ -103,7 +104,7 @@ class ManualGenerator {
 	}
 
 
-	private void writeSyntaxMD(Syntax sx, File folder, String filename) throws IOException {
+	private void writeSyntaxMD(Syntax sx, File folder, String filename, String parent) throws IOException {
 
 		File file = new File(folder, filename);
 		file.createNewFile();
@@ -122,7 +123,7 @@ class ManualGenerator {
 			}
 
 			f.format("---\n");
-			f.format("layout: default\n");
+			f.format("layout: bnd\n");
 			f.format("title: %s\n", overrideFrontmatter.getOrDefault("title", sx.getHeader()));
 			if (sx.getHeader()
 				.startsWith("-")) {
@@ -134,6 +135,7 @@ class ManualGenerator {
 				f.format("class: %s\n", overrideFrontmatter.getOrDefault("class", "Header"));
 			}
 			f.format("summary: |\n   %s\n", overrideFrontmatter.getOrDefault("summary", sx.getLead()));
+			f.format("parent: %s%n", parent);
 
 			String since = overrideFrontmatter.getOrDefault("since", null);
 			if (since != null) {

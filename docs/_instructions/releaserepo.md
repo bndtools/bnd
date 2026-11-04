@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -releaserepo* NAME ( ',' NAME ) *
 class: Project
 summary: |
    Define the names of the repositories to use for a release
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Clazz;
@@ -33,7 +34,8 @@ public class EETest {
 
 	static class EEVersionsArgumentsProvider implements ArgumentsProvider {
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context)
+			throws Exception {
 			EE[] values = EE.values();
 			return Arrays.stream(values, 0, values.length - 1)
 				.filter(ee -> ee.getCapabilityName()
@@ -161,7 +163,8 @@ public class EETest {
 
 	static class EEsArgumentsProvider implements ArgumentsProvider {
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context)
+			throws Exception {
 			EE[] values = EE.values();
 			return Arrays.stream(values, 0, values.length - 1)
 				.filter(ee -> ee.getCapabilityName()
@@ -172,7 +175,8 @@ public class EETest {
 
 	static class ModularEEsArgumentsProvider implements ArgumentsProvider {
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context)
+			throws Exception {
 			EE[] values = EE.values();
 			return Arrays.stream(values, 0, values.length - 1)
 				.filter(ee -> ee.compareTo(EE.JavaSE_1_8) > 0)

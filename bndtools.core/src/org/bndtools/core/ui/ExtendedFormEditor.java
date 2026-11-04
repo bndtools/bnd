@@ -64,10 +64,10 @@ public abstract class ExtendedFormEditor extends FormEditor {
 		super.dispose();
 		if (baseImageDescriptor != null)
 			JFaceResources.getResources()
-				.destroyImage(baseImageDescriptor);
+				.destroy(baseImageDescriptor);
 		if (overlaidTitleImageDescriptor != null)
 			JFaceResources.getResources()
-				.destroyImage(overlaidTitleImageDescriptor);
+				.destroy(overlaidTitleImageDescriptor);
 	}
 
 	public void setOverlayTitleImage(ImageDescriptor overlay) {
@@ -76,17 +76,17 @@ public abstract class ExtendedFormEditor extends FormEditor {
 			firePropertyChange(PROP_TITLE);
 			if (overlaidTitleImageDescriptor != null)
 				JFaceResources.getResources()
-					.destroyImage(overlaidTitleImageDescriptor);
+					.destroy(overlaidTitleImageDescriptor);
 			overlaidTitleImageDescriptor = null;
 		} else {
 			DecorationOverlayIcon newOverlaidDesc = new DecorationOverlayIcon(titleImage, overlay,
 				IDecoration.BOTTOM_LEFT);
 			overlaidTitleImage = JFaceResources.getResources()
-				.createImage(newOverlaidDesc);
+				.create(newOverlaidDesc);
 			firePropertyChange(PROP_TITLE);
 			if (overlaidTitleImageDescriptor != null)
 				JFaceResources.getResources()
-					.destroyImage(overlaidTitleImageDescriptor);
+					.destroy(overlaidTitleImageDescriptor);
 			overlaidTitleImageDescriptor = newOverlaidDesc;
 		}
 	}

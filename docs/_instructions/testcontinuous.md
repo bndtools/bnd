@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -testcontinuous BOOLEAN
 class: Test
 summary: |
    Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

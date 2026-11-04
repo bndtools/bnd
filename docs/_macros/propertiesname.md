@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: 	propertiesname 
 class: 	Project
 summary: Get the filename of the current properties file
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `propertiesname` macro returns the filename (without path) of the properties file being processed. This is typically `bnd.bnd` for projects or workspace configuration files.

@@ -60,6 +60,17 @@ public class P2IndexerTest {
 	}
 
 	@Test
+	public void testIsTargetPlatformWithOpaqueFileUri() throws Exception {
+		URI opaqueTarget = new URI("file:C:/tmp/example.target");
+		assertThat(opaqueTarget.getPath()).isNull();
+		assertThat(P2Indexer.isTargetPlatform(opaqueTarget)).isTrue();
+
+		URI opaqueRepository = new URI("file:C:/tmp/repository");
+		assertThat(opaqueRepository.getPath()).isNull();
+		assertThat(P2Indexer.isTargetPlatform(opaqueRepository)).isFalse();
+	}
+
+	@Test
 	public void testFile() throws Throwable {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));
@@ -71,7 +82,8 @@ public class P2IndexerTest {
 			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				input.toURI(), getName())) {
 				List<String> bsns = p2.list(null);
-				assertThat(bsns).containsExactly("name.njbartlett.eclipse.macbadge");
+				assertThat(bsns).containsExactlyInAnyOrder("name.njbartlett.eclipse.macbadge",
+					"name.njbartlett.eclipse.macbadge.feature");
 
 				System.out.println(bsns);
 

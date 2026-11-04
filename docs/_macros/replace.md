@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: replace ';' LIST ';' REGEX (';' STRING (';' STRING)? )?
 summary: Replace parts of list elements using regex patterns
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `replace` macro applies regex-based replacement to each element in a comma-separated list. Uses simple comma splitting (doesn't handle quoted sections).

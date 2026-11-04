@@ -1,13 +1,33 @@
 ---
 title: Settings
-layout: default
+layout: bnd
+parent: Configuration and Troubleshooting
+nav_order: 1
 ---
-
 For a build model it is crucial that it has no dependencies on the machine it is running on. One of the  most frustrating developer experiences is the phrase: 'Yes, but it runs on my machine!'. For this reason bnd goes out of it is way to have no dependencies outside its workspace. That is, until we hit security. It is in the nature of security to have secrets and by definitions these secrets cannot be in the workspace, or, well, they will not be that secret for long. Though the best solution is to keep the secret in your head, there are times when this is impossible or plain cumbersome.
 
 For this reason, bnd maintains a settings file in ~/.bnd/settings.json. This file contains ordinary settings ...
 
 TBD
+
+The file contains ordinary string settings in `map`, together with the public `id` and private `secret` key data used by
+bnd authentication. The [settings sample](../examples/settings.json) shows the complete JSON shape. The key data in that
+sample is disposable; generate a new identity for real use with `bnd settings -g`.
+
+## Usage
+
+Copy the sample to the default location, then replace its example values:
+
+    $ mkdir -p ~/.bnd
+    $ cp docs/examples/settings.json ~/.bnd/settings.json
+
+Read a value from the settings file with the `global` macro in a workspace `cnf/build.bnd`:
+
+    repository.user: ${global;example.username}
+
+Use a default when the setting is absent:
+
+    repository.token: ${global;example.token;not-configured}
 
 ## Authorization
 

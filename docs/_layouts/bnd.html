@@ -1,0 +1,10 @@
+---
+layout: default
+---
+{% if page.summary %}
+<div class="bnd-summary">
+{{ page.summary | markdownify }}
+</div>
+{% endif %}
+
+{{ content }}

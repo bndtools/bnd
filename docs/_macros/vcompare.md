@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: vcompare VERSION VERSION
 summary: Compare two version strings 
+parent: Macro Reference
 ---
-
 ## Summary
 
 Compare two OSGi version strings using proper version semantics, returning -1, 0, or 1.

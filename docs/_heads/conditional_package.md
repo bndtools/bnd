@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Conditional-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *
 class: Header
 summary: |
    Recursively add packages from the class path when referred and when they match one of the package specifications.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

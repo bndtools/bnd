@@ -1,9 +1,9 @@
 ---
 title: Maven Bnd Repository Plugin
-layout: default
+layout: bnd
 summary: A plugin to use and release to Maven repositories
+parent: Plugins
 ---
-
 The Maven Bnd Repository / MavenBndRepository plugin provides a full interface to the Maven local repository in `~/.m2/repository` and remote repositories like [Nexus] or [Artifactory]. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.
 
 ### Maven Central
@@ -20,207 +20,7 @@ You can add `Group:Artifact:Version` coordinates in the `central.maven` file. Th
 
 #### Release to Maven Central
 
-Releasing to Maven Central requires usually a couple of steps. For one you usually go through a staging repository like the staging nexus of Sonatype. They perform a couple of checks and you manually have to clear the release via their web frontend. 
-
-In case you version your bundles individually, e.g. Sonatype will not complain if a Version of one Artifact in your staging repo already exists. The release will simply not work. Thus you can define a staging repository. The Release process will check against the releaseUrl if something already exists, but will upload to the staging URL. 
-
-A configuration can look like this:
-
-	-plugin.release = \
-		aQute.bnd.repository.maven.provider.MavenBndRepository; \
-			releaseUrl=https://repo.maven.apache.org/maven2/; \
-			stagingUrl=https://oss.sonatype.org/service/local/staging/deploy/maven2/; \
-			index=${.}/release.maven; \
-			name="Release"
-
-#### Release to Maven Central via Sonatype Central Portal (deprecated for removal in 7.3.0)
-
-Maven Central now offers publishing through the [Sonatype Central Portal](https://central.sonatype.com/), which provides a streamlined publishing process. The MavenBndRepository plugin supports this with the `sonatypeMode` configuration property.
-
-The `sonatypeMode` property controls how artifacts are published to Maven Central through the Sonatype Central Portal API:
-
-* **`none`** (default) - Standard Maven repository behavior without special Sonatype Portal handling
-* **`manual`** - Artifacts are uploaded to Sonatype Central Portal for validation, but publishing must be done manually via the Sonatype web interface
-* **`autopublish`** - Artifacts are automatically published to Maven Central after successful upload and validation
-
-##### Authentication
-
-Publishing to Sonatype Central Portal requires authentication using a Bearer Token. Configure this in the [-connection-settings] instruction:
-
-	# Define your Bearer Token (typically from environment variable)
-	sonatype_bearer: '${env;SONATYPE_BEARER;}'
-	
-	# Configure connection settings
-	-connection-settings.sonatype:\
-	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
-	        password = ${sonatype_bearer};\
-	          verify = false
-
-The Bearer Token can be obtained from your [Sonatype Central Portal account](https://central.sonatype.org/publish/generate-portal-token/).
-
-##### Configuration Examples
-
-**Example 1: Automatic Publishing**
-
-This configuration automatically publishes artifacts to Maven Central after upload and validation:
-
-	sonatype_bearer: '${env;SONATYPE_BEARER;}'
-	
-	-connection-settings.sonatype:\
-	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
-	        password = ${sonatype_bearer};\
-	          verify = false
-	
-	-plugin.release = \
-	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
-	        releaseUrl   = https://central.sonatype.com/api/v1/publisher/upload; \
-	        snapshotUrl  = https://central.sonatype.com/repository/maven-snapshots; \
-	        index        = ${.}/release.maven; \
-	        name         = "Maven Central"; \
-	        sonatypeMode = autopublish
-
-**Example 2: Manual Publishing with Staging**
-
-This configuration uses a staging URL and requires manual publishing approval:
-
-	sonatype_bearer: '${env;SONATYPE_BEARER;}'
-	maven_central: https://repo.maven.apache.org/maven2/
-	
-	-connection-settings.sonatype:\
-	   server;    id = https://central.sonatype.com/api/v1/publisher/upload;\
-	        password = ${sonatype_bearer};\
-	          verify = false
-	
-	-plugin.release = \
-	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
-	        releaseUrl   = ${maven_central}; \
-	        stagingUrl   = https://central.sonatype.com/api/v1/publisher/upload; \
-	        snapshotUrl  = https://central.sonatype.com/repository/maven-snapshots; \
-	        index        = ${.}/release.maven; \
-	        name         = "Maven Central Staging"; \
-	        sonatypeMode = manual
-
-When `stagingUrl` is specified with `sonatypeMode`, the plugin:
-1. Checks the `releaseUrl` (Maven Central) to verify the artifact doesn't already exist
-2. Uploads to the `stagingUrl` (Sonatype Portal) for validation
-3. In `manual` mode, waits for manual approval via the [Sonatype web interface](https://central.sonatype.com/publishing)
-
-**Example 3: Local Repository Only**
-
-This configuration disables Sonatype Portal integration:
-
-	-plugin.release = \
-	    aQute.bnd.repository.maven.provider.MavenBndRepository; \
-	        releaseUrl   = file:///path/to/local/repo; \
-	        index        = ${.}/release.maven; \
-	        name         = "Local Release"; \
-	        sonatypeMode = none
-
-#### Standalone Sonatype Upload (recommended for CI/CD)
-
-For CI/CD pipelines, the recommended approach is to separate building and Sonatype deployment
-using the standalone upload scripts. This avoids the "last artifact" problem inherent in the
-bnd-internal mechanism and works across mixed build systems (bnd workspace, Gradle plugins, Maven plugins).
-
-The workflow is:
-
-1. All builds publish artifacts to a shared local directory (e.g. `dist/bundles`)
-2. A standalone script uploads the entire directory to Sonatype as a single deployment
-3. A status check script verifies the deployment and optionally cleans up
-
-##### Workspace Fragments
-
-Use the provided workspace fragment for configuration:
-
-* `cnf/ext/maven-gav.bnd` – Maven GAV coordinates, Bundle-Vendor, Bundle-Developers, GPG signing
-
-##### Release Upload
-
-Upload release artifacts to Sonatype Central Portal:
-
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-upload.sh [--publishing-type AUTOMATIC] dist/bundles
-
-GPG signing is handled by the bnd build (via `-maven-release` in `cnf/ext/maven-gav.bnd`)
-and validated by Sonatype during deployment processing.
-
-The script:
-1. Creates a ZIP bundle from the release directory (using `jar cMf`)
-2. Uploads via `POST /api/v1/publisher/upload`
-3. Stores the deployment ID in `<release-dir>_DEPLOYMENTID.txt`
-
-##### Snapshot Upload
-
-Deploy snapshot artifacts to the Sonatype snapshot repository:
-
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-upload.sh --snapshot dist/bundles
-
-Snapshot deployments use `PUT` requests to upload each artifact individually to
-`https://central.sonatype.com/repository/maven-snapshots/`.
-
-The bnd workspace uses snapshot builds when the `-snapshot:` instruction is commented out
-(prefixed with `#`) in `cnf/build.bnd`. When `-snapshot:` is active (not commented), the
-build produces release versions instead.
-
-##### Deployment Status Check
-
-After uploading, verify the deployment status and optionally clean up:
-
-	# Check release deployment status (reads DEPLOYMENTID from file)
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-status.sh [--clean] dist/bundles
-
-	# Check snapshot deployment (verifies all jar files are available)
-	SONATYPE_BEARER=<token> \
-	  ./.github/scripts/sonatype-status.sh --snapshot [--clean] dist/bundles
-
-For release deployments, the status script reads the deployment ID from
-`<release-dir>_DEPLOYMENTID.txt` and queries `/api/v1/publisher/status`.
-
-For snapshot deployments, the status script compares all jar files in the
-deployment folder against the snapshot repository URL.
-
-The `--clean` flag removes the release directory after a successful status check,
-preparing it for the next deployment cycle.
-
-##### Gradle Integration
-
-To call the Sonatype upload after a successful Gradle publish, add a task to your `build.gradle`
-(adjust the script path to match your project structure):
-
-	tasks.register('sonatypeUpload', Exec) {
-	    dependsOn ':publish'
-	    group = 'publishing'
-	    description = 'Upload artifacts to Sonatype Central Portal'
-	    commandLine './.github/scripts/sonatype-upload.sh', 'dist/bundles'
-	    environment 'SONATYPE_BEARER', System.getenv('SONATYPE_BEARER') ?: ''
-	}
-
-##### Maven Integration
-
-To call the Sonatype upload after a successful Maven deploy, use the `exec-maven-plugin`
-(adjust the script path to match your project structure):
-
-	<plugin>
-	    <groupId>org.codehaus.mojo</groupId>
-	    <artifactId>exec-maven-plugin</artifactId>
-	    <executions>
-	        <execution>
-	            <id>sonatype-upload</id>
-	            <phase>deploy</phase>
-	            <goals><goal>exec</goal></goals>
-	            <configuration>
-	                <executable>./.github/scripts/sonatype-upload.sh</executable>
-	                <arguments>
-	                    <argument>dist/bundles</argument>
-	                </arguments>
-	            </configuration>
-	        </execution>
-	    </executions>
-	</plugin>
-
-
+The recommended approach is the standalone upload scripts described in [Sonatype Central Portal Publishing](/chapters/325-sonatype-central-portal.html).
 
 ### Use of .m2 Local Repository
 
@@ -274,24 +74,35 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 |                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
 | `readOnly`       | `true`|`false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
-| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.|
+| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_ (text with one GAV per line or pom.xml).|
+| `checksumFile`   | `PATH`| `<index-dir>/<index-filename>.checksums` | The path to the trusted checksum file relative to `build.bnd`. If not specified, defaults to a `.checksums` sidecar file next to the index file. See [Trusted Checksum Verification](#trusted-checksum-verification).|
+| `checksumRecord`   | `boolean` | `false` | When set to `true`, the repository generates (records) the trusted checksum file after successful repository initialization. Checksums are computed for all artifacts currently listed in the index file and written to the default sidecar location (`<index>.checksums`) or the path specified by `checksumFile`. **Important:** `checksumRecord=true` does not bootstrap `checksumPolicy=strict` on a missing checksum file; strict initialization fails before recording can run. 
+| `checksumPolicy`   | enum `strict` `lenient` | `lenient` | Controls how checksums are validated when a checksum file is present. See [Checksum Policy](#checksum-policy) for details. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
 | `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for changes to the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
 | `multi`          | `NAME`|        | Comma separated list of extensions to be searched for indexing containing bundles. For example, a zip file could comprise further bundles. Hence, this zip artifact can be referenced in this plugin for indexing the internal JARs. |
 
-If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_. 
+If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_.
 
 For finding archives, both URLs are used. For releasing, only the first or the `stagingUrl` is used.
 
-The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories.
+## Index file
+
+The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent breaking builds due to changes in repositories.
+The index file supports two formats:
+
+- a) text file with one GAV per line or
+- b) Maven _pom.xml_ content (note that not the full maven pom.xml features are supported. Mainly the `<dependency>` entries are relevant).
+
+Note on auto-detection of index format: If bnd detects xml it assumes `pom.xml`, otherwise the text-file format is assumed.
 
 Alternative, the GAV's can be specified in the file where the repository is defined with the  `source` configuration property. This is a string separated by either whitespace, commas, semicolons, or any combination thereof.
 
 Both the index file and the source configuration can be replaced by macros. The only difference is that the source can use macros for more than one GAV while the indexFile is processed per line and that line must deliver at most single GAV.
 
-## Coordinates & Terminology
+### Coordinates & Terminology of Text file
 
 The index file contains a list of _coordinates_. A coordinate specifies an _archive_ in a Maven _revison_. An archive is a ZIP, POM, JAR, or any other type of file. In Maven, these files are addressed within a revision with an _extension_ and a _classifier_. The extension indicates the type of the file and the classifier is a modifier that makes the name unique in the project. A _revision_ is the combination of a _program_ and a _version_, where the program is the combination of _groupId_ and _artifactId_.
 
@@ -312,6 +123,38 @@ The file can contain comments (start the line with `#`), empty lines and also ma
 
     # This is a comment
     ${osgi}:${osgi}.service.log:1.4.0
+
+### Coordinates & Terminology of pom.xml
+
+An example `pom.xml` index file which is supported by MavenBndRepository looks like this:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>bnd.index</groupId>
+  <artifactId>central</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <dependencies>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.framework</artifactId>
+        <version>1.10.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.framework</artifactId>
+        <version>1.8.0</version>
+      </dependency>
+    </dependencies>
+</project>
+```
+
+As stated earlier: Not all maven `pom.xml` features are supported. Mainly the `<dependency>` entries are relevant. The parser is very simple and `pom.xml` is just meant to be an alternative format for the text file.
+
+One advantage of using the `pom.xml` format over the flat text file is that `pom.xml` is understood by more tooling. For example Dependabot can automatically update `pom.xml` files, but not the flat text file.
+
 
 ## Local Repository
 
@@ -341,7 +184,147 @@ The Maven Bnd Repository uses the bnd Http Client. See the [-connection-settings
 
 ## Tagging
 
-This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/chapters/870-plugins.html#tagging-of-repository-plugins) for more details.
+This plugin supports Tagging via the `tags` configuration property. See [Tagging of repository plugins](/plugins/#tagging-of-repository-plugins) for more details.
+
+## Trusted Checksum Verification
+
+The Maven Bnd Repository supports trusted checksum verification to protect against tampered or corrupted artifacts. When a checksum file is present, every artifact fetched from the repository is validated against the expected checksum before use. If the checksum does not match, the local file is deleted and an exception is thrown.
+
+### The .checksums File
+
+The checksum file is a plain-text sidecar file that lists the expected checksum for each artifact coordinate in the index. By convention, bnd looks for a file with the same name as the index file plus the `.checksums` extension. For example, if your index is `cnf/central.maven`, bnd will automatically look for `cnf/central.maven.checksums`.
+
+You can override this location with the checksumFile configuration property:
+
+```
+-plugin.central = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/central.maven; \
+		checksumFile=${.}/trusted/central.checksums; \
+		checksumPolicy=strict; \
+		name="Central"
+```
+
+If neither a default nor an explicit checksum file exists, checksum verification is silently skipped and the repository operates normally.
+
+### File Format
+
+Each line in the `.checksums` file specifies one artifact coordinate and its expected checksum in the form:
+
+```
+<GAV>=<hashType>:<hexDigest>
+```
+
+where `<GAV>` uses the same coordinate syntax as the index file and `<hashType>` is one of `sha1`, `sha-1`, `sha256`, `sha-256`, `sha512`, `sha-512`, or `md5`.
+
+Lines starting with # are treated as comments. Empty lines are ignored.
+
+**Example central.maven.checksums:**
+
+```
+# Trusted checksums for central.maven
+commons-cli:commons-cli:1.0=sha1:6dac9733315224fc562f6268df58e92d65fd0137
+commons-cli:commons-cli:1.2=sha1:2bf96b7aa8b611c177d329452af1dc933e14501c
+org.osgi:osgi.core:6.0.0=sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+```
+
+### Generating the Checksums File
+
+The `checksumRecord` configuration option enables automatic generation of the trusted checksum file after successful repository initialization.
+
+**Configuration:**
+
+```
+-plugin.central =
+	aQute.bnd.repository.maven.provider.MavenBndRepository;
+	releaseUrl=https://repo.maven.apache.org/maven2/;
+	index=${.}/central.maven;
+	checksumRecord=true;
+	checksumPolicy=lenient;
+	name="Central"
+```
+
+**Workflow:**
+
+1. Repository initialization runs (during workspace startup or build)
+2. Index file is loaded and all artifacts are discovered
+3. If `checksumRecord=true`, bnd iterates through each artifact
+4. Computes a checksum (SHA-1 by default) for each locally available artifact
+5. Writes the checksums to the `.checksums` sidecar file (or custom location)
+6. Repository becomes ready for use
+
+**Use Cases:**
+
+- **Local development:** Enable `checksumRecord=true` locally when you need to generate or update the checksum file. After building, review the changes to `index.checksums` and commit to version control if satisfied.
+- **Controlled checksum updates:** Use an environment variable like `CHECKSUMS_RECORD` to selectively enable recording only when intentional (e.g., `checksumRecord=${if;${env;CHECKSUMS_RECORD};false}`). Leave disabled in regular CI builds to prevent unintended modifications to the checksum file.
+- **Onboarding new artifacts:** When adding new dependencies to the index, enable recording on a local build to bootstrap the initial checksum file.
+
+**Notes:**
+
+- Recording happens **after** repository initialization completes.
+- Therefore, `checksumPolicy=strict` + missing checksum file fails initialization before recording can run.
+- Recommended bootstrap flow:
+  1. Run once with `checksumPolicy=lenient` and `checksumRecord=true` to generate/update the checksum file.
+  2. Commit and review the checksum file.
+  3. Switch to `checksumPolicy=strict` for enforcement.
+- Only artifacts that have been downloaded to the local repository can have their checksums recorded
+- Remote-only artifacts (not yet downloaded) are skipped during recording
+- The generated file uses SHA-1 by default (matching the format created by the IDE's "Create Trusted Checksums file" action)
+- If the checksum file already exists, it will be **overwritten** with the current state
+- **Best practice:** Leave `checksumRecord=false` in standard CI builds. Enable it only when you intend to update and review the checksum file before committing.
+- To use recorded checksums for verification on subsequent builds, ensure `checksumFile` is configured or the default `.checksums` sidecar is in place
+
+### Generating checksums file in Bndtools
+
+Additionally the Bndtools Eclipse Plugin provides a context menu action on the repository to generate the checksum file automatically. Right-click the repository entry and choose "Create Trusted Checksums file". This computes a `sha1` checksum for every artifact currently in the index and writes the result to the default sidecar location (`<index>.checksums`).
+
+After generating the file, review it and commit it to version control alongside your index file. This ensures that everyone on your team (and CI) uses the same trusted checksums.
+
+### Checksum Policy
+
+The `checksumPolicy` configuration property controls how strictly the repository enforces checksum verification when a checksum file is present. Two modes are available:
+
+#### Lenient Mode (default)
+
+In `lenient` mode (the default for backward compatibility):
+- If no checksum file exists, verification is skipped and artifacts are used as-is
+- If a checksum file exists, only artifacts explicitly listed in it are verified
+- Artifacts not listed in the checksum file are used as-is without verification
+- This allows you to incrementally build and maintain your checksum file over time
+
+Configuration:
+```
+checksumPolicy=lenient
+```
+
+#### Strict Mode
+
+In `strict` mode:
+- A checksum file **must** exist; the build fails if it is missing
+- **Every** dependency in the repository index must have a matching entry in the checksum file with the correct BSN and version
+- If a dependency is missing from the checksum file or has a different version, the build fails with an error
+- This mode ensures complete traceability: all dependencies must be explicitly validated against known-good checksums
+- `checksumRecord=true` does not change this requirement in the same run.
+
+Configuration:
+```
+checksumPolicy=strict
+```
+
+**Use Case Example:** Strict mode is recommended for production builds and CI/CD pipelines where you want to guarantee that all dependencies have been explicitly reviewed and approved via the checksum file.
+
+### Expected Behavior
+
+|                              Situation                             |                               Behavior (Lenient)                              | Behavior (Strict)                        |
+|:------------------------------------------------------------------:|:-------------------------------------------------------------------:|:------|
+| No checksum file exists                                            | No verification is performed; artifacts are used as-is.                  | **Build fails** with error                      |
+| `.checksums` file exists but has no entry for an artifact              | That artifact is not verified; it is used as-is.                    | **Build fails** with error - dependency missing from checksums                   |
+| Checksum file exists and artifact matches the expected hash        | Artifact is used normally.                                          | Artifact is used normally.                     |
+| Checksum file exists but artifact does not match the expected hash | The local file is deleted and a `TrustedChecksumException` is thrown. The artifact appears as if it does not exist / could not be downloaded and thus will not resolve. Removing the artifact entry from the checksum file and a rebuild should re-download the artifact | **Build fails** with error - checksum mismatch                    |
+| BSN matches but version in `.checksums` differs from index         | That artifact is not verified; it is used as-is.                    | **Build fails** with error - version mismatch                     |
+
+In lenient mode, you can incrementally add entries to the checksum file: only artifacts explicitly listed are verified. Artifacts not listed in the file are passed through without verification.
 
 ## IDEs
 

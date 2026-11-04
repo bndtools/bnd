@@ -5,11 +5,25 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.EnumSet;
 
+import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository;
 
 public class SearchableRepositoryTreeContentProvider extends RepositoryTreeContentProvider {
+
+	public SearchableRepositoryTreeContentProvider() {
+		super();
+	}
+
+	public SearchableRepositoryTreeContentProvider(ResolutionPhase mode) {
+		super(mode);
+	}
+
+	public SearchableRepositoryTreeContentProvider(EnumSet<ResolutionPhase> modes) {
+		super(modes);
+	}
 
 	@Override
 	Object[] getRepositoryBundles(RepositoryPlugin repo) {

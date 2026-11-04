@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: Bundle-UpdateLocation
 class: Header
 summary: |
    The Bundle-UpdateLocation header specifies a URL where an update for this bundle should come from. If the bundle is updated, this location should be used, if present, to retrieve the updated JAR file.
+parent: Headers
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

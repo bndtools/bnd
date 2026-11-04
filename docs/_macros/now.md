@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: now ( 'long' | DATEFORMAT )
 summary: Get current date and time in various formats
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `now` macro returns the current date and time. It can return the raw Date object, milliseconds since epoch, or a formatted date string.

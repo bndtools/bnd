@@ -1,9 +1,9 @@
 ---
 title: AspectJ Plugin
-layout: default
+layout: bnd
 summary: Weave an executable JAR during compile time (experimental)
+parent: Plugins
 ---
-
 Aspects make it possible to centralize _cross cutting concerns_. 
 
 The biz.aQute.aspectj.plugin.AspectJ plugin allows you to weave an executable JAR during export. It
@@ -38,8 +38,7 @@ menu entry for this.)
         aQute.bnd.aspectj.plugin.AspectJ
 
 The following code defines an aspect with the annotation model in a bundle called 'aspect':
-```
-
+```java
     @Aspect
     public class AspectHandler {
         @Before("execution(void *.start(org.osgi.framework.BundleContext))")

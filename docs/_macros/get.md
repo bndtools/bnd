@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: get ';' INDEX (';' LIST )*
 summary: Get an element from a list at a specific index
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `get` macro retrieves an element from one or more lists at a specified index position. It supports negative indices to count from the end of the list.

@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: fmodified ( ';' RESOURCE )+
 summary: Get the latest modification timestamp from a list of files
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `fmodified` macro finds the most recent modification time among a list of files and returns it as a long integer (milliseconds since epoch). This is useful for detecting when files have changed.

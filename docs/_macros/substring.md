@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: substring ';' STRING ';' START ( ';' END )?
 summary: Extract a substring from a string with support for negative indices
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `substring` macro extracts a portion of a string between start and end positions. It supports negative indices to count from the end of the string.

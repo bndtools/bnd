@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Processor
 title: uri ';' URI (';' URI)?
 summary: Resolve a uri against a base uri.
+parent: Macro Reference
 ---
-
 ## Summary
 
 Resolve a URI against a base URI, handling relative URIs and file scheme URIs appropriately.

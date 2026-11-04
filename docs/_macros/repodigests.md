@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: repodigests ( ';' NAME )*
 summary: Get cryptographic digests of repository contents
 class: Workspace
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `repodigests` macro returns hexadecimal cryptographic digests representing the contents of all repositories or specific named repositories. This is useful for detecting changes in repository state.

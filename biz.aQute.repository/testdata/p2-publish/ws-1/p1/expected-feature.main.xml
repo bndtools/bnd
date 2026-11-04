@@ -204,8 +204,8 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
-   
+
+
    ======================================
         Eclipse Public License - v 2.0
 
@@ -470,8 +470,8 @@ No third-party beneficiary rights are created under this Agreement.
 
 Exhibit A - Form of Secondary Licenses Notice
 
-"This Source Code may also be made available under the following 
-Secondary Licenses when the conditions for such availability set forth 
+"This Source Code may also be made available under the following
+Secondary Licenses when the conditions for such availability set forth
 in the Eclipse Public License, v. 2.0 are satisfied: {name license(s),
 version(s), and exceptions or additional permissions here}."
 
@@ -511,9 +511,9 @@ version(s), and exceptions or additional permissions here}."
   <plugin id="org.bndtools.templating.gitrepo" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
   <plugin id="org.bndtools.versioncontrol.ignores.manager" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
   <plugin id="org.bndtools.versioncontrol.ignores.plugin.git" version="[7.0.0.202306291715-SNAPSHOT,7.0.0.202306291715-SNAPSHOT]" unpack="false"/>
-  <plugin id="org.osgi.service.coordinator" version="[1.0.2.201505202024,1.0.2.201505202024]" unpack="false"/>
-  <plugin id="org.osgi.service.repository" version="[1.1.0.201505202024,1.1.0.201505202024]" unpack="false"/>
+   <plugin id="org.osgi.service.coordinator" version="[1.0.2,1.1.0)" unpack="false"/>
+   <plugin id="org.osgi.service.repository" version="[1.1.0,2.0.0)" unpack="false"/>
   <plugin id="org.osgi.util.function" version="[1.2.0.202109301733,1.2.0.202109301733]" unpack="false"/>
   <plugin id="org.osgi.util.promise" version="[1.2.0.202109301733,1.2.0.202109301733]" unpack="false"/>
-  <plugin id="org.slf4j.api" version="[1.7.30.v20200204-2150,1.7.30.v20200204-2150]" unpack="false"/>
+   <plugin id="org.slf4j.api" version="[1.7.30,2.0.0)" unpack="false"/>
 </feature>

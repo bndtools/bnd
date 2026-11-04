@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -export-apiguardian PACKAGE-SPEC, ( ',' PACKAGE-SPEC )*
 class: Project
 summary: |
    Exports the given packages where the the `@API` annotation is found on contained classes.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
@@ -19,7 +20,7 @@ note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same fil
 
 The heuristic used by **bnd** to determine which packages to export is as follows:
 
--  the instruction `-export-apiguardian` is required (i.e. opt-in is required). The value of the instruction is a package specification like most other [bnd instructions](/chapters/820-instructions.html). The minimal configuration is `-export-apiguardian: *` which instructs bnd to scan all classes in all packages with the plugin
+-  the instruction `-export-apiguardian` is required (i.e. opt-in is required). The value of the instruction is a package specification like most other [bnd instructions](/instructions/). The minimal configuration is `-export-apiguardian: *` which instructs bnd to scan all classes in all packages with the plugin
 - the plugin will export packages which have any class containing the `@API` annotation
 - package exports will be marked with the attribute `status` using the highest value of `org.apiguardian.api.API.Status` (in ordinal order) found on `@API` annotations in the package
 - package exports will be marked with the directive `mandatory:=status` for any package whose highest value of `org.apiguardian.api.API.Status`  found was `INTERNAL` . This implies that the package can only be imported by marking the import with the attribute `status=INTERNAL` 

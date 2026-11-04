@@ -155,7 +155,7 @@ public final class Icons {
 		Key k = new Key(name);
 		synchronized (images) {
 			Image image = images.get(k);
-			if (image == null) {
+			if (image == null || image.isDisposed()) {
 				image = desc.createImage();
 				images.put(k, image);
 			}

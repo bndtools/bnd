@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: env ';' KEY (';' STRING)?
 summary: Get an environment variable with an optional default
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `env` macro looks up an environment variable and returns its value, or returns a default value if the variable is not set. The default is an empty string if not specified.

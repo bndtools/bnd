@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,6 +60,7 @@ import aQute.lib.zip.ZipUtil;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
+import aQute.maven.provider.TrustedChecksums.TrustedChecksumException;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -78,7 +80,7 @@ class IndexFile {
 	final IMavenRepo							repo;
 	private final Processor						domain;
 	private final Macro							replacer;
-	private final boolean						isPom;
+	final boolean								isPom;
 
 	final Reporter								reporter;
 	final PromiseFactory						promiseFactory;
@@ -115,7 +117,12 @@ class IndexFile {
 	 * Open, will refresh this repository, which will load the file
 	 */
 	void open() throws Exception {
-		serialize(this::load);
+		Promise<Boolean> result = serialize(this::load);
+
+		Throwable failure = result.getFailure();
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
 	}
 
 	/**
@@ -133,14 +140,26 @@ class IndexFile {
 		Deferred<Boolean> latch = promiseFactory.deferred();
 		try {
 			synchronized (this) {
-				return updateSerializer = updateSerializer.flatMap(b -> latch.getPromise())
+				Promise<Boolean> current = updateSerializer.flatMap(b -> latch.getPromise())
 					.flatMap(b -> updater.get())
 					.recover(failed -> {
 						Throwable failure = Exceptions.unrollCause(failed.getFailure(),
 							InvocationTargetException.class);
+
+						if (failure instanceof TrustedChecksumException) {
+							throw Exceptions.duck(failure); // fail this
+															// operation
+						}
+
 						logger.debug("Failure occured updating index {}", getMessage(failure), failed.getFailure());
 						return Boolean.FALSE;
 					});
+
+				// Keep serializer usable for future operations even if
+				// `current` failed.
+				updateSerializer = current.recover(failed -> Boolean.TRUE);
+
+				return current;
 			}
 		} finally {
 			latch.resolve(Boolean.TRUE);
@@ -263,14 +282,14 @@ class IndexFile {
 		} else {
 			promises = toAdd.stream()
 				.map(archive -> {
-					if (!archive.isSnapshot()) {
-						File localFile = repo.toLocalFile(archive);
-						if (localFile.isFile() && localFile.length() > 0) {
-							return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
-								.recover(p -> failed(archive, p.getFailure()));
-						}
-					}
 					try {
+						if (!archive.isSnapshot()) {
+							File localFile = repo.toLocalFile(archive);
+							if (localFile.isFile() && localFile.length() > 0) {
+								return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
+									.recover(p -> failed(archive, p.getFailure()));
+							}
+						}
 						return repo.get(archive)
 							.map(file -> (file == null) ? failed(archive, "Not found")
 								: parseSingleOrMultiFile(archive, file))
@@ -294,6 +313,11 @@ class IndexFile {
 
 	private Map<Archive, Resource> failed(Archive archive, Throwable t) {
 		Throwable failure = Exceptions.unrollCause(t, InvocationTargetException.class);
+
+		if (failure instanceof TrustedChecksumException) {
+			throw Exceptions.duck(failure);
+		}
+
 		String message = getMessage(failure);
 		logger.debug("Failed to get {}: {}", archive, message, t);
 		return failed(archive, message);
@@ -457,7 +481,7 @@ class IndexFile {
 
 	private void save(Set<Archive> add, Set<Archive> remove) throws Exception {
 		if (isPom) {
-			POMIndexFile.savePom(indexFile, archives);
+			POMIndexFile.savePom(indexFile, sort(archives.keySet()));
 		} else {
 			saveText(add, remove);
 		}
@@ -507,6 +531,38 @@ class IndexFile {
 			return update(toAdd).thenAccept(b -> save(toAdd, toRemove));
 		});
 		sync(serializer);
+	}
+
+	void convertTextXml() {
+		Promise<Boolean> serializer = serialize(() -> {
+
+			if (isPom) {
+				try (Formatter f = new Formatter()) {
+					sort(archives.keySet()).forEach(archive -> f.format("%s\n", archive));
+					IO.store(f.toString(), indexFile);
+				}
+
+			} else {
+				POMIndexFile.savePom(indexFile, sort(archives.keySet()));
+			}
+			lastModified = indexFile.lastModified();
+			return null;
+		});
+		sync(serializer);
+
+	}
+
+	private static List<Archive> sort(Set<Archive> archives) {
+
+		// Compute archives from current state (update() already applied
+		// changes)
+		return archives.stream()
+			.sorted(Comparator.comparing((Archive a) -> a.revision.program.group)
+				.thenComparing(a -> a.revision.program.artifact)
+				.thenComparing(Comparator.comparing(a -> a.extension))
+				.thenComparing(Comparator.comparing(a -> a.classifier))
+				.thenComparing(a -> a.revision.version.toString()))
+			.collect(toList());
 	}
 
 	private Archive toArchive(String s, boolean macro) {

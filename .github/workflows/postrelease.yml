@@ -35,22 +35,29 @@ jobs:
     env:
       BUNDLE_GEMFILE: Gemfile
       BUNDLE_PATH: vendor/bundle
+      V1: ${{ github.event.inputs.V1 }}
     steps:
     - name: Git Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         ref: next
     - name: Set up Ruby
-      uses: ruby/setup-ruby@4eb9f110bac952a8b68ecf92e3b5c7a987594ba6
+      uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94
       with:
         ruby-version: 3.4.5
         bundler-cache: true
         working-directory: docs
+    - name: update baseline for the current build
+      run: |
+        sed 's/baseline.version:.*/baseline.version: ${{ github.event.inputs.V1 }}/' cnf/build.bnd >tmp
+        cat tmp
+        mv tmp cnf/build.bnd        
     - name: create release docs for ${{ github.event.inputs.V1 }}
       run: |
+        # keep the following in-sync with docs/ADDING_RELEASE_DOCS.md
         cd docs
         echo "releasename: ${V1}" >tmp
-        echo "baseurl: /release/${V1}" >>tmp
+        echo "baseurl: /releases/${V1}" >>tmp
         echo "repository: bndtools/bnd" >>tmp
         cat _config.yml | sed '/^releasename: /d' | sed '/^baseurl: /d' | sed '/^repository: /d' >>tmp
         mv tmp _config.yml
@@ -59,9 +66,17 @@ jobs:
         bundle exec jekyll build
 
         rm -rf _site/releases
-        find _site -type f ! -name "*.html" -exec rm -f {} +
+        # Remove unwanted root-level files (keeping only the ones you specified)
+        find _site -maxdepth 1 -type f ! -name "404.html" \
+                           ! -name "favicon.ico" \
+                           ! -name "index.html" \
+                           ! -name "robots.txt" \
+                           ! -name "sitemap.xml" \
+                           ! -name "snapshot.html" \
+                           -delete
+        
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.2
       with:
         name: releasedocs
         path: docs/_site/
@@ -75,8 +90,8 @@ jobs:
   create-workspace-template:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      WORKSPACE_REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/bndtools/workspace.git
+      GH_TOKEN: ${{ secrets.PAT_REPO_WORKSPACE }}
+      WORKSPACE_REPO: github.com/bndtools/workspace.git
       V1: ${{ github.event.inputs.V1 }}
 
     steps:
@@ -84,7 +99,7 @@ jobs:
       run: |
         export v=`echo $V1 | awk -F. '{print $1"."$2}'`
         echo $v
-        git clone $WORKSPACE_REPO repo
+        git clone https://x-access-token:${GH_TOKEN}@${WORKSPACE_REPO} repo
         cd repo
         git config user.name github-actions
         git config user.email github-actions@bndtools.org
@@ -92,8 +107,7 @@ jobs:
         echo "For release $V1" > README.md
         git add .
         git commit -m "Release $V1"
-        git push --force $WORKSPACE_REPO $v 
-
+        git push --force https://x-access-token:${GH_TOKEN}@${WORKSPACE_REPO} $v
 
 
   #
@@ -107,12 +121,12 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: checkout master
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         ref: master
 
     - name: download docs/releases/${{ github.event.inputs.V1 }}
-      uses: actions/download-artifact@v8.0.1
+      uses: actions/download-artifact@v8.0.2
       with:
         name: releasedocs
         path: docs/releases/${{ github.event.inputs.V1 }}/
@@ -122,7 +136,10 @@ jobs:
         sed 's/baseline.version:.*/baseline.version: ${{ github.event.inputs.V1 }}/' cnf/build.bnd >tmp
         cat tmp
         mv tmp cnf/build.bnd
-
+        
+    - name: sync baseline version to docs
+      run: bash docs/scripts/sync-baseline-version.sh
+      
     - name: create PR
       run: |
         git config user.name github-actions

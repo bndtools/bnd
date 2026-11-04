@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runprogramargs
 class: Project
 summary: |
    Additional arguments for the program invokation.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runpath REPO-ENTRY ( ',' REPO-ENTRY )
 class: Project
 summary: |
    Additional JARs for the remote VM path, should include the framework.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 
@@ -32,6 +33,8 @@ For example:
 	-runpath: \
 		com.foo.bar;version=1, \
 		file.jar; version=file
+
+An entry can also reference an Eclipse feature, which expands to the bundles of the feature for the target platform, see [-buildpath](buildpath.html#eclipse-features).
 
 
 <hr />

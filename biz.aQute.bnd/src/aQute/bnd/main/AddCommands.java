@@ -6,14 +6,19 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.Update;
 import aQute.lib.collections.ExtList;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
@@ -59,6 +64,8 @@ public class AddCommands {
 	@Description("Add template fragment(s) to the current workspace. Leave the name empty to see a list of available templates at the index."
 		+ "\\n\\nExample:\\n bnd add fragment osgi gradle ")
 	interface AddTemplateOptions extends Options {
+		@Description("Show archived template fragments when listing available templates")
+		boolean showArchived();
 	}
 
 	@Description("Add template fragment(s) to the current workspace.")
@@ -73,7 +80,7 @@ public class AddCommands {
 
 		List<String> selectedFragmentNames = args;
 		String indexUrl = DEFAULT_INDEX;
-		installTemplateFragment(ws, selectedFragmentNames, indexUrl);
+		installTemplateFragment(ws, selectedFragmentNames, indexUrl, options.showArchived());
 
 	}
 
@@ -88,6 +95,9 @@ public class AddCommands {
 		@Description("Specify template fragment(s) by name to install together with the created workspace. Fragments are identified by the 'name' attribute in the index. Specify multiple fragments by repeating the -f option. "
 			+ "To see a list of available templates use 'bnd add fragment' without arguments.")
 		List<String> fragment();
+
+		@Description("Show archived template fragments when listing available templates")
+		boolean showArchived();
 
 	}
 
@@ -112,7 +122,7 @@ public class AddCommands {
 		if (fragments != null && !fragments
 			.isEmpty()) {
 			String indexUrl = DEFAULT_INDEX;
-			installTemplateFragment(ws, fragments, indexUrl);
+			installTemplateFragment(ws, fragments, indexUrl, options.showArchived());
 		}
 
 
@@ -167,21 +177,25 @@ public class AddCommands {
 	}
 
 	private void showTemplatesFragments(List<TemplateInfo> availableTemplates) {
-		availableTemplates.forEach(ti -> bnd.out.format("%s - %s%n  - Organisation: %s%n  - Repo: %s %n", ti.name(),
-			ti.description(), ti.id()
-				.organisation(),
+		availableTemplates.forEach(ti -> bnd.out.format("%s%s - %s%n  - Repo: %s %n", ti.name(),
+			ti.archived() ? " (archived)" : "", ti.description(),
 			ti.id()
 				.repoUrl()));
 	}
 
-	private void installTemplateFragment(Workspace ws, List<String> selectedFragmentNames, String index)
+	private void installTemplateFragment(Workspace ws, List<String> selectedFragmentNames, String index,
+		boolean showArchived)
 		throws MalformedURLException {
 		FragmentTemplateEngine engine = initFragmentTemplateEngine(ws, index);
 		List<TemplateInfo> availableTemplates = engine.getAvailableTemplates();
 
 		if (selectedFragmentNames == null || selectedFragmentNames.isEmpty()) {
 			bnd.out.format("Available template fragments:%n");
-			showTemplatesFragments(availableTemplates);
+			List<TemplateInfo> toShow = showArchived ? availableTemplates
+				: availableTemplates.stream()
+					.filter(ti -> !ti.archived())
+					.toList();
+			showTemplatesFragments(toShow);
 			return;
 		}
 		List<TemplateInfo> selectedTemplates = availableTemplates.stream()
@@ -195,16 +209,20 @@ public class AddCommands {
 			return;
 		}
 
-		List<TemplateInfo> thirdParty = selectedTemplates.stream()
+		List<TemplateInfo> selectedAndRequired = engine.resolveRequirements(selectedTemplates);
+		List<TemplateInfo> thirdParty = selectedAndRequired
+			.stream()
 			.filter(t -> !t.isOfficial())
 			.toList();
 
 		if (!thirdParty.isEmpty()) {
-			bnd.out.format("You have selected " + thirdParty.size() + " fragments from 3rd-party authors: %n");
+			bnd.out.format("Your selection would install " + thirdParty.size()
+				+ " template fragments from 3rd-party authors (including required dependency fragments): %n");
 			showTemplatesFragments(thirdParty);
 
 			boolean confirmed = showConfirmation(
-				"Are you sure you trust the authors and want to continue fetching the content?");
+				"These fragments may contain build instructions (e.g., .bnd files) that are executed with the next build. "
+					+ "Only continue if you fully trust the authors and the content.");
 
 			if (!confirmed) {
 				// not confirmed. cancel selected
@@ -216,8 +234,26 @@ public class AddCommands {
 		}
 
 
-		engine.updater(ws.getBase(), selectedTemplates)
-			.commit();
+		try (TemplateUpdater updater = engine.updater(ws.getBase(), selectedTemplates)) {
+			Map<File, List<Update>> conflicts = updater.conflicts();
+			if (!conflicts.isEmpty()) {
+				bnd.out.format("%nNo template fragments installed, the selection writes different content to the same file:%n");
+				conflicts.forEach((file, updates) -> bnd.out.format("  %s <- %s%n", ws.getBase()
+					.toPath()
+					.relativize(file.toPath()),
+					updates.stream()
+						.map(u -> u.info()
+							.name())
+						.distinct()
+						.collect(Collectors.joining(", "))));
+				bnd.out.format(
+					"Select fewer fragments, or let the fragment mark the file with append=true in tool.bnd.%n");
+				return;
+			}
+			updater.commit();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 
 		bnd.out.format("Added %s template fragment(s): %n", selectedTemplates.size());
 		showTemplatesFragments(selectedTemplates);
@@ -226,7 +262,7 @@ public class AddCommands {
 	private boolean showConfirmation(String question) {
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
-				bnd.out.format("%n%s (yes/no): ", question);
+				bnd.out.format("%n%s%nDo you want to proceed? (yes/no): ", question);
 				String input = scanner.nextLine()
 					.trim()
 					.toLowerCase();

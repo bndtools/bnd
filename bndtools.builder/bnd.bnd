@@ -20,6 +20,7 @@
 	org.eclipse.core.contenttype,\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.resources,\
+	org.eclipse.core.filebuffers,\
 	org.eclipse.core.jobs,\
 	org.eclipse.core.commands,\
 	org.eclipse.jface,\
@@ -41,7 +42,8 @@
 
 -testpath: \
     ${junit},\
-    ${mockito}
+	${mockito},\
+	org.eclipse.core.filesystem
 
 # Headers
 Bundle-SymbolicName: ${p};singleton:=true

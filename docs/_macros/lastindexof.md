@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: lastindexof ';' STRING (';' LIST )*
 summary: Find the last index position of a value in one or more lists
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `lastindexof` macro searches for a value in combined lists and returns the 0-based index position of its last occurrence, or -1 if not found.

@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -classpath  FILE (',' FILE) *
 class: Analyzer
 summary: |
    Specify additional file based entries (either directories or JAR files) to add to the used classpath.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

@@ -1,9 +1,9 @@
 ---
 title: Guided Tour Workspace & Projects
-layout: default
+layout: bnd
+parent: Getting Started
+nav_order: 3
 ---
-
-
 The bnd workspace is a foundational concept in bnd, providing the structure and context in which OSGi projects are developed and built.
 
 In the introduction we mentioned this as the second part of bnd:
@@ -21,17 +21,22 @@ Since this section provides a tool independent view of bndlib, we use the [bnd c
 
 A workspace is a directory with the following mandatory files/directories:
 
-	./
-		cnf/
-			build.bnd
-			ext/
+```
+./
+	cnf/
+		build.bnd
+		ext/
+```
 
 That's all! So let's create one:
 
-	$ bnd add workspace com.acme.prime
-	$ cd com.acme.prime
-	$ ls
-	cnf
+```shell
+bnd add workspace com.acme.prime
+cd com.acme.prime
+ls
+```
+displaying 
+`cnf`
 
 The `cnf` directory is the 'magic' directory that makes a directory a workspace, just like the `.git` directory does for git. 
 

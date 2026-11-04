@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: bnd
 title: -runnoreferences  BOOLEAN
 class: Launcher
 summary: |
    Do not use the `reference:` URL scheme for installing a bundle in the installer.
+parent: Instruction Reference
 note: AUTO-GENERATED FILE - DO NOT EDIT. You can add manual content via same filename in ext folder. 
 ---
 

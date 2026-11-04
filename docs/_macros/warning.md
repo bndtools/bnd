@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: warning ( ';' STRING )*
 summary: Generate a build warning with a custom message
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `warning` macro generates one or more build warnings with custom messages. Each message argument is processed (macros are expanded) and then added to the build warning list. Unlike errors, warnings do not fail the build.

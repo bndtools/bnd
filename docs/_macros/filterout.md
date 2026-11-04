@@ -1,10 +1,10 @@
 ---
-layout: default
+layout: bnd
 class: Macro
 title: filterout ';' LIST ';' REGEX
 summary: Filter a list to exclude entries matching a regular expression
+parent: Macro Reference
 ---
-
 ## Summary
 
 The `filterout` macro filters a list to exclude entries that match a specified regular expression pattern. This is the inverse of `${filter}` - entries that match the pattern are removed from the result.

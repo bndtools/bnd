@@ -64,6 +64,7 @@ import aQute.lib.comparators.Comparators;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
+import aQute.p2.provider.EclipsePlatform;
 
 /**
  * This is the Resolve Context as outlined in the Resolver specification. It
@@ -104,9 +105,21 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private int										level									= 0;
 	private Resource								framework;
 	private final AtomicBoolean						reported								= new AtomicBoolean();
+	private volatile EclipsePlatform				platform;
 
 	public AbstractResolveContext(LogService log) {
 		this.log = log;
+	}
+
+	/**
+	 * Without a platform every requirement applies.
+	 */
+	void setPlatform(EclipsePlatform platform) {
+		this.platform = platform;
+	}
+
+	EclipsePlatform getPlatform() {
+		return platform;
 	}
 
 	protected synchronized void init() {
@@ -175,6 +188,9 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	@Override
 	public boolean isEffective(Requirement requirement) {
 		initAndReport();
+		if (!isApplicable(requirement))
+			return false;
+
 		String effective = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
 		if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
@@ -184,6 +200,15 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			.contains(requirement.getNamespace()))
 			return true;
 
+		return false;
+	}
+
+	private boolean isApplicable(Requirement requirement) {
+		EclipsePlatform platform = this.platform;
+		if (platform == null || platform.matches(requirement))
+			return true;
+
+		log.log(LogService.LOG_DEBUG, "Skipping " + requirement + ", it is not for the platform " + platform);
 		return false;
 	}
 
