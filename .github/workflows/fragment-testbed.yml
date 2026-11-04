@@ -1,0 +1,49 @@
+name: Fragment testbed
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+concurrency:
+  group: bnd-fragment-testbed-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cli:
+    name: Build bnd CLI
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Build CLI from this commit
+        run: ./gradlew --no-daemon :biz.aQute.bnd:build -x test -x testOSGi
+
+      - name: Upload bnd CLI
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: fragment-testbed-bnd-cli
+          path: biz.aQute.bnd/generated/biz.aQute.bnd.jar
+          if-no-files-found: error
+          retention-days: 14
+
+  testbed:
+    name: Test workspace fragments
+    needs: cli
+    uses: bndtools/workspace-templates/.github/workflows/testbed.yml@master
+    with:
+      bnd_artifact: fragment-testbed-bnd-cli
+      include_archived: ${{ github.event_name != 'pull_request' }}
