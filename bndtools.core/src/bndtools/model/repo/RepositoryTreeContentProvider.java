@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Stream;
@@ -475,7 +474,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			new LoadingContentElement(repoPlugin.getName())
 		};
 		setLoadState(pendingResults, repoPlugin, cacheKey, new RepositoryLoadState(resultMap, loading));
-		AtomicBoolean loadingShown = new AtomicBoolean();
 		long generation = inputGeneration;
 		Job job = new Job("Loading " + repoPlugin.getName() + " content...") {
 			@Override
@@ -488,14 +486,13 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					logger.logError(message, e);
 					completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
 					String detail = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, detail, generation,
-						loadingShown.get());
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, detail, null, generation);
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
 				}
 				if (bsns == null) {
 					completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
-					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, "No bundle list returned", generation,
-						loadingShown.get());
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, "No bundle list returned", null,
+						generation);
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "No bundle list returned");
 				}
 				bsns = new ArrayList<>(bsns);
@@ -529,17 +526,15 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				}
 				if (featureError != null) {
 					items.add(LoadingContentElement.failure(repoPlugin.getName(), featureError));
-					Object[] partial = items.toArray();
 					completeRepositoryLoad(repoPlugin, resultMap, cacheKey, null);
-					setLoadState(failedResults, repoPlugin, cacheKey, new RepositoryLoadState(resultMap, partial));
-					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, featureError, generation,
-						loadingShown.get());
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, featureError, items.toArray(),
+						generation);
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID,
 						"Feature data unavailable for repository " + repoPlugin.getName());
 				}
 
 				boolean published = completeRepositoryLoad(repoPlugin, resultMap, cacheKey, items.toArray());
-				scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, null, generation, loadingShown.get());
+				scheduleRepositoryLoadFinish(repoPlugin, resultMap, cacheKey, null, null, generation);
 				return published ? Status.OK_STATUS : Status.CANCEL_STATUS;
 		}
 		};
@@ -561,13 +556,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					: loaded;
 			}
 		}
-		loadingShown.set(true);
 		return loading;
 	}
 
+	// UI thread only: sole writer of pendingResults/failedResults after scheduling
 	private void finishRepositoryLoad(RepositoryPlugin repoPlugin, Map<String, Object[]> resultMap, String cacheKey,
-		String error, long generation,
-		boolean refresh) {
+		String error, Object[] partialElements, long generation) {
 		try {
 			if (disposed || generation != inputGeneration) {
 				return;
@@ -577,7 +571,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				removeLoadState(pendingResults, repoPlugin, cacheKey);
 			}
 			if (getRepositoryListResults(repoPlugin) != resultMap) {
-				if (refresh && structuredViewer != null && !structuredViewer.getControl().isDisposed()) {
+				if (structuredViewer != null && !structuredViewer.getControl().isDisposed()) {
 					structuredViewer.refresh();
 				}
 				return;
@@ -588,15 +582,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					removeLoadState(failedResults, repoPlugin, cacheKey);
 				}
 			} else {
-				RepositoryLoadState failure = getLoadState(failedResults, repoPlugin, cacheKey);
-				if (failure == null || failure.cache() != resultMap) {
-					setLoadState(failedResults, repoPlugin, cacheKey,
-						new RepositoryLoadState(resultMap, new Object[] {
-							LoadingContentElement.failure(repoPlugin.getName(), error)
-						}));
-				}
+				Object[] elements = partialElements != null ? partialElements : new Object[] {
+					LoadingContentElement.failure(repoPlugin.getName(), error)
+				};
+				setLoadState(failedResults, repoPlugin, cacheKey, new RepositoryLoadState(resultMap, elements));
 			}
-			if (!refresh || structuredViewer == null || structuredViewer.getControl().isDisposed()) {
+			if (structuredViewer == null || structuredViewer.getControl().isDisposed()) {
 				return;
 			}
 			if (showRepos) {
@@ -610,14 +601,15 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	}
 
 	private void scheduleRepositoryLoadFinish(RepositoryPlugin repoPlugin, Map<String, Object[]> resultMap,
-		String cacheKey, String error, long generation, boolean refresh) {
+		String cacheKey, String error, Object[] partialElements, long generation) {
 		try {
 			Display display = Display.getDefault();
 			if (display.isDisposed()) {
 				releaseRepositoryLoad(repoPlugin);
 				return;
 			}
-			display.asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey, error, generation, refresh));
+			display.asyncExec(() -> finishRepositoryLoad(repoPlugin, resultMap, cacheKey, error, partialElements,
+				generation));
 		} catch (RuntimeException e) {
 			releaseRepositoryLoad(repoPlugin);
 			logger.logError("Unable to refresh repository " + repoPlugin.getName(), e);
@@ -651,16 +643,13 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					Object[] visible = filterLocalRepositoryContents(contents, filter, glob, features, labels);
-					boolean incomplete = containsFailure(contents);
-					if (incomplete) {
-						setLoadState(failedResults, repoPlugin, filteredKey,
-							new RepositoryLoadState(resultMap, visible));
+					if (containsFailure(contents)) {
 						completeRepositoryLoad(repoPlugin, resultMap, filteredKey, null);
-						scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey,
-							failureMessage(contents), generation, true);
+						scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey, failureMessage(contents),
+							visible, generation);
 					} else {
 						completeRepositoryLoad(repoPlugin, resultMap, filteredKey, visible);
-						scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey, null, generation, true);
+						scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey, null, null, generation);
 					}
 					return Status.OK_STATUS;
 				} catch (Exception e) {
@@ -668,7 +657,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 					logger.logError(message, e);
 					completeRepositoryLoad(repoPlugin, resultMap, filteredKey, null);
 					String detail = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-					scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey, detail, generation, true);
+					scheduleRepositoryLoadFinish(repoPlugin, resultMap, filteredKey, detail, null, generation);
 					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
 				}
 			}
