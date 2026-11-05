@@ -42,9 +42,6 @@ import aQute.p2.provider.Feature;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.core.test.utils.WorkbenchTest;
-import bndtools.model.repo.RepositoryBundle;
-import bndtools.model.repo.RepositoryFeature;
-import bndtools.model.repo.RepositoryFeatureResource;
 
 /**
  * Measures the "Add Bundle" dialog of the Build Path section against a
@@ -340,10 +337,7 @@ class RepoBundleSelectionPerfSwtbotTest extends AbstractFeatureSwtbotTest {
 				if (item.getText()
 					.startsWith(PERF_REPO)) {
 					for (TreeItem child : item.getItems()) {
-						Object element = child.getData();
-						String identity = element instanceof RepositoryBundle bundle ? bundle.getBsn()
-							: element instanceof RepositoryFeatureResource feature ? feature.getId()
-								: element instanceof RepositoryFeature feature ? feature.getBsn() : null;
+						String identity = repositoryIdentity(child.getData());
 						rows.add(new RunRepositoryRow(child.getText(), identity));
 					}
 					return rows;

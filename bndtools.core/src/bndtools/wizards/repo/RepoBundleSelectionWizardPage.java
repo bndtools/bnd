@@ -132,7 +132,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 		});
 		availableViewer.setContentProvider(contentProvider);
-		availableViewer.setAutoExpandLevel(1);
+		// Expands repository roots only; bundle versions stay lazy
+		availableViewer.setAutoExpandLevel(2);
 
 		// Load data
 		try {

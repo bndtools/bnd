@@ -755,7 +755,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				saveExpansionState();
 				contentProvider.setFilter(filterString);
 				viewer.refresh();
-				viewer.expandToLevel(1);
+				viewer.expandToLevel(2);
 			}
 
 		} finally {

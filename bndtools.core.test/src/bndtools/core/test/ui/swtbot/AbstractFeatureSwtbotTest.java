@@ -2,6 +2,7 @@ package bndtools.core.test.ui.swtbot;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.resources.IFile;
@@ -171,6 +172,25 @@ public abstract class AbstractFeatureSwtbotTest {
 			return IO.collect(bndFile.getLocation()
 				.toFile());
 		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Bundle or feature id of a repository tree element, or {@code null} for
+	 * status rows. Reflective because bndtools.model.repo is not exported.
+	 */
+	protected static String repositoryIdentity(Object element) {
+		if (element == null) {
+			return null;
+		}
+		try {
+			Method getBsn = element.getClass()
+				.getMethod("getBsn");
+			return (String) getBsn.invoke(element);
+		} catch (NoSuchMethodException e) {
+			return null;
+		} catch (ReflectiveOperationException e) {
 			throw Exceptions.duck(e);
 		}
 	}

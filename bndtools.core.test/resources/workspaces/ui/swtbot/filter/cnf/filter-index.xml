@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<repository name='filter' increment='0' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
+<resource>
+<capability namespace='osgi.identity'><attribute name='osgi.identity' value='com.acme.RCPTools'/><attribute name='type' value='osgi.bundle'/><attribute name='version' type='Version' value='1.0.0'/></capability>
+<capability namespace='osgi.content'><attribute name='osgi.content' value='0000000000000000000000000000000000000000000000000000000000000001'/><attribute name='url' value='com.acme.RCPTools-1.0.0.jar'/><attribute name='size' type='Long' value='1'/><attribute name='mime' value='application/vnd.osgi.bundle'/></capability>
+</resource>
+<resource>
+<capability namespace='osgi.identity'><attribute name='osgi.identity' value='org.example.logging'/><attribute name='type' value='osgi.bundle'/><attribute name='version' type='Version' value='1.0.0'/></capability>
+<capability namespace='osgi.content'><attribute name='osgi.content' value='0000000000000000000000000000000000000000000000000000000000000002'/><attribute name='url' value='org.example.logging-1.0.0.jar'/><attribute name='size' type='Long' value='1'/><attribute name='mime' value='application/vnd.osgi.bundle'/></capability>
+</resource>
+<resource>
+<capability namespace='osgi.identity'><attribute name='osgi.identity' value='org.example.rcp.core'/><attribute name='type' value='osgi.bundle'/><attribute name='version' type='Version' value='1.0.0'/></capability>
+<capability namespace='osgi.content'><attribute name='osgi.content' value='0000000000000000000000000000000000000000000000000000000000000003'/><attribute name='url' value='org.example.rcp.core-1.0.0.jar'/><attribute name='size' type='Long' value='1'/><attribute name='mime' value='application/vnd.osgi.bundle'/></capability>
+</resource>
+<resource>
+<capability namespace='osgi.identity'><attribute name='osgi.identity' value='org.example.rcp.ui'/><attribute name='type' value='osgi.bundle'/><attribute name='version' type='Version' value='1.0.0'/></capability>
+<capability namespace='osgi.content'><attribute name='osgi.content' value='0000000000000000000000000000000000000000000000000000000000000004'/><attribute name='url' value='org.example.rcp.ui-1.0.0.jar'/><attribute name='size' type='Long' value='1'/><attribute name='mime' value='application/vnd.osgi.bundle'/></capability>
+</resource>
+<resource>
+<capability namespace='osgi.identity'><attribute name='osgi.identity' value='org.example.util'/><attribute name='type' value='osgi.bundle'/><attribute name='version' type='Version' value='1.0.0'/></capability>
+<capability namespace='osgi.content'><attribute name='osgi.content' value='0000000000000000000000000000000000000000000000000000000000000005'/><attribute name='url' value='org.example.util-1.0.0.jar'/><attribute name='size' type='Long' value='1'/><attribute name='mime' value='application/vnd.osgi.bundle'/></capability>
+</resource>
+</repository>
