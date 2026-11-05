@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bundle-Contributors ...</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Bundle-Contributors ...</h1>
+<ul>
+<li>
+<p>Example: <code>Bundle-Contributors: Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>name</code> The display name of the developer</li>
+<li>
+<p>Example: <code>name='Peter Kriens'</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>organization</code> The display name of organization that employs the developer</p>
+</li>
+<li>
+<p>Example: <code>organization='aQute'</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>roles</code> Roles played by the developer in this bundle's project (see Maven)</p>
+</li>
+<li>
+<p>Example: <code>roles=ceo</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>timezone</code> Timezone in offset of UTC this developer usually resides in</p>
+</li>
+<li>
+<p>Example: <code>timezone+2</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>organizationUrl</code> The URL of the developer's organization</p>
+</li>
+<li>
+<p>Example: <code>organizationURL='http://www.aQute.biz'</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/bundle_contributors.md -->
+<h1 id="bundle-contributors">Bundle-Contributors</h1>
+<p>The <code>Bundle-Contributors</code> header lists contributors to the bundle, as defined in the Maven POM or via annotations. This header is not standardized by OSGi but is used for documentation and tracking purposes.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Contributors: John Doe;roles=&#39;developer&#39;;organization=&#39;Example Corp.&#39;
+</code></pre></div>
+
+<p>This header is optional and is mainly used for informational purposes.</p>
+<div class="highlight"><pre><span></span><code>/*
+ * Bundle-Contributors header
+ */
+
+private void doBundleContributors(BundleContributors annotation) throws IOException {
+    StringBuilder sb = new StringBuilder(annotation.value());
+    if (annotation.name() != null) {
+        sb.append(&quot;;name=&#39;&quot;);
+        escape(sb, annotation.name());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.roles() != null) {
+        sb.append(&quot;;roles=&#39;&quot;);
+        escape(sb,annotation.roles());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.organizationUrl() != null) {
+        sb.append(&quot;;organizationUrl=&#39;&quot;);
+        escape(sb,annotation.organizationUrl());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.organization() != null) {
+        sb.append(&quot;;organization=&#39;&quot;);
+        escape(sb,annotation.organization());
+        sb.append(&quot;&#39;&quot;);
+    }
+    if (annotation.timezone() != 0)
+        sb.append(&quot;;timezone=&quot;).append(annotation.timezone());
+    add(Constants.BUNDLE_CONTRIBUTORS, sb.toString());
+}
+
+
+        /**
+     * Maven defines contributors and developers in the POM. This annotation will
+     * generate a (not standardized by OSGi) Bundle-Contributors header.
+     * &lt;p&gt;
+     * This annotation can be used directly on a type or it can &#39;color&#39; an
+     * annotation. This coloring allows custom annotations that define a specific
+     * contributor. For example:
+     * 
+     * &lt;pre&gt;
+     *   {@code @}BundleContributor(&quot;Peter.Kriens@aQute.biz&quot;)
+     *   {@code @}interface pkriens {}
+     *   
+     *   {@code @}pkriens
+     *   public class MyFoo {
+     *     ...
+     *   }
+     * &lt;/pre&gt;
+     * 
+     * Duplicates are removed before the header is generated and the coloring does
+     * not create an entry in the header, only an annotation on an actual type is
+     * counted. This makes it possible to make a library of contributors without
+     * then adding them all to the header.
+     * &lt;p&gt;
+     * See &lt;a href=https://maven.apache.org/pom.html#Developers&gt;Maven POM reference&lt;/a&gt;
+     */
+    @Retention(RetentionPolicy.CLASS)
+    @Target({
+            ElementType.ANNOTATION_TYPE, ElementType.TYPE
+    })
+    public @interface BundleContributors {
+
+        /**
+         * The email address of the developer.
+         */
+        String value();
+
+        /**
+         * The display name of the developer. If not specified, the {@link #value()}
+         * is used.
+         */
+        String name() default &quot;&quot;;
+
+        /**
+         * The roles this contributor plays in the development.
+         */
+        String[] roles() default {};
+
+        /**
+         * The name of the organization where the contributor works for.
+         */
+        String organization() default &quot;&quot;;
+
+        /**
+         * The url of the organization where the contributor works for.
+         */
+        String organizationUrl() default &quot;&quot;;
+
+        /**
+         * Time offset in hours from UTC without Daylight savings
+         */
+        int timezone() default 0;
+    }
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

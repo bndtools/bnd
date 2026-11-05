@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Warnings</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Warnings</h1>
+<h2 id="java-source-version-inconsistency-bnd-has-15-while-eclipse-has-18-set-the-bnd-javacsource-property-or-change-the-eclipse-project-setup">Java source version inconsistency: bnd has '1.5' while Eclipse has '1.8'. Set the bnd 'javac.source' property or change the Eclipse project setup.</h2>
+<p>First to explain the message. In a Bndtools project, the Java version is configured in two places. For the offline bnd build with Gradle/Ant, we set it directly from the <code>javac.source</code> and <code>javac.target</code> properties that you find in <code>cnf/build.bnd</code>. But in the internal Eclipse build, the configuration of the Eclipse project contains the JRE settings. Unfortunately we cannot force Eclipse to use the same settings as the offline build, but we can detect when they are inconsistent, and so we generate the warning you have seen.</p>
+<p>To fix the problem, first decide what version of Java you want to use. Then you need to set that in both the bnd configuration and in the Eclipse workspace.</p>
+<p>For bnd, you can set <code>javac.source</code> and <code>javac.target</code> for the whole workspace in <code>cnf/build.bnd</code>, and you can override it if you wish in each project's <code>bnd.bnd</code> file. You can find these entries in <code>cnf/build.bnd</code> from the standard templates, it will be commented out so just uncomment it.</p>
+<p>For Eclipse you can set a workspace-wide preference by opening <code>Window -&gt; Preferences</code> and navigating to the <code>Java -&gt; Compiler</code> preference panel. This can also be overridden on a per-project basis by right-clicking the project, selecting Properties and navigating to the Java Compiler property panel. To be really safe, it's best to set the Eclipse compiler properties explicitly per-project. This is because these properties are persisted by Eclipse into the .settings folder inside the project, which can be checked into source control, whereas the workspace-wide settings go into the workspace .metadata directory which is not usually checked in.</p>
+</body>
+</html>

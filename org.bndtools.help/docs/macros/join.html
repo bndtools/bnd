@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>join ( ';' LIST )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>join ( ';' LIST )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>join</code> macro combines one or more lists into a single comma-separated list. It flattens all input lists and returns them joined with commas.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${join;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more lists to combine (items within lists can be comma or semicolon-separated)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Splits each input list into individual elements</li>
+<li>Combines all elements from all lists</li>
+<li>Returns a single comma-separated list</li>
+<li>Preserves the order of elements</li>
+<li>Removes empty elements</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Join two lists:</p>
+<div class="highlight"><pre><span></span><code>${join;apple,banana;cherry,date}
+# Returns: &quot;apple,banana,cherry,date&quot;
+</code></pre></div>
+
+<p>Join multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${join;red,green;blue;yellow,orange}
+# Returns: &quot;red,green,blue,yellow,orange&quot;
+</code></pre></div>
+
+<p>Flatten nested lists:</p>
+<div class="highlight"><pre><span></span><code>list1=a,b,c
+list2=d,e,f
+${join;${list1};${list2}}
+# Returns: &quot;a,b,c,d,e,f&quot;
+</code></pre></div>
+
+<p>Combine with other macros:</p>
+<div class="highlight"><pre><span></span><code>${join;${exports};${imports}}
+# Returns all exported and imported packages
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Combining multiple configuration lists</li>
+<li>Merging classpath or dependency lists</li>
+<li>Concatenating package lists</li>
+<li>Building composite values from multiple sources</li>
+<li>Flattening nested list structures</li>
+<li>Creating unified collections</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Input lists can use comma or semicolon separators</li>
+<li>Output is always comma-separated</li>
+<li>Empty elements are filtered out</li>
+<li>Element order is preserved</li>
+<li>No deduplication - duplicate elements are kept</li>
+<li>To join with a custom separator (not comma), use <code>${sjoin;&lt;separator&gt;;&lt;list&gt;...}</code> instead</li>
+<li>See also: <code>${uniq}</code> for removing duplicates</li>
+<li>See also: <code>${sjoin}</code> for custom separator joining</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

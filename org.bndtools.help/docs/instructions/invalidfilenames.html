@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-invalidfilenames</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-invalidfilenames</h1>
+<ul>
+<li>
+<p>Example: <code>-invalidfilenames:CON(\..+)?|PRN(\..+)?|AUX(\..+)?|CLOCK\$|NUL(\..+)?|COM[1-9](\..+)?|LPT[1-9](\..+)?|\$Mft|\$MftMirr|\$LogFile|\$Volume|\$AttrDef|\$Bitmap|\$Boot|\$BadClus|\$Secure|\$Upcase|\$Extend|\$Quota|\$ObjId|\$Reparse</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/invalidfilenames.md -->
+<p>The <code>-invalidfilenames</code> instruction allows you to specify file or directory names that should not be used in your project because they are not portable across all operating systems (especially Windows). By default, bnd checks for reserved names that are problematic on Windows, such as <code>CON</code>, <code>PRN</code>, <code>AUX</code>, <code>NUL</code>, <code>COM1</code>, <code>LPT1</code>, and others.</p>
+<p>You can customize the regular expression used to detect invalid names by setting this instruction. If any files or directories in your JAR match the specified pattern, bnd will report an error, helping you avoid portability issues when distributing your bundles.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

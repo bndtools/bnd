@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>maven_version ';' MAVEN-VERSION</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>maven_version ';' MAVEN-VERSION</h1>
+<h2 id="summary">Summary</h2>
+<p>Convert a Maven-style version string to OSGi version format. <strong>Note:</strong> Use <a href="version_cleanup.html">version_cleanup</a> instead, which can be used in more contexts.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${maven_version;&lt;version&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>version</strong>: Maven version string to convert to OSGi format</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>This macro is <strong>deprecated</strong> in favor of <a href="version_cleanup.html">version_cleanup</a>.</p>
+<p>Converts Maven version formats (which may use hyphens) to OSGi version format (which uses dots):
+- Replaces hyphens with dots in the qualifier
+- Ensures the version follows OSGi's <code>major.minor.micro.qualifier</code> structure</p>
+<p>For example: <code>1.2.3-SNAPSHOT</code> becomes <code>1.2.3.SNAPSHOT</code></p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Convert Maven version
+${maven_version;1.2.3-SNAPSHOT}
+# Returns: 1.2.3.SNAPSHOT
+
+# In Bundle-Version
+Bundle-Version: ${maven_version;${project.version}}
+
+# However, prefer version_cleanup:
+Bundle-Version: ${version_cleanup;${project.version}}
+</code></pre></div>
+
+<h2 id="deprecation-note">Deprecation Note</h2>
+<p><strong>This macro should not be used in new code.</strong> Use <a href="version_cleanup.html">version_cleanup</a> instead because:
+- <code>version_cleanup</code> can be used in more contexts (not just Builder)
+- <code>version_cleanup</code> handles more edge cases and version formats
+- <code>version_cleanup</code> is the recommended approach going forward</p>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="version_cleanup.html">version_cleanup</a> - <strong>Preferred alternative</strong> with broader applicability</li>
+<li><a href="versionmask.html">versionmask</a> - Transform versions using templates</li>
+<li><a href="version.html">version</a> - Alias for versionmask</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

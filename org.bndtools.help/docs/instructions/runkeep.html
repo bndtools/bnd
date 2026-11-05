@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runkeep true | false</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runkeep true | false</h1>
+<ul>
+<li>
+<p>Example: <code>-runkeep: true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runkeep.md -->
+<h1 id="-runkeep">-runkeep</h1>
+<p>The <code>-runkeep</code> instruction decides whether to keep the framework storage directory between launches. When set to <code>true</code>, the storage directory is preserved, which can be useful for debugging or maintaining state between runs.</p>
+<p>The <code>-runkeep</code> instruction is particularly useful in scenarios where you need to persist data across different runs of the framework. For instance, if your application generates logs, caches data, or requires a specific directory structure to function correctly, setting <code>-runkeep</code> to <code>true</code> will ensure that these elements are not removed between launches.</p>
+<p>However, one should be cautious while using this option, as preserving the storage directory might lead to outdated or corrupted data being used in subsequent runs. It is generally recommended to use the default setting (i.e., <code>-runkeep: false</code>) unless there is a specific need to retain the storage directory.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-runkeep: true
+</code></pre></div>
+
+<p>By default, the storage directory is deleted between launches.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

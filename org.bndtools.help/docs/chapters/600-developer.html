@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>For Developers</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>For Developers</h1>
+<h2 id="api">API</h2>
+<p>It is quite easy to use bnd from Java, you only need to include biz.aQute.bndlib on your class path. This chapter shows you some samples of how to use bndlib.</p>
+<h2 id="creating-a-manifest">Creating a Manifest</h2>
+<p>By default, bnd creates a container with resources and then calculates the manifest. However, these phases are separated although they use the same instructions. The following snippet therefore shows how you can create a manifest from an existing file or directory.</p>
+<div class="highlight"><pre><span></span><code>Analyzer analyzer = new Analyzer(); 
+Jar bin = new Jar( new File(&quot;bin&quot;) );  // where our data is
+analyzer.setJar( bin );                // give bnd the contents
+
+// You can provide additional class path entries to allow
+// bnd to pickup export version from the packageinfo file,
+// Version annotation, or their manifests.
+analyzer.addClasspath( new File(&quot;jar/spring.jar&quot;) );
+
+analyzer.setProperty(&quot;Bundle-SymbolicName&quot;,&quot;org.osgi.core&quot;);
+analyzer.setProperty(&quot;Export-Package&quot;, 
+                   &quot;org.osgi.framework,org.osgi.service.event&quot;);
+analyzer.setProperty(&quot;Bundle-Version&quot;,&quot;1.0&quot;);
+
+// There are no good defaults so make sure you set the 
+// Import-Package
+analyzer.setProperty(&quot;Import-Package&quot;,&quot;*&quot;);
+
+// Calculate the manifest
+Manifest manifest = analyzer.calcManifest();
+
+public interface MakePlugin {
+/**
+ * This plugin is called when Include-Resource detects 
+ * a reference to a resource that it can not find in the 
+ * file system.
+ * 
+ * @param builder   The current builder
+ * @param source    The source string (i.e. the place 
+ *                  where bnd looked)
+ * @param arguments Any arguments on the clause in 
+ *                  Include-Resource
+ * @return          A resource or null if no resource 
+ *                  could be made
+ * @throws Exception
+ */
+Resource make(Builder builder, String source, 
+      Map&lt;String,String&gt; arguments) throws Exception;
+}
+</code></pre></div>
+
+<h3 id="make">Make</h3>
+<p>Make plugins kick in when the <code>Include-Resource</code> header tries to locate a resource but it cannot find that resource. The <code>-make</code> option defines a number of patterns that are mapped to a make instruction.</p>
+<p>For example, if you have</p>
+<div class="highlight"><pre><span></span><code>Include-Resource:       com.acme.Abc.ann
+</code></pre></div>
+
+<p>If no such resource is found, bnd will look in the -make instruction. This instruction associates a pattern with a plugin type. For example:</p>
+<div class="highlight"><pre><span></span><code>-make:                  (*.jar); type=xyz; abc=3; def=&quot;$1&quot;
+</code></pre></div>
+
+<p>The first name part of the clause is matched against the unfound resource. All plugins are called sequentially until one returns non-null. The arguments on the -make clause are given as parameters to the make plugin. Normally all Make Plugins should verify the type field.</p>
+<p>bnd has a bnd and a copy Make Plugin.</p>
+<h2 id="workspace-template-fragments">Workspace Template Fragments</h2>
+<p>If, for example, you created a library for bnd and want to make it easy for the user to setup his functionality have a look at <a href="620-template-fragments.html">template fragments</a>.</p>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-javaagent BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-javaagent BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-javaagent: true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/javaagent.md -->
+<p>If the value is true, then each classpath elements that
+has a <code>Premain-Class</code> manifest header is used as a java agent
+when launching by adding a <code>-javaagent:</code> argument to the java invocation.</p>
+<div class="highlight"><pre><span></span><code>-javaagent:jarpath
+</code></pre></div>
+
+<p>If the classpath element was specified with an <code>agent</code> attribute, the
+value of the <code>agent</code> attribute will be used as the options for the
+<code>-jaragent:</code> argument to the java invocation.</p>
+<div class="highlight"><pre><span></span><code>-javaagent:jarpath=options
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

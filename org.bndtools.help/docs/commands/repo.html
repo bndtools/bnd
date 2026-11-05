@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>repo</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>repo</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   repo [options]  &lt;sub-cmd&gt; ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -c --cache ]</code> Include the cache repository</li>
+<li><code>[ -f --filerepo &lt;string&gt;* ]</code> Add a File Repository</li>
+<li><code>[ -m --maven ]</code> Include the maven repository</li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Specify a project</li>
+<li><code>[ -r --release &lt;glob&gt; ]</code> Override the name of the release repository (-releaserepo)</li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> Workspace (a standalone bndrun file or a sbdirectory of a workspace (default is the cwd)</li>
+</ul>
+<h2 id="available-sub-commands">Available sub-commands</h2>
+<ul>
+<li><code>copy</code> -   </li>
+<li><code>diff</code> - Diff jars (or show tree) </li>
+<li><code>get</code> - Get an artifact from a repository. </li>
+<li><code>index</code> -   </li>
+<li><code>list</code> - List all artifacts from the current repositories with their versions </li>
+<li><code>put</code> - Put an artifact into the repository after it has been verified. </li>
+<li><code>refresh</code> - Refresh refreshable repositories </li>
+<li><code>repos</code> - List the current repositories </li>
+<li><code>sync</code> -   </li>
+<li><code>topom</code> -   </li>
+<li><code>versions</code> - Displays a list of versions for a given bsn that can be found in the current repositories. </li>
+</ul>
+<h3 id="copy">copy</h3>
+<h4 id="synopsis_1">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   copy [options]  &lt;source&gt; &lt;dest&gt; &lt;bsn[:version]...&gt;
+</code></pre></div>
+
+<h5 id="options_1">Options:</h5>
+<ul>
+<li><code>[ -d --dry ]</code> Do not really copy but trace the steps</li>
+<li><code>[ -f --filter &lt;string;&gt; ]</code> </li>
+<li><code>[ -F --force ]</code> </li>
+<li><code>[ -p --project &lt;string&gt; ]</code> Identify another project</li>
+<li><code>[ -q --quiet ]</code> </li>
+<li><code>[ -s --standalone &lt;string&gt; ]</code> A stanalone bndrun file</li>
+</ul>
+<h3 id="diff">diff</h3>
+<p>Show the diff tree of a single repo or compare 2  repos. A diff tree is a detailed tree of all aspects of a bundle, including its packages, types, methods, fields, and modifiers.</p>
+<h4 id="synopsis_2">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   diff [options]  &lt;newer repo&gt; &lt;[older repo]&gt;
+</code></pre></div>
+
+<h5 id="options_2">Options:</h5>
+<ul>
+<li><code>[ -a --added ]</code> Just additions (no removes)</li>
+<li><code>[ -A --all ]</code> Both add and removes</li>
+<li><code>[ -d --diff ]</code> Formatted like diff</li>
+<li><code>[ -f --full ]</code> Show full diff tree (also wen entries are equal)</li>
+<li><code>[ -j --json ]</code> Serialize to JSON</li>
+<li><code>[ -r --remove ]</code> Just removes (no additions)</li>
+</ul>
+<h3 id="get">get</h3>
+<p>Get an artifact from a repository.</p>
+<h4 id="synopsis_3">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   get [options]  &lt;bsn&gt; &lt;[range]&gt;
+</code></pre></div>
+
+<h5 id="options_3">Options:</h5>
+<ul>
+<li><code>[ -f --from &lt;instruction&gt; ]</code> </li>
+<li><code>[ -l --lowest ]</code> </li>
+<li><code>[ -o --output &lt;string&gt; ]</code> Where to store the artifact</li>
+</ul>
+<h3 id="index">index</h3>
+<h4 id="synopsis_4">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   index [options]  ...
+</code></pre></div>
+
+<h5 id="options_4">Options:</h5>
+<ul>
+<li><code>[ -f --from &lt;instruction&gt; ]</code> A glob expression on the source repo, default is all repos</li>
+<li><code>[ -n --name &lt;string&gt; ]</code> The name of the output file. If not set will show on the console</li>
+<li><code>[ -o --output &lt;string&gt; ]</code> Output file (will be compressed)</li>
+<li><code>[ -q --query &lt;string&gt; ]</code> Optional search term for the list of bsns (given to the repo)</li>
+<li><code>[ -Q --quiet ]</code> No output</li>
+</ul>
+<h3 id="list">list</h3>
+<p>List all artifacts from the current repositories with their versions</p>
+<h4 id="synopsis_5">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   list [options]
+</code></pre></div>
+
+<h5 id="options_5">Options:</h5>
+<ul>
+<li><code>[ -f --from &lt;instruction&gt; ]</code> A glob expression on the source repo, default is all repos</li>
+<li><code>[ -n --noversions ]</code> Do not list the versions, just the bsns</li>
+<li><code>[ -q --query &lt;string&gt; ]</code> Optional search term for the list of bsns (given to the repo)</li>
+</ul>
+<h3 id="put">put</h3>
+<p>Put an artifact into the repository after it has been verified.</p>
+<h4 id="synopsis_6">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   put [options]  &lt;&lt;jar&gt;...&gt;
+</code></pre></div>
+
+<h5 id="options_6">Options:</h5>
+<ul>
+<li><code>[ -f --force ]</code> Put in repository even if verification fails (actually, no verification is done).</li>
+</ul>
+<h3 id="refresh">refresh</h3>
+<p>Refresh refreshable repositories</p>
+<h4 id="synopsis_7">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   refresh [options]
+</code></pre></div>
+
+<h5 id="options_7">Options:</h5>
+<ul>
+<li><code>[ -q --quiet ]</code> </li>
+</ul>
+<h3 id="repos">repos</h3>
+<p>List the current repositories</p>
+<h4 id="synopsis_8">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   repos
+</code></pre></div>
+
+<h3 id="sync">sync</h3>
+<h4 id="synopsis_9">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   sync [options]  ...
+</code></pre></div>
+
+<h5 id="options_8">Options:</h5>
+<ul>
+<li><code>[ -d --dest &lt;string&gt; ]</code> </li>
+<li><code>[ -g --gavs &lt;string;&gt; ]</code> </li>
+<li><code>[ -s --source &lt;string;&gt; ]</code> </li>
+<li><code>[ -w --workspace &lt;string&gt; ]</code> </li>
+</ul>
+<h3 id="topom">topom</h3>
+<p>Create a POM out of a bnd repository</p>
+<h4 id="synopsis_10">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   topom [options]  &lt;repo&gt; &lt;name&gt;
+</code></pre></div>
+
+<h5 id="options_9">Options:</h5>
+<ul>
+<li><code>[ -d --dependencyManagement ]</code> Use the dependency management section</li>
+<li><code>[ -o --output &lt;string&gt; ]</code> Output file</li>
+<li><code>[ -p --parent &lt;string&gt; ]</code> The parent of the pom (default none.xml)</li>
+</ul>
+<h3 id="versions">versions</h3>
+<p>Displays a sorted set of versions for a given bsn that can be found in the current repositories.</p>
+<h4 id="synopsis_11">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   versions  &lt;bsn&gt;
+</code></pre></div>
+</body>
+</html>

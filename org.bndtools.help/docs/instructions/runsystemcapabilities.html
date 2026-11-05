@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runsystemcapabilities* CAPABILITY (',' CAPABILITY )</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runsystemcapabilities* CAPABILITY (',' CAPABILITY )</h1>
+<ul>
+<li>
+<p>Example: <code>-runsystemcapabilities=some.namespace; some.namespace=foo</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runsystemcapabilities.md -->
+<p>Although resolver analyses the <code>-runpath</code> (and thus <code>-runfw</code>) for system capabilities, this is not always sufficient. For example, if the target system has special hardware then this might be described with a capability. Such an external capability must be explicitly given to the resolver. These <em>extra</em> capabilities maybe given with the <code>-runsystemcapabilities</code> instruction.</p>
+<ul>
+<li>
+<p>Examples: </p>
+<p>explizitly use system capabilities (also to for viewing them ;-)
+<code>-runsystemcapabilities=${native_capability}</code>
+define specific e.g. windows host capabilities
+<code>-runsystemcapabilities=\
+    osgi.native; \
+    osgi.native.osname:List&lt;String&gt;="Windows10,Windows 10,Win32"; \
+    osgi.native.osversion:Version="10.0.0"; \
+    osgi.native.processor:List&lt;String&gt;="x86-64,amd64,em64t,x86_64"; \
+    osgi.native.language=en_US</code>
+other capabilities
+<code>-runsystemcapabilities=some.namespace; some.namespace=foo</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<p><br /><br /></p>
+</body>
+</html>

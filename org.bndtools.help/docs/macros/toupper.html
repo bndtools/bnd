@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>toupper STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>toupper STRING</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>toupper</code> macro converts a string to uppercase using the default locale.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${toupper;&lt;string&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The string to convert to uppercase</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Converts all lowercase letters to uppercase</li>
+<li>Uses default locale for conversion</li>
+<li>Non-letter characters remain unchanged</li>
+<li>Returns the uppercase string</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Convert simple string:</p>
+<div class="highlight"><pre><span></span><code>${toupper;hello world}
+# Returns: &quot;HELLO WORLD&quot;
+</code></pre></div>
+
+<p>Convert mixed case:</p>
+<div class="highlight"><pre><span></span><code>${toupper;MyClassName}
+# Returns: &quot;MYCLASSNAME&quot;
+</code></pre></div>
+
+<p>Create constants:</p>
+<div class="highlight"><pre><span></span><code>constant.name=${toupper;${property.name}}
+</code></pre></div>
+
+<p>Format identifiers:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Id: ${toupper;${bsn}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Creating uppercase constants</li>
+<li>Normalizing strings for comparison</li>
+<li>Formatting identifiers</li>
+<li>Case-insensitive matching</li>
+<li>Standard formatting requirements</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses default locale conversion rules</li>
+<li>See also: <code>${tolower}</code> for lowercase conversion</li>
+<li>Locale-sensitive for certain characters</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

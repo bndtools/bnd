@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>extension ';' PATH</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>extension ';' PATH</h1>
+<h2 id="summary">Summary</h2>
+<p>Extract the file extension from a file path, returning the part after the last dot in the filename.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${extension;&lt;path&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>path</strong>: File path from which to extract the extension</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>The macro:
+1. Normalizes the path (handles different path separators)
+2. Extracts the last segment (filename) from the path
+3. Returns the part after the last <code>.</code> in the filename
+4. Returns an empty string if no extension is present</p>
+<p>The extension is returned <strong>without</strong> the leading dot.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Extract extension from file path
+${extension;myfile.txt}                    # Returns: txt
+${extension;/path/to/document.pdf}        # Returns: pdf
+${extension;archive.tar.gz}               # Returns: gz (only last extension)
+
+# No extension cases
+${extension;README}                        # Returns: (empty)
+${extension;/path/to/folder/}             # Returns: (empty)
+
+# Multiple dots
+${extension;my.file.name.java}            # Returns: java
+
+# Original examples
+${extension;abcdef.def}                   # Returns: def
+${extension;/foo.bar/abcdefxyz.def}      # Returns: def
+${extension;abcdefxyz}                    # Returns: (empty)
+${extension;/foo.bar/abcdefxyz}          # Returns: (empty)
+
+# Used with other macros
+-include ${extension;${workspace}/.project} == project
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>File Type Detection</strong>: Determine the type of file being processed</li>
+<li><strong>Conditional Logic</strong>: Apply different processing based on file extension</li>
+<li><strong>File Filtering</strong>: Select files based on their extensions</li>
+<li><strong>Path Construction</strong>: Build new paths with modified extensions</li>
+</ol>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="basenameext.html">basenameext</a> - Extract basename, optionally removing an extension</li>
+<li><a href="stem.html">stem</a> - Get filename without extension</li>
+<li><a href="basename.html">basename</a> - Get the last path segment</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

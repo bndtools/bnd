@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>min (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>min (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>min</code> macro compares strings lexicographically using Java's <code>String.compareTo()</code> and returns the minimum (lowest) value.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${min;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of strings</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Compares strings lexicographically</li>
+<li>Case-sensitive comparison</li>
+<li>Returns the lowest string value</li>
+<li>Uses standard Java string ordering</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find minimum string:</p>
+<div class="highlight"><pre><span></span><code>${min;apple,banana,cherry}
+# Returns: &quot;apple&quot;
+</code></pre></div>
+
+<p>Multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${min;xyz,abc;mno,def}
+# Returns: &quot;abc&quot;
+</code></pre></div>
+
+<p>Numeric strings (lexicographic):</p>
+<div class="highlight"><pre><span></span><code>${min;1,10,2,20}
+# Returns: &quot;1&quot; (lexicographic, not numeric)
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Finding lowest string value</li>
+<li>String comparison</li>
+<li>Alphabetic sorting (first)</li>
+<li>String selection</li>
+<li>Data analysis</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Lexicographic (dictionary) ordering</li>
+<li>Case-sensitive ("A" &lt; "a")</li>
+<li>Not numeric comparison</li>
+<li>For numeric min, use proper number comparison</li>
+<li>See also: <code>${max}</code> for maximum</li>
+<li>See also: <code>${vmin}</code> for version comparison</li>
+<li>See also: <code>${nmin}</code> for numeric comparison</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>
