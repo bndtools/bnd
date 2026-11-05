@@ -1,5 +1,8 @@
 theme: just-the-docs
 
+mermaid:
+  version: "11.12.0"
+
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap

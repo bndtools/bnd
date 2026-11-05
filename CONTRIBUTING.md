@@ -2,6 +2,9 @@
 
 Want to hack on Bnd/Bndtools? Here are instructions to get you started. They are probably not perfect, please let us know if anything feels wrong or incomplete.
 
+See [Developing bnd and Bndtools](docs/development/index.md) for architecture,
+development notes, documentation development, and maintainer procedures.
+
 ## Reporting Issues
 
 When reporting [issues](https://github.com/bndtools/bnd/issues) on GitHub please include the version of Bnd/Bndtools you are using, `bnd version`, as well as the version of Java, `java -version`, and your OS.
@@ -233,7 +236,7 @@ This will help prioritize the most common problems and requests.
 
 ### Conventions
 
-See [Bndtools Development: Tips and Tricks](DEV_README.md) for more detailed information, but the following are the basics.
+See [Bndtools Development: Tips and Tricks](docs/development/development-notes.md) for more detailed information, but the following are the basics.
 
 Fork the repo and make changes on your fork in a feature branch:
 
