@@ -103,6 +103,13 @@ class RepositoryFilterSwtbotTest extends AbstractFeatureSwtbotTest {
 
 			type(search, "RCP");
 			waitForRows(tree, RCP_MATCHES, "Repositories view filtered by 'RCP'");
+
+			// A second applied filter must not replace the pre-filter expansion state
+			type(search, "util");
+			waitForRows(tree, List.of("org.example.util"), "Repositories view filtered by 'util'");
+
+			search.setText("");
+			waitForCollapsedRoot(tree, "Repositories view filter cleared");
 		} finally {
 			view.close();
 		}
@@ -173,6 +180,29 @@ class RepositoryFilterSwtbotTest extends AbstractFeatureSwtbotTest {
 				return what + ": expected expanded " + REPO + " with " + expected + " but " + state.get();
 			}
 		}, 30_000, 100);
+	}
+
+	/**
+	 * Clearing must restore the pre-filter (collapsed) state rather than
+	 * expanding every repository with its full contents.
+	 */
+	private void waitForCollapsedRoot(Tree tree, String what) {
+		AtomicReference<String> state = new AtomicReference<>("not read");
+		bot.waitUntil(new DefaultCondition() {
+			@Override
+			public boolean test() {
+				return UIThreadRunnable.syncExec(() -> {
+					TreeItem root = fixtureRoot(tree);
+					state.set(root == null ? REPO + " root not shown" : "expanded=" + root.getExpanded());
+					return root != null && !root.getExpanded();
+				});
+			}
+
+			@Override
+			public String getFailureMessage() {
+				return what + ": expected collapsed " + REPO + " but " + state.get();
+			}
+		}, 5_000, 100);
 	}
 
 	private static TreeItem fixtureRoot(Tree tree) {
