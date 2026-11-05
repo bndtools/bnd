@@ -35,6 +35,7 @@ import bndtools.jface.util.FilteredTree;
 import bndtools.jface.util.TreeFilter;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryFeature;
+import bndtools.model.repo.RepositoryFeatureResource;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.utils.SelectionDragAdapter;
@@ -67,6 +68,14 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 																						.contains(repoBundle.getRepo()
 																							.getName());
 																				}
+																			} else if (element instanceof RepositoryPlugin repo) {
+																				if (includedRepos == null) {
+																					select = true;
+																				} else if (repo instanceof WorkspaceRepository) {
+																					select = includedRepos.contains("Workspace");
+																				} else {
+																					select = includedRepos.contains(repo.getName());
+																				}
 																			} else if (element instanceof RepositoryFeature) {
 																				// Check RepositoryFeature since both RepositoryBundle and RepositoryFeature extend RepositoryEntry
 																				RepositoryFeature repoFeature = (RepositoryFeature) element;
@@ -82,6 +91,15 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 																					select = includedRepos
 																						.contains(repoFeature.getRepo()
 																							.getName());
+																				}
+																			} else if (element instanceof RepositoryFeatureResource featureResource) {
+																				RepositoryPlugin repo = featureResource.getRepo();
+																				if (includedRepos == null) {
+																					select = true;
+																				} else if (repo instanceof WorkspaceRepository) {
+																					select = includedRepos.contains("Workspace");
+																				} else {
+																					select = includedRepos.contains(repo.getName());
 																				}
 																			} else {
 																				select = true;
@@ -114,26 +132,43 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 		layout.marginHeight = 0;
 		container.setLayout(layout);
 
-		contentProvider.setShowRepos(false);
+		contentProvider.setShowRepos(true);
+		contentProvider.setWaitForFastResult(false);
+		contentProvider.setLocalFiltering(true);
+		contentProvider.setLocalFilterUseLabels(true);
 
 		FilteredTree ftree = new FilteredTree(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, new TreeFilter() {
 			@Override
 			public boolean isElementSelectable(Object element) {
 				return element instanceof RepositoryBundle || element instanceof RepositoryFeature
+					|| element instanceof RepositoryFeatureResource
 					|| element instanceof Project;
 			}
 
 			@Override
 			public boolean isElementVisible(Viewer viewer, Object element) {
-				if (element instanceof RepositoryBundle || element instanceof RepositoryFeature) {
-					return super.isLeafMatch(viewer, element);
-				}
 				return true;
 			}
-
 		},
-			true, true);
-		ftree.setExpand(false);
+			true, true) {
+			@Override
+			protected void textChanged() {
+				String filter = getFilterString();
+				if (filter == null || filter.isBlank() || filter.equals(getInitialText())) {
+					contentProvider.setFilter(null);
+				} else {
+					contentProvider.setFilter(filter);
+				}
+				contentProvider.setWaitForFastResult(false);
+				super.textChanged();
+			}
+
+			@Override
+			protected boolean shouldExpand(Object element) {
+				return element instanceof RepositoryPlugin;
+			}
+		};
+		ftree.setExpand(true);
 		viewer = ftree.getViewer();
 		viewer.setContentProvider(contentProvider);
 		labelProvider = new RepositoryTreeLabelProvider(true);

@@ -159,8 +159,9 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider
 				label.append("Continue Search on repository...", new HyperlinkStyler());
 				image = null;
 			} else if (element instanceof LoadingContentElement) {
-				label.append(element.toString());
-				image = loadingImg;
+				LoadingContentElement status = (LoadingContentElement) element;
+				label.append(status.toString());
+				image = status.isFailure() ? Icons.image("error") : loadingImg;
 			} else if (element instanceof RepositoryFeatureResource) {
 				if (index == 0) {
 					RepositoryFeatureResource featureResource = (RepositoryFeatureResource) element;

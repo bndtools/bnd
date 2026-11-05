@@ -7,7 +7,9 @@ import static org.mockito.Mockito.when;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.TreeSet;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.osgi.resource.Resource;
@@ -20,6 +22,7 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.repository.p2.provider.P2Repository;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.version.Version;
 import aQute.lib.xml.XML;
 import aQute.p2.provider.Feature;
 import bndtools.tasks.ResourceCapReqLoader;
@@ -90,5 +93,22 @@ public class RepositoryFeaturesTest {
 		assertThat(provider.getRepositoryFeatures(plugin, repository)).isEmpty();
 		provider.setFilter("TEST.FEATURE");
 		assertThat(provider.getRepositoryFeatures(plugin, repository)).hasSize(1);
+		provider.setFilter("[");
+		assertThat(provider.getFilter()).isEqualTo("TEST.FEATURE");
+		assertThat(provider.getRepositoryFeatures(plugin, repository)).hasSize(1);
+	}
+
+	@Test
+	void allRepositoryVersionsDoNotDependOnViewerLoadingPlaceholders() throws Exception {
+		RepositoryPlugin plugin = mock(RepositoryPlugin.class);
+		when(plugin.list(null)).thenReturn(List.of("test.bundle"));
+		when(plugin.versions("test.bundle")).thenReturn(new TreeSet<>(List.of(Version.parseVersion("1.2.3"))));
+
+		SearchableRepositoryTreeContentProvider provider = new SearchableRepositoryTreeContentProvider();
+		provider.setLocalFiltering(true);
+
+		assertThat(provider.allRepoBundleVersions(plugin))
+			.extracting(RepositoryBundleVersion::getVersion)
+			.containsExactly(Version.parseVersion("1.2.3"));
 	}
 }
