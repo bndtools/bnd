@@ -1,0 +1,8 @@
+-include: ~test.swtbot.perf.win32.x86_64.bndrun
+
+# Clone https://github.com/bndtools/workspace-templates.git and set
+# BNDTOOLS_PERF_INDEX to eclipse/eclipse_4.41_simrel_2026-09/cnf/ext/eclipse_4.41_simrel_2026-09_p2.index.xml.gz.
+# An absolute path is recommended when launching from Eclipse.
+-runproperties.dataset: \
+	bndtools.test.performance.requireExternalIndex=true,\
+	bndtools.test.performance.filter=HA

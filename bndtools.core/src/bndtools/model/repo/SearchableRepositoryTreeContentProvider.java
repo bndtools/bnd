@@ -1,17 +1,19 @@
 package bndtools.model.repo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository;
 
 public class SearchableRepositoryTreeContentProvider extends RepositoryTreeContentProvider {
+
+	private static final Logger logger = Logger.getLogger(SearchableRepositoryTreeContentProvider.class.getName());
 
 	public SearchableRepositoryTreeContentProvider() {
 		super();
@@ -50,28 +52,27 @@ public class SearchableRepositoryTreeContentProvider extends RepositoryTreeConte
 	}
 
 	public List<RepositoryBundleVersion> allRepoBundleVersions(final RepositoryPlugin rp) {
-		Object[] result = getChildren(rp);
-
 		List<RepositoryBundleVersion> allChildren = new ArrayList<>();
-		Queue<Object> queue = new LinkedList<>();
-
-		if (result != null) {
-			queue.addAll(Arrays.asList(result));
+		List<String> bsns;
+		try {
+			List<String> repositoryBsns = rp.list(null);
+			if (repositoryBsns == null) {
+				return allChildren;
+			}
+			bsns = new ArrayList<>(repositoryBsns);
+			Collections.sort(bsns);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Error listing repository " + rp.getName(), e);
+			return allChildren;
 		}
-
-		while (!queue.isEmpty()) {
-			Object currentChild = queue.poll();
-
-			if (currentChild instanceof RepositoryBundleVersion rpv) {
-				allChildren.add(rpv);
-			}
-			else if (currentChild instanceof RepositoryResourceElement rre) {
-				allChildren.add(rre.getRepositoryBundleVersion());
-			}
-
-			Object[] childrenOfChild = getChildren(currentChild);
-			if (childrenOfChild != null) {
-				queue.addAll(Arrays.asList(childrenOfChild));
+		for (String bsn : bsns) {
+			Object[] versions = getRepositoryBundleVersions(new RepositoryBundle(rp, bsn));
+			if (versions != null) {
+				for (Object version : versions) {
+					if (version instanceof RepositoryBundleVersion bundleVersion) {
+						allChildren.add(bundleVersion);
+					}
+				}
 			}
 		}
 		return allChildren;

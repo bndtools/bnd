@@ -206,7 +206,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 																					}
 																				};
 
-	private Object[]								lastExpandedElements;
 	private TreePath[]								lastExpandedPaths;
 
 	@Override
@@ -277,6 +276,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 				}
 			}
 		};
+		contentProvider.setLocalFiltering(true);
+		contentProvider.setLocalFilterUseLabels(true);
 		viewer.setContentProvider(contentProvider);
 		StickyToolTipSupport.enableFor(viewer);
 
@@ -743,14 +744,19 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 		try {
 			if (filterString == null || filterString.isEmpty()) {
-				// Restore previous state when clearing filter
 				contentProvider.setFilter(null);
-				viewer.refresh(); // Required to clear filter
-				restoreExpansionState();
-				viewer.refresh();
+				if (lastExpandedPaths != null) {
+					// Rebuild collapsed; refreshing filter-expanded roots would render every bundle of every repository
+					viewer.setInput(viewer.getInput());
+					restoreExpansionState();
+					lastExpandedPaths = null;
+				} else {
+					viewer.refresh();
+				}
 			} else {
-				// Save state before applying new filter
-				saveExpansionState();
+				if (lastExpandedPaths == null) {
+					saveExpansionState();
+				}
 				contentProvider.setFilter(filterString);
 				viewer.refresh();
 				viewer.expandToLevel(2);
@@ -1631,17 +1637,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	}
 
 	private void saveExpansionState() {
-		lastExpandedElements = viewer.getExpandedElements();
 		lastExpandedPaths = viewer.getExpandedTreePaths();
 	}
 
 	private void restoreExpansionState() {
-		if (lastExpandedElements != null) {
-			viewer.setExpandedElements(lastExpandedElements);
-		}
-		if (lastExpandedPaths != null) {
-			viewer.setExpandedTreePaths(lastExpandedPaths);
-		}
+		viewer.setExpandedTreePaths(lastExpandedPaths);
 	}
 
 }

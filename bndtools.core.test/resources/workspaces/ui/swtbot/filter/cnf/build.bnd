@@ -1,0 +1,7 @@
+# Test workspace for RepositoryFilterSwtbotTest.
+
+-plugin.0.FilterFixture:\
+    aQute.bnd.repository.osgi.OSGiRepository;\
+        name = "Filter Fixture";\
+        locations = "${fileuri;${.}/filter-index.xml}";\
+        poll.time = -1
