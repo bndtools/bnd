@@ -283,6 +283,7 @@ public class BndPomRepository extends BaseRepository
 		if (!init()) {
 			return false;
 		}
+
 		repoImpl.refresh();
 		bridge = new BridgeRepository(repoImpl);
 		for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
