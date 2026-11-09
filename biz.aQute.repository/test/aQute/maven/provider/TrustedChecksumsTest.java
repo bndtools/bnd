@@ -52,10 +52,12 @@ public class TrustedChecksumsTest {
 	public void testChecksumPolicyFromString() throws Exception {
 		assertEquals(ChecksumPolicy.LENIENT, ChecksumPolicy.fromString("lenient"));
 		assertEquals(ChecksumPolicy.STRICT, ChecksumPolicy.fromString("strict"));
+		assertEquals(ChecksumPolicy.STRICT_JAR_ONLY, ChecksumPolicy.fromString("strict-jar-only"));
 		assertEquals(ChecksumPolicy.LENIENT, ChecksumPolicy.fromString(""));
 		assertEquals(ChecksumPolicy.LENIENT, ChecksumPolicy.fromString(null));
 		assertEquals(ChecksumPolicy.LENIENT, ChecksumPolicy.fromString("  lenient  "));
 		assertEquals(ChecksumPolicy.STRICT, ChecksumPolicy.fromString("  STRICT  "));
+		assertEquals(ChecksumPolicy.STRICT_JAR_ONLY, ChecksumPolicy.fromString("  STRICT-JAR-ONLY  "));
 	}
 
 	@Test
@@ -177,6 +179,89 @@ public class TrustedChecksumsTest {
 
 		// Should not throw, should return false
 		boolean result = tc.checkTrustedChecksum(archive, dummyFile);
+		assertEquals(false, result);
+	}
+
+	@Test
+	public void testStrictJarOnlySkipsClassifierValidation(@TempDir File tmpDir) throws Exception {
+		// In strict-jar-only mode, classifiers (sources, javadoc, etc.) should be skipped
+		File checksumsFile = new File(tmpDir, "test.checksums");
+		String checksumContent = "org.example:artifact:1.0=sha256:abc123def456\n";
+		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
+
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.STRICT_JAR_ONLY);
+		tc.open();
+
+		// Try with sources classifier - should return false without throwing
+		Archive sourcesArchive = Archive.valueOf("org.example:artifact:jar:sources:1.0");
+		File dummyFile = new File(tmpDir, "dummy-sources.jar");
+		Files.write(dummyFile.toPath(), "test".getBytes(StandardCharsets.UTF_8));
+
+		// Should not throw, should return false (skipped)
+		boolean result = tc.checkTrustedChecksum(sourcesArchive, dummyFile);
+		assertEquals(false, result);
+	}
+
+	@Test
+	public void testStrictJarOnlyValidatesBaseJar(@TempDir File tmpDir) throws Exception {
+		// In strict-jar-only mode, base JARs (no classifier) should still be validated
+		File checksumsFile = new File(tmpDir, "test.checksums");
+		String checksumContent = "org.example:artifact:1.0=sha256:abc123def456\n";
+		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
+
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.STRICT_JAR_ONLY);
+		tc.open();
+
+		// Try with base JAR (no classifier) - should throw if not found
+		Archive baseArchive = Archive.valueOf("org.example:other:1.0");
+		File dummyFile = new File(tmpDir, "dummy.jar");
+		Files.write(dummyFile.toPath(), "test".getBytes(StandardCharsets.UTF_8));
+
+		// Should throw because base JARs are validated in strict-jar-only mode
+		TrustedChecksumException ex = assertThrows(TrustedChecksumException.class, () ->
+			tc.checkTrustedChecksum(baseArchive, dummyFile)
+		);
+		assertThat(ex.getMessage()).contains("Strict checksum policy").contains("no checksum entry found");
+	}
+
+	@Test
+	public void testStrictJarOnlyWithValidClassifierEntry(@TempDir File tmpDir) throws Exception {
+		// In strict-jar-only mode, if a classifier has an explicit entry, it should be validated
+		File checksumsFile = new File(tmpDir, "test.checksums");
+		String checksumContent = "org.example:artifact:1.0=sha256:abc123def456\n"
+			+ "org.example:artifact:jar:sources:1.0=sha256:sources123\n";
+		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
+
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.STRICT_JAR_ONLY);
+		tc.open();
+
+		// Even if a classifier has an entry, strict-jar-only should skip it
+		Archive sourcesArchive = Archive.valueOf("org.example:artifact:jar:sources:1.0");
+		File dummyFile = new File(tmpDir, "dummy-sources.jar");
+		Files.write(dummyFile.toPath(), "test".getBytes(StandardCharsets.UTF_8));
+
+		// Should return false (skipped) even though an entry exists
+		boolean result = tc.checkTrustedChecksum(sourcesArchive, dummyFile);
+		assertEquals(false, result);
+	}
+
+	@Test
+	public void testStrictJarOnlyWithJavadocClassifier(@TempDir File tmpDir) throws Exception {
+		// In strict-jar-only mode, javadoc classifiers should be skipped
+		File checksumsFile = new File(tmpDir, "test.checksums");
+		String checksumContent = "org.example:artifact:1.0=sha256:abc123def456\n";
+		Files.write(checksumsFile.toPath(), checksumContent.getBytes(StandardCharsets.UTF_8));
+
+		TrustedChecksums tc = new TrustedChecksums(checksumsFile, ChecksumPolicy.STRICT_JAR_ONLY);
+		tc.open();
+
+		// Try with javadoc classifier - should return false without throwing
+		Archive javadocArchive = Archive.valueOf("org.example:artifact:jar:javadoc:1.0");
+		File dummyFile = new File(tmpDir, "dummy-javadoc.jar");
+		Files.write(dummyFile.toPath(), "test".getBytes(StandardCharsets.UTF_8));
+
+		// Should not throw, should return false (skipped)
+		boolean result = tc.checkTrustedChecksum(javadocArchive, dummyFile);
 		assertEquals(false, result);
 	}
 }
