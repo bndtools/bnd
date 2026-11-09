@@ -36,7 +36,25 @@ public final class TrustedChecksums {
 	private final ChecksumPolicy						checksumPolicy;
 
 	public enum ChecksumPolicy {
-		STRICT("strict"), LENIENT("lenient");
+		/**
+		 * All artifacts (including classifiers like sources) must have checksum
+		 * entries. Recommended for high-security environments.
+		 */
+		STRICT("strict"),
+
+		/**
+		 * Only base JAR artifacts (without classifiers) must have checksum
+		 * entries. Classifiers like sources, javadoc, tests are exempt from
+		 * checksum validation. Useful as a pragmatic middle ground between
+		 * strict and lenient.
+		 */
+		STRICT_JAR_ONLY("strict-jar-only"),
+
+		/**
+		 * No checksum validation is performed. Use only if you trust the
+		 * repository completely.
+		 */
+		LENIENT("lenient");
 
 		private final String name;
 
@@ -51,6 +69,7 @@ public final class TrustedChecksums {
 			return switch (policy.trim()
 				.toLowerCase()) {
 				case "strict" -> STRICT;
+				case "strict-jar-only" -> STRICT_JAR_ONLY;
 				case "lenient" -> LENIENT;
 				default -> throw new IllegalArgumentException("Unknown checksum policy: " + policy);
 			};
@@ -110,8 +129,13 @@ public final class TrustedChecksums {
 	 *             file is deleted before the exception is thrown.
 	 */
 	public boolean checkTrustedChecksum(Archive archive, File file) {
+		// STRICT_JAR_ONLY: Skip classifiers (sources, javadoc, etc.)
+		if (checksumPolicy == ChecksumPolicy.STRICT_JAR_ONLY && archive.hasClassifier()) {
+			return false; // Skip checksum validation for classifiers
+		}
+
 		if (!indexExists) {
-			if (checksumPolicy == ChecksumPolicy.STRICT) {
+			if (checksumPolicy == ChecksumPolicy.STRICT || checksumPolicy == ChecksumPolicy.STRICT_JAR_ONLY) {
 				throw new TrustedChecksumException(
 					"Strict checksum policy enabled but no trusted checksums file found", null);
 			}
@@ -120,7 +144,7 @@ public final class TrustedChecksums {
 
 		ArtifactChecksum expected = get(archive);
 		if (expected == null) {
-			if (checksumPolicy == ChecksumPolicy.STRICT) {
+			if (checksumPolicy == ChecksumPolicy.STRICT || checksumPolicy == ChecksumPolicy.STRICT_JAR_ONLY) {
 				throw new TrustedChecksumException(
 					"Strict checksum policy enabled but no checksum entry found for: " + archive, null);
 			}
@@ -151,6 +175,7 @@ public final class TrustedChecksums {
 			return;
 		}
 		indexExists = true;
+		trustedChecksumCache.clear(); // Clear validation cache
 		Collection<ArtifactChecksum> set = read(IO.collect(sidecarFile));
 		index = set.stream()
 			.collect(Collectors.toMap(acs -> acs.archive(), acs -> acs));

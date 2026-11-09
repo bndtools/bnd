@@ -77,7 +77,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_ (text with one GAV per line or pom.xml).|
 | `checksumFile`   | `PATH`| `<index-dir>/<index-filename>.checksums` | The path to the trusted checksum file relative to `build.bnd`. If not specified, defaults to a `.checksums` sidecar file next to the index file. See [Trusted Checksum Verification](#trusted-checksum-verification).|
 | `checksumRecord`   | `boolean` | `false` | When set to `true`, the repository generates (records) the trusted checksum file after successful repository initialization. Checksums are computed for all artifacts currently listed in the index file and written to the default sidecar location (`<index>.checksums`) or the path specified by `checksumFile`. **Important:** `checksumRecord=true` does not bootstrap `checksumPolicy=strict` on a missing checksum file; strict initialization fails before recording can run. 
-| `checksumPolicy`   | enum `strict` `lenient` | `lenient` | Controls how checksums are validated when a checksum file is present. See [Checksum Policy](#checksum-policy) for details. |
+| `checksumPolicy`   | enum `strict` `strict-jar-only` `lenient` | `lenient` | Controls how checksums are validated when a checksum file is present. See [Checksum Policy](#checksum-policy) for details. |
 | `tags`           | `STRING`|  | Comma separated list of tags. (e.g. resolve, baseline, release) Use a placeholder like &lt;&lt;EMPTY&gt;&gt; to exclude the repo from resolution. The `resolve` tag is picked up by the [-runrepos](/instructions/runrepos.html) instruction.|
 | `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
@@ -283,7 +283,7 @@ After generating the file, review it and commit it to version control alongside 
 
 ### Checksum Policy
 
-The `checksumPolicy` configuration property controls how strictly the repository enforces checksum verification when a checksum file is present. Two modes are available:
+The `checksumPolicy` configuration property controls how strictly the repository enforces checksum verification when a checksum file is present. Three modes are available:
 
 #### Lenient Mode (default)
 
@@ -312,7 +312,22 @@ Configuration:
 checksumPolicy=strict
 ```
 
-**Use Case Example:** Strict mode is recommended for production builds and CI/CD pipelines where you want to guarantee that all dependencies have been explicitly reviewed and approved via the checksum file.
+#### Strict JAR Only Mode
+
+In `strict-jar-only` mode:
+- A checksum file **must** exist; the build fails if it is missing
+- **Only base JAR artifacts** (without classifiers) must have matching entries in the checksum file
+- Classifiers like `sources`, `javadoc`, and `tests` are **exempt** from checksum validation
+- If a base JAR is missing from the checksum file, the build fails with an error
+- This mode provides a pragmatic middle ground between strict and lenient validation
+- Useful when working with repositories that provide source/javadoc artifacts which may not have checksums
+
+Configuration:
+```
+checksumPolicy=strict-jar-only
+```
+
+**Use Case Example:** Strict JAR Only mode is useful for development and CI environments where you want strict validation of released binaries (base JARs) but also need flexible access to optional artifacts like source code or documentation.
 
 ### Expected Behavior
 
@@ -325,6 +340,8 @@ checksumPolicy=strict
 | BSN matches but version in `.checksums` differs from index         | That artifact is not verified; it is used as-is.                    | **Build fails** with error - version mismatch                     |
 
 In lenient mode, you can incrementally add entries to the checksum file: only artifacts explicitly listed are verified. Artifacts not listed in the file are passed through without verification.
+
+**Note:** In strict JAR only mode, classifiers (`sources`, `javadoc`, `tests`) are always exempt from checksum validation. Only base JAR artifacts (without classifiers) are subject to strict validation. Classifiers are verified only if they have explicit entries in the checksum file and all other conditions match (but entries are typically not necessary). This mode allows you to enforce strict validation on released binaries while remaining flexible with optional artifacts.
 
 ## IDEs
 
