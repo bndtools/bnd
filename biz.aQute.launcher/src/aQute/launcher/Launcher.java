@@ -91,6 +91,7 @@ import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.strings.Strings;
+import aQute.libg.filelock.ProcessLock;
 import aQute.libg.uri.URIUtil;
 
 /**
@@ -122,6 +123,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	private BundleActivator					externalActivator;
 	private boolean							restart					= false;
 	private boolean							frameworkInited			= false;
+	private ProcessLock						storageLock;
 
 	private ServiceRegistration<?>			launcherServiceRegistraion;
 
@@ -441,6 +443,8 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		} finally {
 			deactivate();
 			trace("stopped system bundle due to leaving run body");
+			IO.close(storageLock);
+			storageLock = null;
 			System.setProperties(initialSystemProperties);
 			// TODO should we wait here?
 		}
@@ -1186,7 +1190,8 @@ public class Launcher implements ServiceListener, FrameworkListener {
 			workingdir = new File(bnd, parms.name);
 		}
 
-		if (workingdir == null) {
+		boolean temporary = workingdir == null;
+		if (temporary) {
 			workingdir = File.createTempFile("osgi.", ".fw");
 			final File wd = workingdir;
 			Runtime.getRuntime()
@@ -1199,6 +1204,9 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		}
 
 		trace("using working dir: %s with keeping=%s", workingdir, parms.keep);
+
+		if (!temporary && !lockStorage(workingdir))
+			return null;
 
 		if (!parms.keep && workingdir.exists()) {
 			trace("deleting working dir %s because not kept", workingdir);
@@ -1313,6 +1321,37 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		IO.delete(wd);
 	}
 
+	/**
+	 * A framework owns its storage directory for as long as it runs. Hold a
+	 * lock next to the directory so that a second launch with the same
+	 * storage neither deletes nor shares it. The lock is released when this
+	 * launch ends or its process dies.
+	 *
+	 * @return {@code false} when another launch holds the storage
+	 */
+	private boolean lockStorage(File workingdir) {
+		File lockFile = storageLockFile(workingdir);
+		try {
+			storageLock = ProcessLock.tryLock(lockFile)
+				.orElse(null);
+		} catch (IOException e) {
+			trace("cannot lock the working dir %s with %s: %s", workingdir, lockFile, e);
+			return true;
+		}
+		if (storageLock == null) {
+			error(
+				"The framework storage %s is in use by another launch (%s). Stop that launch or use a different -runstorage.",
+				workingdir, ProcessLock.holder(lockFile));
+			return false;
+		}
+		return true;
+	}
+
+	private static File storageLockFile(File workingdir) {
+		File absolute = workingdir.getAbsoluteFile();
+		return new File(absolute.getParentFile(), absolute.getName() + ".lock");
+	}
+
 	public void addBundle(File resource) {
 		parms.runbundles.add(resource.getAbsolutePath());
 	}
@@ -1322,7 +1361,9 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	}
 
 	public void report(PrintStream out) {
-		startLevelhandler.sync();
+		// without a framework no start level is ever reached
+		if (systemBundle != null)
+			startLevelhandler.sync();
 		try {
 			synchronized (out) { // avoid interleaving output
 				out.print(String.format("------------------------------- REPORT --------------------------%n%n"));
