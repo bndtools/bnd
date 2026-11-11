@@ -35,14 +35,6 @@ env:
     -Daether.connector.http.connectionMaxTtl=25
     -Daether.connector.connectTimeout=120000
   BNDTOOLS_CORE_TEST_NOJUNITOSGI: true # This test is very flaky on CI
-  GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-  GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-  P2_SIGN: true
-  P2_SIGN_KEY: ${{ secrets.GPG_KEY_ID }}
-  P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-  P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
-  SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
 
 defaults:
   run:
@@ -70,7 +62,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a
         with:
           egress-policy: audit
       - name: Git Checkout
@@ -78,21 +70,21 @@ jobs:
         with:
           fetch-depth: ${{ matrix.fetch-depth }}
       - name: Set up Java 8 + ${{ matrix.java }}
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: 'temurin'
           java-version: |
             8
             ${{ matrix.java }}
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - name: Build
         id: build
         run: |
           ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
       - name: Configure settings.xml for Publish
         if: ${{ (github.event_name != 'pull_request') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) }}
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
@@ -109,9 +101,15 @@ jobs:
           CANONICAL: true
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          P2_SIGN: true
+          P2_SIGN_KEY: ${{ secrets.GPG_KEY_ID }}
+          P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
           SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
           JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
           JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+
       - name: Upload P2 Repo artifact
         if: ${{ matrix.canonical && github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -120,8 +118,9 @@ jobs:
           path: org.bndtools.p2/generated/org.bndtools.p2.jar
           if-no-files-found: error
           retention-days: 7
+
       - name: Publish P2 repo
-        if: ${{ matrix.canonical && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) }}
+        if: ${{ matrix.canonical && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'dependabot/'))) }}
         env:
           JFROG_SNAPSHOT_TOKEN: ${{ secrets.JFROG_SNAPSHOT_TOKEN }}
           JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
@@ -164,7 +163,7 @@ jobs:
           echo "Upload successful"
       - name: Upload Test Reports
         if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
           path: |
@@ -193,7 +192,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a
         with:
           egress-policy: audit
       - name: Git Checkout
@@ -201,21 +200,21 @@ jobs:
         with:
           fetch-depth: 1
       - name: Set up Java 8 + ${{ matrix.java }}
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: 'temurin'
           java-version: |
             8
             ${{ matrix.java }}
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - name: Build
         id: build
         run: |
           ${{ format(matrix.runner, './.github/scripts/ci-build.sh') }}
       - name: Upload Test Reports
         if: ${{ always() && ((steps.build.outcome == 'success') || (steps.build.outcome == 'failure')) }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: Build_JDK${{ matrix.java }}_${{ matrix.os }}-test-reports
           path: |

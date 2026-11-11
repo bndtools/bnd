@@ -2,8 +2,11 @@ package org.bndtools.core.ui.resource;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.jface.BoldStyler;
@@ -37,6 +40,7 @@ import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
 import aQute.bnd.service.resource.SupportingResource;
 import aQute.bnd.unmodifiable.Maps;
+import aQute.p2.provider.Feature;
 import bndtools.Plugin;
 
 public class R5LabelFormatter {
@@ -331,6 +335,8 @@ public class R5LabelFormatter {
 			}
 		}
 
+		appendPlatform(label, requirement);
+
 		boolean first = true;
 		for (Entry<String, String> directive : requirement.getDirectives()
 			.entrySet()) {
@@ -351,6 +357,20 @@ public class R5LabelFormatter {
 			label.setStyle(0, label.length(), StyledString.QUALIFIER_STYLER);
 			label.append(" <optional>", ItalicStyler.INSTANCE_DEFAULT);
 		}
+	}
+
+	private static void appendPlatform(StyledString label, Requirement requirement) {
+		Map<String, Object> attributes = requirement.getAttributes();
+		if (!attributes.containsKey(Feature.RELATION_ATTRIBUTE))
+			return;
+
+		String platform = Stream.of("os", "ws", "arch")
+			.map(attributes::get)
+			.filter(Objects::nonNull)
+			.map(Object::toString)
+			.collect(Collectors.joining("/"));
+		if (!platform.isEmpty())
+			label.append(" [" + platform + "]", StyledString.QUALIFIER_STYLER);
 	}
 
 	private static String getIdentityVersionDisplay(String filter, Expression exp, Matcher versionMatcher) {

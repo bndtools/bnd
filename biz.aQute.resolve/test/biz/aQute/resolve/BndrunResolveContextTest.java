@@ -18,10 +18,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -44,6 +46,8 @@ import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
+import aQute.p2.provider.EclipsePlatform;
+import aQute.p2.provider.Feature;
 import test.lib.MockRegistry;
 import test.lib.NullLogService;
 
@@ -228,6 +232,77 @@ public class BndrunResolveContextTest {
 		assertFalse(context.isEffective(filteredActiveReq));
 		assertFalse(context.isEffective(anotherFilteredActiveReq));
 		assertTrue(context.isEffective(noEffectiveDirectiveReq));
+	}
+
+	private static Requirement featureMember(String relation, String os, String ws, String arch) {
+		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=member)")
+			.addAttribute(Feature.RELATION_ATTRIBUTE, relation)
+			.addAttribute("os", os)
+			.addAttribute("ws", ws)
+			.addAttribute("arch", arch)
+			.buildSyntheticRequirement();
+	}
+
+	@Test
+	public void testFeatureMembersOfOtherPlatformsAreNotEffective() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.setRunProperties(Map.of("osgi.os", "macosx", "osgi.ws", "cocoa", "osgi.arch", "aarch64"));
+
+		BndrunResolveContext context = new BndrunResolveContext(model.getProperties(), model.getProject(),
+			new MockRegistry(), log);
+
+		assertTrue(context.isEffective(featureMember(Feature.RELATION_PLUGIN, "macosx", "cocoa", "aarch64")));
+		assertTrue(context.isEffective(featureMember(Feature.RELATION_INCLUDE, "macosx,linux", null, null)));
+		assertTrue(context.isEffective(featureMember(Feature.RELATION_PLUGIN, null, null, null)));
+		assertFalse(context.isEffective(featureMember(Feature.RELATION_PLUGIN, "win32", "win32", "x86_64")));
+		assertFalse(context.isEffective(featureMember(Feature.RELATION_INCLUDE, "macosx", "cocoa", "x86_64")));
+		assertTrue(context.isEffective(featureMember(Feature.RELATION_REQUIRE, "win32", "win32", "x86_64")));
+	}
+
+	@Test
+	public void testSystemResourceProvidesThePlatform() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.setRunProperties(Map.of("osgi.os", "win32", "osgi.ws", "win32", "osgi.arch", "x86_64"));
+
+		BndrunResolveContext context = new BndrunResolveContext(model.getProperties(), model.getProject(),
+			new MockRegistry(), log);
+		context.init();
+
+		List<Capability> platform = context.getSystemResource()
+			.getCapabilities(EclipsePlatform.NAMESPACE);
+		assertThat(platform).hasSize(1);
+		assertThat(platform.get(0)
+			.getAttributes()).containsEntry("osgi.os", "win32")
+				.containsEntry("osgi.ws", "win32")
+				.containsEntry("osgi.arch", "x86_64");
+	}
+
+	@Test
+	public void testSystemCapabilitiesCanProvideThePlatform() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.genericSet(Constants.RUNSYSTEMCAPABILITIES, "eclipse.platform;osgi.os=solaris");
+
+		BndrunResolveContext context = new BndrunResolveContext(model.getProperties(), model.getProject(),
+			new MockRegistry(), log);
+		context.init();
+
+		List<Capability> platform = context.getSystemResource()
+			.getCapabilities(EclipsePlatform.NAMESPACE);
+		assertThat(platform).hasSize(1);
+		assertThat(platform.get(0)
+			.getAttributes()).containsEntry("osgi.os", "solaris");
+	}
+
+	@Test
+	public void testInvalidRunPropertiesUseTheRunningPlatform() throws Exception {
+		Processor model = new Processor();
+		model.setProperty(Constants.RUNPROPERTIES, "osgi.os=win32,");
+
+		BndrunResolveContext context = new BndrunResolveContext(model, null, new MockRegistry(), log);
+
+		assertThat(context.getPlatform()).hasToString(EclipsePlatform.of(null)
+			.toString());
 	}
 
 	@Test

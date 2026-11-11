@@ -10,7 +10,8 @@
 
 package aQute.tester.junit.platform.reporting.legacy;
 
-import org.junit.platform.commons.util.Preconditions;
+import static java.util.Objects.requireNonNull;
+
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -51,8 +52,8 @@ public class LegacyReportingUtils {
 	 * @see TestIdentifier#getLegacyReportingName
 	 */
 	public static String getClassName(TestPlan testPlan, TestIdentifier testIdentifier) {
-		Preconditions.notNull(testPlan, "testPlan must not be null");
-		Preconditions.notNull(testIdentifier, "testIdentifier must not be null");
+		requireNonNull(testPlan, "testPlan must not be null");
+		requireNonNull(testIdentifier, "testIdentifier must not be null");
 		for (TestIdentifier current = testIdentifier; current != null; current = getParent(testPlan, current)) {
 			ClassSource source = getClassSource(current);
 			if (source != null) {

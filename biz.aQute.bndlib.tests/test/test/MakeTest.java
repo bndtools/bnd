@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.util.Properties;
 import java.util.jar.Attributes;
 
 import org.junit.jupiter.api.Test;
+
+import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
@@ -149,6 +152,50 @@ public class MakeTest {
 			Resource resource = jar.getResource("www/xyz.jar");
 			assertNotNull(resource);
 			assertTrue(resource instanceof JarResource);
+		}
+	}
+
+	/**
+	 * A jar made by a -make recipe that is embedded via Bundle-ClassPath in
+	 * another made jar must still be usable when the outer jar is written. The
+	 * CDI analysis of the Bundle-ClassPath entries used to close the shared
+	 * inner Jar (bndtools/bnd#7452).
+	 */
+	@Test
+	public void testNestedMakeJarOnBundleClassPath(@InjectTemporaryDirectory
+	File tmp) throws Exception {
+		IO.store("inner", new File(tmp, "inner.txt"));
+		IO.store("Bundle-SymbolicName: example.inner\n-includeresource: inner.txt\n", new File(tmp, "inner.bnd"));
+		for (String n : new String[] {
+			"outer1", "outer2"
+		}) {
+			IO.store("Bundle-SymbolicName: example." + n + "\nBundle-ClassPath: inner.jar\n"
+				+ "-includeresource: inner.jar\n", new File(tmp, n + ".bnd"));
+		}
+		IO.store("Bundle-SymbolicName: example.main\n-make: (*).jar;type=bnd;recipe=$1.bnd\n"
+			+ "-includeresource: outer1.jar, outer2.jar\n", new File(tmp, "main.bnd"));
+
+		try (Builder main = new Builder()) {
+			main.setBase(tmp);
+			main.setProperties(new File(tmp, "main.bnd"));
+			Jar jar = main.build();
+			report(main);
+			assertTrue(main.isOk());
+
+			File out = new File(tmp, "out.jar");
+			jar.write(out);
+
+			try (Jar written = new Jar(out)) {
+				for (String n : new String[] {
+					"outer1.jar", "outer2.jar"
+				}) {
+					Resource outer = written.getResource(n);
+					assertNotNull(outer);
+					try (Jar outerJar = new Jar(n, outer.openInputStream())) {
+						assertNotNull(outerJar.getResource("inner.jar"));
+					}
+				}
+			}
 		}
 	}
 

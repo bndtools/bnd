@@ -60,6 +60,7 @@ import aQute.lib.zip.ZipUtil;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
+import aQute.maven.provider.TrustedChecksums.TrustedChecksumException;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -116,7 +117,12 @@ class IndexFile {
 	 * Open, will refresh this repository, which will load the file
 	 */
 	void open() throws Exception {
-		serialize(this::load);
+		Promise<Boolean> result = serialize(this::load);
+
+		Throwable failure = result.getFailure();
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
 	}
 
 	/**
@@ -134,14 +140,26 @@ class IndexFile {
 		Deferred<Boolean> latch = promiseFactory.deferred();
 		try {
 			synchronized (this) {
-				return updateSerializer = updateSerializer.flatMap(b -> latch.getPromise())
+				Promise<Boolean> current = updateSerializer.flatMap(b -> latch.getPromise())
 					.flatMap(b -> updater.get())
 					.recover(failed -> {
 						Throwable failure = Exceptions.unrollCause(failed.getFailure(),
 							InvocationTargetException.class);
+
+						if (failure instanceof TrustedChecksumException) {
+							throw Exceptions.duck(failure); // fail this
+															// operation
+						}
+
 						logger.debug("Failure occured updating index {}", getMessage(failure), failed.getFailure());
 						return Boolean.FALSE;
 					});
+
+				// Keep serializer usable for future operations even if
+				// `current` failed.
+				updateSerializer = current.recover(failed -> Boolean.TRUE);
+
+				return current;
 			}
 		} finally {
 			latch.resolve(Boolean.TRUE);
@@ -264,14 +282,14 @@ class IndexFile {
 		} else {
 			promises = toAdd.stream()
 				.map(archive -> {
-					if (!archive.isSnapshot()) {
-						File localFile = repo.toLocalFile(archive);
-						if (localFile.isFile() && localFile.length() > 0) {
-							return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
-								.recover(p -> failed(archive, p.getFailure()));
-						}
-					}
 					try {
+						if (!archive.isSnapshot()) {
+							File localFile = repo.toLocalFile(archive);
+							if (localFile.isFile() && localFile.length() > 0) {
+								return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
+									.recover(p -> failed(archive, p.getFailure()));
+							}
+						}
 						return repo.get(archive)
 							.map(file -> (file == null) ? failed(archive, "Not found")
 								: parseSingleOrMultiFile(archive, file))
@@ -295,6 +313,11 @@ class IndexFile {
 
 	private Map<Archive, Resource> failed(Archive archive, Throwable t) {
 		Throwable failure = Exceptions.unrollCause(t, InvocationTargetException.class);
+
+		if (failure instanceof TrustedChecksumException) {
+			throw Exceptions.duck(failure);
+		}
+
 		String message = getMessage(failure);
 		logger.debug("Failed to get {}: {}", archive, message, t);
 		return failed(archive, message);

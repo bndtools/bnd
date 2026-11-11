@@ -37,6 +37,8 @@ import java.util.regex.Pattern;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import aQute.bnd.build.Container;
@@ -111,6 +113,7 @@ public class ProjectTest {
 	}
 
 	@Test
+	@DisabledOnOs(OS.WINDOWS)
 	public void testAliasbuild() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p3");
@@ -549,7 +552,8 @@ public class ProjectTest {
 		top.clear();
 		top.setProperty("-runbundles", "org.apache.felix.configadmin,org.apache.felix.configadmin");
 		Collection<Container> runbundles = top.getRunbundles();
-		assertTrue(top.check("Multiple bundles with the same final URL", "Duplicate name"));
+		assertTrue(top.check("Multiple bundles with the same final URL", "Duplicate name",
+			"\\[Property Conflict\\]: `Header-1` is defined more than once"));
 		assertNotNull(runbundles);
 		assertEquals(1, runbundles.size());
 	}
@@ -684,7 +688,8 @@ public class ProjectTest {
 
 		List<Container> bundles = project.getBundles(Strategy.LOWEST,
 			"org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
-		assertTrue(project.check("Multiple bundles with the same final URL", "Duplicate name"));
+		assertTrue(project.check("Multiple bundles with the same final URL", "Duplicate name",
+			"\\[Property Conflict\\]: `Header-1` is defined more than once"));
 		assertEquals(1, bundles.size());
 	}
 
@@ -1577,7 +1582,7 @@ public class ProjectTest {
 
 			softly.assertThat(a.getWarnings())
 				.as("pedantic warnings")
-				.containsExactly("Duplicate property key: `Header-1`: <<Header-1: b>>");
+				.singleElement().asString().contains("[Property Conflict]: `Header-1` is defined more than once");
 			softly.assertThat(a.getErrors()).as("pedantic errors").isEmpty();
 
 		}
@@ -1593,6 +1598,29 @@ public class ProjectTest {
 			softly.assertThat(a.getErrors())
 				.as("non-pedantic errors")
 				.isEmpty();
+		}
+	}
+
+	@Test
+	public void testPropertyConflictsFailBuild() throws Exception {
+		IO.mkdirs(new File(tmp, "cnf"));
+		File directory = new File(tmp, "conflicts");
+		IO.mkdirs(directory);
+		IO.store("resource", new File(directory, "data.txt"));
+		File file = new File(directory, "bnd.bnd");
+		String content = "-resourceonly: true\n-includeresource: data.txt\nname: first\nname: last\n";
+		IO.store(content + "-propertyconflicts: error\n", file);
+		try (Workspace workspace = new Workspace(tmp)) {
+			Project project = workspace.getProject("conflicts");
+			assertThat(project.build()).isNull();
+			assertThat(project.getErrors()).anySatisfy(message -> assertThat(message).contains("[Property Conflict]"));
+			assertThat(project.build()).isNull();
+			IO.store(content + "-propertyconflicts: warning\n", file);
+			project.clear();
+			project.forceRefresh();
+			assertThat(project.build()).isNotEmpty();
+			assertThat(project.getErrors()).isEmpty();
+			assertThat(project.getWarnings()).anySatisfy(message -> assertThat(message).contains("[Property Conflict]"));
 		}
 	}
 }

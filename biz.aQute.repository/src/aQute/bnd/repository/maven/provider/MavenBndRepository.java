@@ -780,14 +780,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			workspace.ifPresent(ws -> ws.refresh(this));
 			return true;
 		} catch (Exception e) {
-			reporter.exception(e, "Init for MavenBndRepository failed %s", configuration);
 			status = Exceptions.getDisplayTypeName(e) + " " + Exceptions.causes(e);
+			reporter.exception(e, "Init for MavenBndRepository failed %s, %s", status, configuration);
 			return false;
 		}
 	}
 
 	private TrustedChecksums loadTrustedChecksumFile(File indexFile) {
 		String checksumFile = configuration.checksumFile();
+		String checksumPolicyStr = configuration.checksumPolicy("lenient");
+		TrustedChecksums.ChecksumPolicy policy = TrustedChecksums.ChecksumPolicy.fromString(checksumPolicyStr);
 
 		File trustedChecksumFile;
 		if (checksumFile != null) {
@@ -797,7 +799,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			trustedChecksumFile = IO.getFile(indexDir, indexFile.getName() + ".checksums");
 		}
 
-		return new TrustedChecksums(trustedChecksumFile);
+		return new TrustedChecksums(trustedChecksumFile, policy);
 	}
 
 	private void validateUris(List<MavenBackingRepository> release, Formatter f) {

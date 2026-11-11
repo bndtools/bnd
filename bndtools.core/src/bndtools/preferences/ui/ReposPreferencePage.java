@@ -10,6 +10,7 @@ import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
@@ -23,6 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
@@ -173,8 +175,33 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
 			}
 		});
 
+		composite.addDisposeListener(e -> prefs().removePropertyChangeListener(indexPrefListener));
+		prefs().addPropertyChangeListener(indexPrefListener);
+
 		return composite;
 	}
+
+	private BndPreferences prefs() {
+		return new BndPreferences();
+	}
+
+	private final IPropertyChangeListener indexPrefListener = e -> {
+		if (!BndPreferences.PREF_WORKSPACE_TEMPLATE_INDEXES.equals(e.getProperty()))
+			return;
+		List<String> stored = prefs().getWorkspaceTemplateIndexes();
+		Display.getDefault()
+			.asyncExec(() -> {
+				if (vwrIndexes == null || vwrIndexes.getControl()
+					.isDisposed())
+					return;
+				for (String uri : stored) {
+					if (!workspaceTemplateIndexes.contains(uri)) {
+						workspaceTemplateIndexes.add(uri);
+						vwrIndexes.add(uri);
+					}
+				}
+			});
+	};
 
 	private void doAddRepo() {
 		URLDialog dialog = new URLDialog(getShell(), "Add repository URL", false);

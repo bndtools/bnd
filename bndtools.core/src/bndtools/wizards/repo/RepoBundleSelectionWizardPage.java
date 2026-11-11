@@ -7,48 +7,60 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
+import org.osgi.framework.namespace.IdentityNamespace;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.collections.Logic;
+import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.RepositoryUtils;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
+import bndtools.model.repo.FeatureVersionNode;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryFeature;
+import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
-import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
 	private static final ILogger				logger					= Logger
@@ -68,33 +80,11 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	Button										addButton;
 	Button										removeButton;
 
-	ViewerFilter								alreadySelectedFilter	= new ViewerFilter() {
-																			@Override
-																			public boolean select(Viewer viewer,
-																				Object parentElement, Object element) {
-																				String search = selectionSearchTxt
-																					.getText()
-																					.toLowerCase(Locale.ROOT);
+	static final int							FILTER_DELAY_MS			= 300;
 
-																				String bsn = null;
-																				if (element instanceof RepositoryBundle) {
-																					bsn = ((RepositoryBundle) element)
-																						.getBsn();
-																				} else if (element instanceof ProjectBundle) {
-																					bsn = ((ProjectBundle) element)
-																						.getBsn();
-																				}
-
-																				if (bsn != null) {
-																					if (search.length() > 0
-																						&& bsn.toLowerCase(Locale.ROOT)
-																							.indexOf(search) == -1) {
-																						return false;
-																					}
-																				}
-																				return true;
-																			}
-																		};
+	final RepositoryTreeContentProvider		contentProvider			= new RepositoryTreeContentProvider();
+	private final Runnable						applyFilterTask			= this::applyFilter;
+	private TreePath[]							expansionBeforeFilter;
 
 	protected RepoBundleSelectionWizardPage(DependencyPhase phase) {
 		super("bundleSelectionPage");
@@ -103,7 +93,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 	public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
 		for (VersionedClause clause : selectedBundles) {
-			this.selectedBundles.put(clause.getName(), clause);
+			this.selectedBundles.put(key(clause), clause);
 		}
 	}
 
@@ -111,29 +101,50 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		return new ArrayList<>(selectedBundles.values());
 	}
 
+	/**
+	 * Key for the selected map. Eclipse features may share their name with a
+	 * bundle, so the identity type is part of the key.
+	 */
+	private static String key(VersionedClause clause) {
+		String type = clause.getAttribs()
+			.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
+		return type == null ? clause.getName() : clause.getName() + ";" + type;
+	}
+
 	Control createAvailableBundlesPanel(Composite parent) {
+		contentProvider.setWaitForFastResult(false);
+		contentProvider.setLocalFiltering(true);
 		Composite panel = new Composite(parent, SWT.NONE);
 		new Label(panel, SWT.NONE).setText("Available Bundles:");
 		selectionSearchTxt = new Text(panel, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
 		selectionSearchTxt.setMessage("filter bundle name");
 
-		final Tree availableTree = new Tree(panel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+		// Tree.computeSize visits every visible item on Windows; the holder reports a fixed size instead
+		Composite treeHolder = new Composite(panel, SWT.NONE);
+		treeHolder.setLayout(new Layout() {
+			@Override
+			protected Point computeSize(Composite composite, int wHint, int hHint, boolean flushCache) {
+				return new Point(wHint == SWT.DEFAULT ? 250 : wHint, hHint == SWT.DEFAULT ? 300 : hHint);
+			}
+
+			@Override
+			protected void layout(Composite composite, boolean flushCache) {
+				for (Control child : composite.getChildren()) {
+					child.setBounds(composite.getClientArea());
+				}
+			}
+		});
+		final Tree availableTree = new Tree(treeHolder, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
 		availableViewer = new TreeViewer(availableTree);
 		availableViewer.setLabelProvider(new RepositoryTreeLabelProvider(false) {
 
 		});
-		availableViewer.setContentProvider(new SearchableRepositoryTreeContentProvider());
-		availableViewer.setAutoExpandLevel(2);
-
-		availableViewer.setFilters(alreadySelectedFilter);
+		availableViewer.setContentProvider(contentProvider);
+		// Keep roots collapsed until a filter is applied; bundle versions stay lazy
+		availableViewer.setAutoExpandLevel(0);
 
 		// Load data
-		try {
-			refreshBundleList();
-		} catch (Exception e) {
-			setErrorMessage("Error querying repositories: " + e.getMessage());
-			logger.logError("Error querying repository configuration.", e);
-		}
+		refreshBundleList();
 
 		// Listeners
 		selectionSearchTxt.addKeyListener(new KeyAdapter() {
@@ -143,7 +154,19 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 					availableTree.setFocus();
 			}
 		});
-		selectionSearchTxt.addModifyListener(e -> availableViewer.setFilters(alreadySelectedFilter));
+		selectionSearchTxt.addModifyListener(e -> {
+			Display display = selectionSearchTxt.getDisplay();
+			display.timerExec(-1, applyFilterTask);
+			display.timerExec(FILTER_DELAY_MS, applyFilterTask);
+		});
+		selectionSearchTxt.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				selectionSearchTxt.getDisplay()
+					.timerExec(-1, applyFilterTask);
+				applyFilter();
+			}
+		});
 		availableViewer.addSelectionChangedListener(event -> {
 			enabledStatus();
 		});
@@ -159,11 +182,47 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		selectionSearchTxt.setLayoutData(gd);
 
 		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.heightHint = 300;
-		gd.widthHint = 250;
-		availableTree.setLayoutData(gd);
+		treeHolder.setLayoutData(gd);
 
 		return panel;
+	}
+
+	void applyFilter() {
+		if (selectionSearchTxt.isDisposed() || availableViewer.getControl()
+			.isDisposed()) {
+			return;
+		}
+		String filter = selectionSearchTxt.getText();
+		if (Objects.equals(filter, contentProvider.getFilter())) {
+			return;
+		}
+		boolean filtered = filter != null && !filter.isBlank();
+		if (filtered && expansionBeforeFilter == null) {
+			expansionBeforeFilter = availableViewer.getExpandedTreePaths();
+		}
+		Control tree = availableViewer.getControl();
+		tree.setRedraw(false);
+		try {
+			contentProvider.setFilter(filter);
+			contentProvider.setWaitForFastResult(false);
+			// rebuilds the tree in one pass; refresh() would diff thousands of items one by one
+			availableViewer.setInput(availableViewer.getInput());
+			if (filtered) {
+				Object input = availableViewer.getInput();
+				if (input instanceof Collection<?> repositories) {
+					for (Object repository : repositories) {
+						if (repository instanceof RepositoryPlugin) {
+							availableViewer.setExpandedState(repository, true);
+						}
+					}
+				}
+			} else if (expansionBeforeFilter != null) {
+				availableViewer.setExpandedTreePaths(expansionBeforeFilter);
+				expansionBeforeFilter = null;
+			}
+		} finally {
+			tree.setRedraw(true);
+		}
 	}
 
 	private void enabledStatus() {
@@ -261,10 +320,40 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		setControl(composite);
 	}
 
-	protected void refreshBundleList() throws Exception {
-		Workspace workspace = Central.getWorkspace();
-		// workspace.refresh();
-		availableViewer.setInput(RepositoryUtils.listRepositories(workspace, true));
+	protected void refreshBundleList() {
+		setMessage("Loading repositories...");
+		Display display = availableViewer.getControl().getDisplay();
+		new Job("Loading available repositories") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				List<RepositoryPlugin> repositories;
+				try {
+					Workspace workspace = Central.getWorkspace();
+					repositories = RepositoryUtils.listRepositories(workspace, true);
+				} catch (Exception e) {
+					logger.logError("Error querying repository configuration.", e);
+					if (!display.isDisposed()) {
+						display.asyncExec(() -> {
+							if (!selectionSearchTxt.isDisposed()) {
+								setMessage(null);
+								setErrorMessage("Error querying repositories: " + e.getMessage());
+							}
+						});
+					}
+					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Error querying repositories", e);
+				}
+				if (!display.isDisposed()) {
+					display.asyncExec(() -> {
+						if (selectionSearchTxt.isDisposed() || availableViewer.getControl().isDisposed()) {
+							return;
+						}
+						setMessage(null);
+						availableViewer.setInput(repositories);
+					});
+				}
+				return Status.OK_STATUS;
+			}
+		}.schedule();
 	}
 
 	void doAdd() {
@@ -272,8 +361,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		List<VersionedClause> adding = getVersionClauses(selection);
 		if (!adding.isEmpty()) {
 			for (VersionedClause clause : adding) {
-				if (!selectedBundles.containsKey(clause.getName())) {
-					selectedBundles.put(clause.getName(), clause);
+				if (!selectedBundles.containsKey(key(clause))) {
+					selectedBundles.put(key(clause), clause);
 					selectedViewer.add(clause);
 				}
 			}
@@ -291,6 +380,10 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 				adding.add(RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item, phase));
 			} else if (item instanceof RepositoryBundleVersion) {
 				adding.add(RepositoryBundleUtils.convertRepoBundleVersion((RepositoryBundleVersion) item, phase));
+			} else if (item instanceof RepositoryFeature) {
+				adding.add(RepositoryBundleUtils.convertRepoFeature((RepositoryFeature) item));
+			} else if (item instanceof FeatureVersionNode) {
+				adding.add(RepositoryBundleUtils.convertRepoFeature(((FeatureVersionNode) item).getParent()));
 			} else if (item instanceof ProjectBundle) {
 				String bsn = ((ProjectBundle) item).getBsn();
 				Attrs attribs = new Attrs();
@@ -304,7 +397,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 	void doRemove() {
 		IStructuredSelection selection = (IStructuredSelection) selectedViewer.getSelection();
 		for (Object clause : selection.toList()) {
-			selectedBundles.remove(((VersionedClause) clause).getName());
+			selectedBundles.remove(key((VersionedClause) clause));
 		}
 		selectedViewer.remove(selection.toArray());
 		availableViewer.refresh();

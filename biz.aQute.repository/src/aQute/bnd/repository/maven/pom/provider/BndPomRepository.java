@@ -200,6 +200,7 @@ public class BndPomRepository extends BaseRepository
 				.executor(), reporter);
 			storage.setTrustedChecksums(trustedChecksums);
 
+
 			boolean transitive = configuration.transitive(true);
 			boolean dependencyManagement = configuration.dependencyManagement(false);
 
@@ -282,6 +283,7 @@ public class BndPomRepository extends BaseRepository
 		if (!init()) {
 			return false;
 		}
+
 		repoImpl.refresh();
 		bridge = new BridgeRepository(repoImpl);
 		for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
@@ -592,11 +594,14 @@ public class BndPomRepository extends BaseRepository
 
 	private TrustedChecksums loadTrustedChecksumFile(Workspace workspace) {
 		String checksumFile = configuration.checksumFile();
+		String checksumPolicyStr = configuration.checksumPolicy("lenient");
+		TrustedChecksums.ChecksumPolicy policy = TrustedChecksums.ChecksumPolicy.fromString(checksumPolicyStr);
+
 		if (checksumFile == null || checksumFile.isBlank()) {
-			return new TrustedChecksums(null);
+			return new TrustedChecksums(null, policy);
 		}
 		File file = workspace.getFile(checksumFile);
-		return new TrustedChecksums(file);
+		return new TrustedChecksums(file, policy);
 
 	}
 

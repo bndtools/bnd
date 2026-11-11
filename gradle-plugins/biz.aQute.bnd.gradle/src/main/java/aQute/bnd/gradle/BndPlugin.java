@@ -366,6 +366,7 @@ public class BndPlugin implements Plugin<Project> {
 			ConfigurableFileCollection javacBootclasspath = objects.fileCollection()
 				.from(decontainer(bndProject.getBootclasspath()));
 			String javac = bndProject.getProperty("javac", "javac");
+			String javacRelease = bndProject.getProperty(Constants.JAVAC_RELEASE);
 			Optional<String> javacSource = optional(bndProject.getProperty("javac.source"));
 			Optional<String> javacTarget = optional(bndProject.getProperty("javac.target"));
 			Optional<String> javacProfile = optional(bndProject.getProperty("javac.profile"));
@@ -381,7 +382,11 @@ public class BndPlugin implements Plugin<Project> {
 					CompileOptions options = t.getOptions();
 					javacSource.ifPresent(t::setSourceCompatibility);
 					javacTarget.ifPresent(t::setTargetCompatibility);
-					if (javacSource.isPresent() && javacTarget.isPresent()) {
+					if (javacRelease != null && !javacRelease.isEmpty()) {
+						options.getRelease()
+							.set(Integer.valueOf(JavaVersion.toVersion(javacRelease)
+								.getMajorVersion()));
+					} else if (javacRelease == null && javacSource.isPresent() && javacTarget.isPresent()) {
 						Property<Boolean> supportsRelease = objects.property(Boolean.class)
 							.value(t.getJavaCompiler()
 								.map(javaCompiler -> Boolean.valueOf(javaCompiler.getMetadata()

@@ -5,10 +5,12 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.osgi.util.promise.Promise;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.tags.Tagged;
@@ -232,6 +234,31 @@ public interface RepositoryPlugin extends Tagged {
 	 */
 
 	SortedSet<Version> versions(String bsn) throws Exception;
+
+	/**
+	 * Expand a {@link aQute.bnd.build.Container.TYPE#TYPED_RESOURCE} container
+	 * into its member containers. A typed resource is any identity whose OSGi
+	 * identity capability carries a {@code type} attribute other than a plain
+	 * bundle, for example an Eclipse feature ({@code org.eclipse.update.feature}),
+	 * an OSGi feature or a Karaf feature. Core bnd does not know about any
+	 * particular type; it merely asks each repository in turn to expand it.
+	 * <p>
+	 * Repositories that do not recognize the container's type must return
+	 * {@code null} so that other repositories get a chance to expand it. Once a
+	 * repository claims a type it is responsible for resolving the identity,
+	 * validating attributes such as platform filters, and recursively expanding
+	 * nested typed resources.
+	 *
+	 * @param container the typed resource container to expand
+	 * @param visited cycle-detection guard keyed by {@code bsn:version}; pass it
+	 *            along unchanged when recursively expanding nested members
+	 * @return the member containers, or {@code null} if this repository does
+	 *         not recognize the container's identity type
+	 * @throws Exception when something goes wrong while expanding the members
+	 */
+	default List<Container> getTypedResourceMembers(Container container, Set<String> visited) throws Exception {
+		return null;
+	}
 
 	/**
 	 * @return The name of the repository

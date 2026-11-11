@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -98,7 +98,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 		table = toolkit.createTable(composite, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER);
 
 		viewer = new TableViewer(table);
-		ColumnViewerToolTipSupport.enableFor(viewer);
+		StickyToolTipSupport.enableFor(viewer);
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
 		viewer.setLabelProvider(new PluginClauseLabelProvider(configElements));
 		viewer.addDoubleClickListener(e -> {

@@ -28,6 +28,41 @@ class TestBndPlugin extends Specification {
 		assert pluginClasspath != null
 	}
 
+	def "Bnd plugin enforces Java API level for matching source and target"() {
+		given:
+		String testProject = "workspaceplugin1-release"
+		File testProjectDir = new File(testResources, testProject)
+		testProjectDir.deleteDir()
+		copyDirectory(new File(testResources, "workspaceplugin1"), testProjectDir)
+		new File(testProjectDir, "cnf/ext/javac.bnd").text = "javac.source=1.8\njavac.target=8\n"
+		new File(testProjectDir, "test.simple/src/main/java/test/simple/UsesNewerApi.java").with {
+			parentFile.mkdirs()
+			text = "package test.simple;\nimport java.util.List;\npublic class UsesNewerApi { List<String> values = List.of(); }\n"
+		}
+
+		when:
+		def result = TestHelper.getGradleRunner()
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--stacktrace", ":test.simple:compileJava")
+				.forwardOutput()
+				.buildAndFail()
+
+		then:
+		result.output.contains("release version 8 not supported") || result.output.contains("cannot find symbol")
+	}
+
+	private static void copyDirectory(File source, File target) {
+		target.mkdirs()
+		source.eachFile { file ->
+			File destination = new File(target, file.name)
+			if (file.directory) {
+				copyDirectory(file, destination)
+			} else {
+				destination.bytes = file.bytes
+			}
+		}
+	}
+
 	def "Bnd Workspace Plugin"() {
 		given:
 		String testProject = "workspaceplugin1"
@@ -513,5 +548,38 @@ class TestBndPlugin extends Specification {
 		result.task(":test.simple:clean").outcome == SUCCESS
 		!generated.exists()
 		!simple_bundle.exists()
+	}
+
+	def "Bnd Workspace Plugin configuration cache fail fast Test"() {
+		given:
+		String testProject = "workspaceplugin1"
+		File testProjectDir = new File(testResources, testProject)
+		assert testProjectDir.isDirectory()
+
+		when: "the configuration cache is requested"
+		// "8.5" is a floor, not a pin: TestHelper.getGradleRunner(version)
+		// runs with max(version, default version for the current JVM). The
+		// BuildFeatures service used for the fail fast check was introduced
+		// in Gradle 8.5, so this test verifies the oldest supported Gradle
+		// version on JDK 17 while newer JVMs (and --warning-mode=fail runs)
+		// exercise Gradle 8.10/9.x with the same test.
+		def result = TestHelper.getGradleRunner("8.5")
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--configuration-cache", "--stacktrace", ":tasks")
+				.forwardOutput()
+				.buildAndFail()
+
+		then: "the build fails fast with a clear message"
+		result.output.contains("The Bnd Workspace plugin does not support the Gradle configuration cache")
+
+		when: "the configuration cache is not requested"
+		result = TestHelper.getGradleRunner("8.5")
+				.withProjectDir(testProjectDir)
+				.withArguments("-Pbnd_plugin=${pluginClasspath}", "--stacktrace", ":tasks")
+				.forwardOutput()
+				.build()
+
+		then: "the build succeeds"
+		result.task(":tasks").outcome == SUCCESS
 	}
 }

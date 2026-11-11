@@ -6,29 +6,41 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Formatter;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bndtools.core.ui.StickyToolTipSupport;
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -58,6 +70,8 @@ import aQute.bnd.result.Result;
 import aQute.bnd.wstemplates.FragmentTemplateEngine;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateInfo;
 import aQute.bnd.wstemplates.FragmentTemplateEngine.TemplateUpdater;
+import aQute.bnd.wstemplates.FragmentTemplateEngine.Update;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -69,15 +83,83 @@ import bndtools.util.ui.UI;
  */
 public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWizard {
 
+	private static final String		SETTINGS_SECTION			= "NewWorkspaceWizard";
+	private static final String		SETTING_CLEAN				= "clean";
+	private static final String		SETTING_SWITCH_WORKSPACE	= "switchWorkspace";
+	private static final String		SETTING_SHOW_ARCHIVED		= "showArchived";
+	private static final String		SETTING_UPDATE_WORKSPACE	= "updateWorkspace";
+	private static final Point		MINIMUM_DIALOG_SIZE			= new Point(880, 480);
+
 	static final Logger				log					= LoggerFactory.getLogger(NewWorkspaceWizard.class);
 
 	final Model						model;
 	final UI<Model>					ui;
 	final NewWorkspaceWizardPage	page				= new NewWorkspaceWizardPage();
 	final FragmentTemplateEngine	templates;
+	final Set<String>					loadingTemplateIndexes	= new HashSet<>();
+	final Map<String, List<TemplateInfo>>	templateIndexes			= new HashMap<>();
+
+	final IPropertyChangeListener			indexPrefListener		= e -> {
+																		if (BndPreferences.PREF_WORKSPACE_TEMPLATE_INDEXES
+																			.equals(e.getProperty()))
+																			syncIndexesWithPreferences();
+																	};
+
+	void syncIndexesWithPreferences() {
+		Job.create("sync template indexes", mon -> {
+			Set<String> wanted = new BndPreferences().getWorkspaceTemplateIndexes()
+				.stream()
+				.map(u -> URI.create(u)
+					.normalize()
+					.toString())
+				.collect(Collectors.toCollection(java.util.LinkedHashSet::new));
+			synchronized (templateIndexes) {
+				for (String known : new ArrayList<>(templateIndexes.keySet())) {
+					if (!wanted.contains(known)) {
+						templates.removeAll(templateIndexes.remove(known));
+					}
+				}
+				for (String uri : wanted) {
+					if (templateIndexes.containsKey(uri) || loadingTemplateIndexes.contains(uri))
+						continue;
+					try {
+						List<TemplateInfo> indexTemplates = templates.read(URI.create(uri)
+							.toURL())
+							.unwrap();
+						indexTemplates.forEach(templates::add);
+						templateIndexes.put(uri, indexTemplates);
+					} catch (Exception ex) {
+						log.error("failed to read index {}", uri, ex);
+					}
+				}
+			}
+			ui.write(() -> model.templates = templates.getAvailableTemplates());
+		}).schedule();
+	}
 
 	final static Image				verified			= Icons.image("icons/tick.png", false);
 	final static Image				verifiedGreyedOut	= new Image(Display.getDefault(), verified, SWT.IMAGE_DISABLE);
+
+	public static String globToRegex(String glob) {
+		boolean hasWildcard = glob.indexOf('*') >= 0 || glob.indexOf('?') >= 0;
+		StringBuilder sb = new StringBuilder();
+		if (!hasWildcard) {
+			sb.append(".*");
+		}
+		for (char c : glob.toCharArray()) {
+			switch (c) {
+				case '*' -> sb.append(".*");
+				case '?' -> sb.append('.');
+				case '.', '(', ')', '+', '|', '^', '$', '@', '%', '[', ']', '{', '}', '\\' -> sb.append('\\')
+					.append(c);
+				default -> sb.append(c);
+			}
+		}
+		if (!hasWildcard) {
+			sb.append(".*");
+		}
+		return sb.toString();
+	}
 
 	public NewWorkspaceWizard() throws Exception {
 		setWindowTitle("Create New bnd Workspace");
@@ -85,13 +167,39 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		this.model = new Model(workspace);
 		this.ui = new UI<>(model);
 		templates = new FragmentTemplateEngine(workspace);
+		IDialogSettings workbenchSettings = Plugin.getDefault()
+			.getDialogSettings();
+		IDialogSettings section = workbenchSettings.getSection(SETTINGS_SECTION);
+		if (section == null) {
+			section = workbenchSettings.addNewSection(SETTINGS_SECTION);
+		}
+		setDialogSettings(section);
+
+		if (section.get(SETTING_CLEAN) != null) {
+			model.clean = section.getBoolean(SETTING_CLEAN);
+		}
+		if (section.get(SETTING_SWITCH_WORKSPACE) != null) {
+			model.switchWorkspace = section.getBoolean(SETTING_SWITCH_WORKSPACE);
+		}
+		if (section.get(SETTING_SHOW_ARCHIVED) != null) {
+			model.showArchived = section.getBoolean(SETTING_SHOW_ARCHIVED);
+		}
+		if (section.get(SETTING_UPDATE_WORKSPACE) != null) {
+			model.updateWorkspace(section.getBoolean(SETTING_UPDATE_WORKSPACE));
+		} else {
+			model.updateWorkspace(true);
+		}
+
+		new BndPreferences().addPropertyChangeListener(indexPrefListener);
+
 		try {
 			Job job = Job.create("load index", mon -> {
 				try {
 					for (String uri : new BndPreferences().getWorkspaceTemplateIndexes()) {
-						templates.read(new URL(uri))
-							.unwrap()
-							.forEach(templates::add);
+						List<TemplateInfo> indexTemplates = templates.read(new URL(uri))
+							.unwrap();
+						indexTemplates.forEach(templates::add);
+						templateIndexes.put(URI.create(uri).normalize().toString(), indexTemplates);
 					}
 					Parameters p = workspace.getMergedParameters(Constants.WORKSPACE_TEMPLATES);
 					templates.read(p)
@@ -160,18 +268,62 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 		}
 
 		if (model.valid == null) {
-			ui.write(() -> {
-				TemplateUpdater updater = templates.updater(model.location, model.selectedTemplates);
-				model.execute(updater);
-			});
+			saveDialogSettings();
+			TemplateUpdater updater = templates.updater(model.location, model.selectedTemplates);
+			Map<File, List<Update>> conflicts = updater.conflicts();
+			if (!conflicts.isEmpty()) {
+				IO.close(updater);
+				StringBuilder sb = new StringBuilder();
+				try (Formatter f = new Formatter(sb)) {
+					conflicts.forEach((file, updates) -> f.format("%n%s%n    %s%n",
+						model.location.toPath()
+							.relativize(file.toPath()),
+						updates.stream()
+							.map(u -> u.info()
+								.name())
+							.distinct()
+							.collect(Collectors.joining(", "))));
+				}
+				ConfirmDialogWithTextarea.open(getShell(), "Conflicting template fragments",
+					"The selected template fragments write different content to the same file. "
+						+ "Deselect fragments until each file below has a single source, "
+						+ "or ask the fragment author to mark the file with append=true in tool.bnd.",
+					sb.toString());
+				return false;
+			}
+			ui.write(() -> model.execute(updater));
 			return true;
 		} else
 			return false;
 
 	}
 
+	@Override
+	public void dispose() {
+		new BndPreferences().removePropertyChangeListener(indexPrefListener);
+		saveDialogSettings();
+		super.dispose();
+	}
+
+	@Override
+	public Point getMinimumWizardSize() {
+		return MINIMUM_DIALOG_SIZE;
+	}
+
+	private void saveDialogSettings() {
+		IDialogSettings settings = getDialogSettings();
+		if (settings != null) {
+			settings.put(SETTING_CLEAN, model.clean);
+			settings.put(SETTING_SWITCH_WORKSPACE, model.switchWorkspace);
+			settings.put(SETTING_SHOW_ARCHIVED, model.showArchived);
+			settings.put(SETTING_UPDATE_WORKSPACE, model.updateWorkspace);
+		}
+	}
+
 
 	class NewWorkspaceWizardPage extends WizardPage {
+		private final Map<TemplateInfo, Integer> templateIndices = new HashMap<>();
+
 		NewWorkspaceWizardPage() {
 			super("New Workspace");
 			setTitle("Create New Workspace");
@@ -208,12 +360,95 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			switchWorkspace.setText("Show workspace select dialog to switch to new workspace after finish");
 			switchWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 8, 1));
 
+			Button showArchived = new Button(container, SWT.CHECK);
+			showArchived.setText("Show archived");
+			showArchived.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 8, 1));
+
+			Label filterLabel = new Label(container, SWT.NONE);
+			filterLabel.setText("Filter");
+			filterLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+
+			Text filterText = new Text(container, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
+			filterText.setMessage("glob pattern, e.g. *eclipse*");
+			Pattern[] filterPattern = new Pattern[1];
+			GridData filterTextLayoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false, 7, 1);
+			GC gc = new GC(filterText);
+			filterTextLayoutData.widthHint = gc.stringExtent("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM").x;
+			gc.dispose();
+			filterText.setLayoutData(filterTextLayoutData);
+
 			CheckboxTableViewer selectedTemplates = CheckboxTableViewer.newCheckList(container,
 				SWT.BORDER | SWT.FULL_SELECTION);
-			ColumnViewerToolTipSupport.enableFor(selectedTemplates);
+			Runnable applyTemplateFilter = () -> {
+				if (filterText.isDisposed() || selectedTemplates.getControl()
+					.isDisposed()) {
+					return;
+				}
+				String glob = filterText.getText()
+					.trim();
+				filterPattern[0] = glob.isEmpty() ? null
+					: Pattern.compile(globToRegex(glob), Pattern.CASE_INSENSITIVE);
+				Table table = selectedTemplates.getTable();
+				table.setRedraw(false);
+				try {
+					selectedTemplates.refresh();
+				} finally {
+					table.setRedraw(true);
+				}
+			};
+			StickyToolTipSupport.enableFor(selectedTemplates);
 			selectedTemplates.setContentProvider(ArrayContentProvider.getInstance());
+			selectedTemplates.addFilter(new ViewerFilter() {
+				@Override
+				public boolean select(Viewer viewer, Object parentElement, Object element) {
+					if (model.showArchived) {
+						return true;
+					}
+					if (element instanceof TemplateInfo ti) {
+						return !ti.archived();
+					}
+					return true;
+				}
+			});
+			selectedTemplates.addFilter(new ViewerFilter() {
+				@Override
+				public boolean select(Viewer viewer, Object parentElement, Object element) {
+					Pattern pattern = filterPattern[0];
+					if (pattern == null) {
+						return true;
+					}
+					if (!(element instanceof TemplateInfo ti)) {
+						return true;
+					}
+					String author = ti.isOfficial() ? "bndtools (Official)"
+						: ti.id()
+							.organisation() + " (3rd Party)";
+					return pattern.matcher(ti.name())
+						.matches()
+						|| pattern.matcher(ti.description())
+							.matches()
+						|| pattern.matcher(author)
+							.matches();
+				}
+			});
+			filterText.addModifyListener(e -> {
+				Display display = filterText.getDisplay();
+				display.timerExec(-1, applyTemplateFilter);
+				display.timerExec(300, applyTemplateFilter);
+			});
+			filterText.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetDefaultSelected(SelectionEvent event) {
+					filterText.getDisplay()
+						.timerExec(-1, applyTemplateFilter);
+					applyTemplateFilter.run();
+				}
+			});
 			Table table = selectedTemplates.getTable();
-			table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 6, 10));
+			GridData tableLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 10);
+			tableLayoutData.widthHint = 820;
+			tableLayoutData.heightHint = 360;
+			table.setLayoutData(tableLayoutData);
 			TableLayout tableLayout = new TableLayout();
 			table.setLayout(tableLayout);
 			table.setHeaderVisible(true);
@@ -231,6 +466,20 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				}
 			});
 
+			TableViewerColumn indexColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
+			indexColumn.getColumn()
+				.setText("#");
+			indexColumn.setLabelProvider(new ColumnLabelProvider() {
+
+				@Override
+				public String getText(Object element) {
+					if (element instanceof TemplateInfo ti) {
+						return String.valueOf(localIndex(ti));
+					}
+					return super.getText(element);
+				}
+			});
+
 			TableViewerColumn nameColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
 			nameColumn.getColumn()
 				.setText("Name");
@@ -239,10 +488,11 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public String getText(Object element) {
 					if (element instanceof TemplateInfo ti) {
-						return ti.name();
+						return ti.name() + (ti.archived() ? " (archived)" : "");
 					}
 					return super.getText(element);
 				}
+
 			});
 
 			TableViewerColumn descriptionColumn = new TableViewerColumn(selectedTemplates, SWT.NONE);
@@ -281,6 +531,9 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public Image getImage(Object element) {
 					if (element instanceof TemplateInfo ti) {
+						if (ti.archived()) {
+							return verifiedGreyedOut;
+						}
 						boolean officialOrSHA = ti.isOfficial() || ti.isCommitSHA();
 						return officialOrSHA ? verified : verifiedGreyedOut;
 					}
@@ -298,17 +551,7 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 				@Override
 				public String getText(Object element) {
 					if (element instanceof TemplateInfo ti) {
-						List<TemplateInfo> reqs = NewWorkspaceWizard.this.templates
-							.resolveRequirements(Collections.singletonList(ti));
-
-						long num3rdParty = reqs != null && reqs.size() > 1 ? reqs.stream()
-							.filter(rti -> !rti.isOfficial())
-							.count() : 0;
-
-						return reqs != null && reqs.size() > 1
-							? String.valueOf(reqs.size() - 1)
-								+ (num3rdParty > 0 ? " (" + num3rdParty + " 3rd Party)" : "")
-							: "0";
+						return requiredIndices(ti);
 					}
 					return super.getText(element);
 				}
@@ -328,11 +571,12 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 					return super.getToolTipText(element);
 				}
 			});
-
-			tableLayout.addColumnData(new ColumnWeightData(1, 200, false));
-			tableLayout.addColumnData(new ColumnWeightData(10, 460, true));
-			tableLayout.addColumnData(new ColumnWeightData(20, 100, true));
-			tableLayout.addColumnData(new ColumnWeightData(30, 50, true));
+			int maxIndexWidth = Math.max(32, 18 + String.valueOf(Math.max(1, model.templates.size())).length() * 8);
+			tableLayout.addColumnData(new ColumnPixelData(maxIndexWidth, false));
+			tableLayout.addColumnData(new ColumnPixelData(120, false));
+			tableLayout.addColumnData(new ColumnPixelData(460, false));
+			tableLayout.addColumnData(new ColumnPixelData(120, false));
+			tableLayout.addColumnData(new ColumnPixelData(60, false));
 
 			Button addButton = new Button(container, SWT.PUSH);
 			addButton.setText("+");
@@ -343,24 +587,37 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			formText.setText("Double click to open the fragment template Github-Repo in your browser.", false, false);
 			formText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 6, 1));
 
-			model.updateWorkspace(true);
 			ui.u("location", model.location, UI.text(location)
 				.map(File::getAbsolutePath, File::new));
 			ui.u("clean", model.clean, UI.checkbox(clean));
+			ui.u("switchWorkspace", model.switchWorkspace, UI.checkbox(switchWorkspace));
+			ui.u("showArchived", model.showArchived, UI.checkbox(showArchived))
+				.bind(v -> selectedTemplates.refresh());
 			ui.u("updateWorkspace", model.updateWorkspace, UI.checkbox(useEclipseWorkspace))
 				.bind(v -> location.setEnabled(!v))
 				.bind(v -> browseButton.setEnabled(!v))
 				.bind(v -> switchWorkspace.setEnabled(!v))
 				.bind(v -> clean.setEnabled(!v))
 				.bind(v -> setTitle(
-					v ? "Update Workspace with template fragment" : "Create New Workspace from template fragment"))
-				.bind(v -> setWindowTitle(v ? "Update Workspace" : "Create New Workspace"));
+					v ? "Update Workspace from template fragment" : "Create New Workspace from template fragment"))
+				.bind(v -> setWindowTitle(v ? "Update Workspace from template fragment" : "Create New Workspace"));
 
 			ui.u("valid", model.valid, this::setErrorMessage);
 			ui.u("error", model.error, this::setErrorMessage);
 			ui.u("valid", model.valid, v -> setPageComplete(v == null));
-			ui.u("switchWorkspace", model.switchWorkspace, UI.checkbox(switchWorkspace));
-			ui.u("templates", model.templates, l -> selectedTemplates.setInput(l.toArray()));
+			ui.u("templates", model.templates, l -> {
+				templateIndices.clear();
+				for (int i = 0; i < l.size(); i++) {
+					templateIndices.put(l.get(i), i + 1);
+				}
+				selectedTemplates.setInput(l.toArray());
+				if (!l.isEmpty()) {
+					int digits = String.valueOf(l.size()).length();
+					int width = Math.max(26, 16 + digits * 8);
+					indexColumn.getColumn()
+						.setWidth(width);
+				}
+			});
 			ui.u("selectedTemplates", model.selectedTemplates, UI.widget(selectedTemplates)
 				.map(List::toArray, this::toTemplates));
 			UI.checkbox(addButton)
@@ -368,29 +625,24 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			UI.checkbox(browseButton)
 				.subscribe(this::browseForLocation);
 
-			centerShell();
+			configureShellSize();
 			ui.update();
 		}
 
-		private void centerShell() {
+		private void configureShellSize() {
 			Shell shell = getShell();
-			shell.setSize(840, 480);
+			shell.setMinimumSize(MINIMUM_DIALOG_SIZE);
 			Shell parent = (Shell) shell.getParent();
 			if (parent != null) {
-				Rectangle parentBounds = parent.getBounds();
-				Point shellSize = shell.getSize();
-				int x = parentBounds.x + (parentBounds.width - shellSize.x) / 2;
-				int y = parentBounds.y + (parentBounds.height - shellSize.y) / 2;
-				shell.setLocation(x, y);
-			} else {
-				// If no parent, center on the display
-				Rectangle displayBounds = shell.getDisplay()
-					.getPrimaryMonitor()
-					.getBounds();
-				Point shellSize = shell.getSize();
-				int x = (displayBounds.width - shellSize.x) / 2;
-				int y = (displayBounds.height - shellSize.y) / 2;
-				shell.setLocation(x, y);
+				Rectangle parentBounds = parent.getClientArea();
+				shell.setMaximumSize(parentBounds.width, parentBounds.height);
+				Point preferredSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+				Point shellSize = new Point(Math.min(preferredSize.x, parentBounds.width),
+					Math.min(preferredSize.y, parentBounds.height));
+				shell.setSize(shellSize);
+				Point parentOrigin = parent.toDisplay(parentBounds.x, parentBounds.y);
+				shell.setLocation(parentOrigin.x + (parentBounds.width - shellSize.x) / 2,
+					parentOrigin.y + (parentBounds.height - shellSize.y) / 2);
 			}
 		}
 
@@ -398,6 +650,24 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			return Stream.of(selection)
 				.map(o -> (TemplateInfo) o)
 				.toList();
+		}
+
+		int localIndex(TemplateInfo template) {
+			return templateIndices.getOrDefault(template, -1);
+		}
+
+		String requiredIndices(TemplateInfo template) {
+					List<TemplateInfo> requirements = NewWorkspaceWizard.this.templates
+						.resolveRequirements(Collections.singletonList(template));
+					if (requirements.size() <= 1) {
+				return "-";
+			}
+					String indices = requirements.stream()
+						.filter(required -> !required.equals(template))
+						.map(this::localIndex)
+						.map(String::valueOf)
+				.collect(Collectors.joining(", "));
+			return indices;
 		}
 
 		void browseForLocation() {
@@ -414,27 +684,48 @@ public class NewWorkspaceWizard extends Wizard implements IImportWizard, INewWiz
 			if (dialog.open() == Window.OK) {
 				String selectedPath = dialog.getSelectedPath();
 				if (selectedPath != null && !selectedPath.isBlank()) {
+					URI uri;
+					try {
+						uri = toURI(selectedPath).normalize();
+					} catch (Exception e) {
+						model.error = "failed to add the index: " + e;
+						return;
+					}
+					String uriStr = uri.toString();
+					if (!loadingTemplateIndexes.add(uriStr)) {
+						model.error = "index is already being added: " + uriStr;
+						return;
+					}
 					Job job = Job.create("read " + selectedPath, mon -> {
 						try {
-							URI uri = toURI(selectedPath);
 							Result<List<TemplateInfo>> result = templates.read(uri.toURL());
 
 							if (result.isErr()) {
-								ui.write(() -> model.error = result.toString());
+								ui.write(() -> {
+									loadingTemplateIndexes.remove(uriStr);
+									model.error = result.toString();
+								});
 							} else {
-								result.unwrap()
-									.forEach(templates::add);
-								String uriStr = uri.toString();
+								List<TemplateInfo> indexTemplates = result.unwrap();
+								templates.removeAll(templateIndexes.getOrDefault(uriStr, Collections.emptyList()));
+								indexTemplates.forEach(templates::add);
+								templateIndexes.put(uriStr, indexTemplates);
 								BndPreferences prefs = new BndPreferences();
 								List<String> indexes = new ArrayList<>(prefs.getWorkspaceTemplateIndexes());
 								if (!indexes.contains(uriStr)) {
 									indexes.add(uriStr);
 									prefs.setWorkspaceTemplateIndexes(indexes);
 								}
-								ui.write(() -> model.templates = templates.getAvailableTemplates());
+								ui.write(() -> {
+									loadingTemplateIndexes.remove(uriStr);
+									model.templates = templates.getAvailableTemplates();
+								});
 							}
 						} catch (Exception e) {
-							ui.write(() -> model.error = "failed to add the index: " + e);
+							ui.write(() -> {
+								loadingTemplateIndexes.remove(uriStr);
+								model.error = "failed to add the index: " + e;
+							});
 						}
 					});
 					job.schedule();

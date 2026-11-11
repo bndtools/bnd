@@ -13,10 +13,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -29,8 +33,10 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequest;
 import aQute.bnd.osgi.repository.BridgeRepository;
+import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.url.State;
@@ -38,6 +44,7 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
+import aQute.p2.provider.Feature;
 
 class OSGiIndex {
 	private final static Logger				logger	= LoggerFactory.getLogger(OSGiIndex.class);
@@ -138,8 +145,72 @@ class OSGiIndex {
 		return (b1 << 8) + (b2 & 0xff);
 	}
 
-	Promise<File> get(String bsn, Version version, File file) throws Exception {
+	/**
+	 * Find the resource with the given identity. A requested identity type
+	 * must match. Without a type, Eclipse features are skipped since a p2
+	 * index may contain a bundle and a feature with the same identity.
+	 */
+	private Resource find(String bsn, Version version, String type) throws Exception {
 		Resource resource = getBridge().get(bsn, version);
+		if (resource == null || matches(resource, type))
+			return resource;
+
+		// the bridge keeps one resource per identity, the wanted one may be hidden
+		Requirement requirement = CapReqBuilder.createIdentityRequirement(bsn, type, version.toString());
+		return getBridge().getRepository()
+			.findProviders(Collections.singleton(requirement))
+			.getOrDefault(requirement, Collections.emptyList())
+			.stream()
+			.map(Capability::getResource)
+			.filter(r -> matches(r, type))
+			.findFirst()
+			.orElse(null);
+	}
+
+	private static boolean matches(Resource resource, String type) {
+		return type == null ? !ResourceUtils.hasType(resource, Feature.TYPE) : ResourceUtils.hasType(resource, type);
+	}
+
+	/**
+	 * The versions of bsn, excluding Eclipse features which are only found
+	 * when requested by type.
+	 */
+	SortedSet<Version> versions(String bsn) throws Exception {
+		BridgeRepository bridge = getBridge();
+		Map<Version, ResourceInfo> infos = bridge.versionInfos(bsn);
+		SortedSet<Version> versions = new TreeSet<>();
+		boolean hidden = false;
+		for (Map.Entry<Version, ResourceInfo> entry : infos.entrySet()) {
+			if (matches(entry.getValue()
+				.getResource(), null))
+				versions.add(entry.getKey());
+			else
+				hidden = true;
+		}
+		if (!hidden)
+			return versions;
+
+		// a feature may hide a bundle with the same identity in the bridge
+		Requirement requirement = CapReqBuilder.createIdentityRequirement(bsn, null, null);
+		bridge.getRepository()
+			.findProviders(Collections.singleton(requirement))
+			.getOrDefault(requirement, Collections.emptyList())
+			.stream()
+			.filter(capability -> matches(capability.getResource(), null))
+			.map(capability -> capability.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE))
+			.filter(Objects::nonNull)
+			.map(v -> Version.parseVersion(v.toString()))
+			.forEach(versions::add);
+		return versions;
+	}
+
+	Promise<File> get(String bsn, Version version, File file) throws Exception {
+		return get(bsn, version, null, file);
+	}
+
+	Promise<File> get(String bsn, Version version, String type, File file) throws Exception {
+		Resource resource = find(bsn, version, type);
 		if (resource == null)
 			return null;
 

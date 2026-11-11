@@ -34,6 +34,8 @@ For example:
 		com.foo.bar;version=1, \
 		file.jar; version=file
 
+An entry can also reference an Eclipse feature, which expands to the bundles of the feature for the target platform, see [-buildpath](buildpath.html#eclipse-features).
+
 
 <hr />
 TODO Needs review - AI Generated content

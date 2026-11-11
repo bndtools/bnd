@@ -99,4 +99,12 @@ public interface Configuration {
 	 */
 	@SuppressWarnings("removal")
 	SonatypeMode sonatypeMode(String deflt);
+
+	/**
+	 * The policy for validating trusted checksums
+	 *
+	 * @param deflt default value if not specified
+	 * @return the checksum policy: "strict" or "lenient"
+	 */
+	String checksumPolicy(String deflt);
 }

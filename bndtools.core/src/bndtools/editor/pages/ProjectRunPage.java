@@ -175,18 +175,12 @@ public class ProjectRunPage extends FormPage {
 		RepositorySelectionPart reposPart = new RepositorySelectionPart(getEditor(), left, tk,
 			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
 		managedForm.addPart(reposPart);
-		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 50;
-		gd.heightHint = 50;
 		reposPart.getSection()
 			.setLayoutData(PageLayoutUtils.createCollapsed());
 
 		AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk,
 			ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
 		managedForm.addPart(availableBundlesPart);
-		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 50;
-		gd.heightHint = 50;
 		availableBundlesPart.getSection()
 			.setLayoutData(PageLayoutUtils.createExpanded());
 

@@ -26,6 +26,25 @@ import aQute.service.reporter.Report.Location;
 public class UTF8PropertiesTest {
 
 	@Test
+	public void testDeclarationConsumer() throws IOException {
+		String source = "# comment\r\n  na\\u006de: first\\\r\n continued\r\nname: last\r\n";
+		UTF8Properties properties = new UTF8Properties();
+		ReporterAdapter reporter = new ReporterAdapter();
+		reporter.setPedantic(true);
+		java.util.List<UTF8Properties.Property> declarations = new java.util.ArrayList<>();
+		properties.load(source, null, reporter, null, "snapshot.bnd", declarations::add);
+		assertThat(declarations).extracting(UTF8Properties.Property::key).containsExactly("name", "name");
+		assertThat(declarations).extracting(UTF8Properties.Property::line).containsExactly(1, 3);
+		assertThat(declarations).extracting(UTF8Properties.Property::source)
+			.containsOnly("snapshot.bnd");
+		assertThat(source.substring(declarations.get(0).start(), declarations.get(0).end()))
+			.isEqualTo("na\\u006de");
+		assertThat(properties.getProperty("name")).isEqualTo("last");
+		assertThat(reporter.getWarnings()).singleElement()
+			.asString().startsWith("Invalid property key: `name`");
+	}
+
+	@Test
 	public void testEscapedQuotesInQuotedStrings() throws IOException {
 		testProperty("Provide-Capability: \\\n" + " test; effective:=\"resolve\"; \\\n" + "  test =\"aName\"; \\\n"
 			+ "  version : Version=\"1.0\"; \\\n" + "  long :Long=\"100\"; \\\n" + "  double: Double=\"1.001\"; \\\n"

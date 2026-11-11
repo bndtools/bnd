@@ -78,7 +78,9 @@ public class RemoteRepoTest {
 		// Fetch it, must exist now
 		//
 
-		assertEquals(State.UPDATED, repo.fetch("foo/bar", localFoobar)
+		// force cache refresh because we cache 404 NOT_FOUND now
+		boolean forceCacheRefresh = true;
+		assertEquals(State.UPDATED, repo.fetch("foo/bar", localFoobar, forceCacheRefresh )
 			.getState());
 		assertTrue(localFoobar.isFile());
 		assertEquals(3L, localFoobar.length());

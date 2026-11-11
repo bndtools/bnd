@@ -6,19 +6,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.MD5;
@@ -37,13 +33,73 @@ public final class TrustedChecksums {
 	private Map<Archive, ArtifactChecksum>	index	= Map.of();
 	private volatile boolean							indexExists				= false;
 	private final Map<TrustedChecksumCacheKey, Boolean>	trustedChecksumCache	= new ConcurrentHashMap<>();
+	private final ChecksumPolicy						checksumPolicy;
 
+	public enum ChecksumPolicy {
+		/**
+		 * All artifacts (including classifiers like sources) must have checksum
+		 * entries. Recommended for high-security environments.
+		 */
+		STRICT("strict"),
+
+		/**
+		 * Only base JAR artifacts (without classifiers) must have checksum
+		 * entries. Classifiers like sources, javadoc, tests are exempt from
+		 * checksum validation. Useful as a pragmatic middle ground between
+		 * strict and lenient.
+		 */
+		STRICT_JAR_ONLY("strict-jar-only"),
+
+		/**
+		 * No checksum validation is performed. Use only if you trust the
+		 * repository completely.
+		 */
+		LENIENT("lenient");
+
+		private final String name;
+
+		ChecksumPolicy(String name) {
+			this.name = name;
+		}
+
+		public static ChecksumPolicy fromString(String policy) {
+			if (policy == null || policy.isEmpty()) {
+				return LENIENT; // default
+			}
+			return switch (policy.trim()
+				.toLowerCase()) {
+				case "strict" -> STRICT;
+				case "strict-jar-only" -> STRICT_JAR_ONLY;
+				case "lenient" -> LENIENT;
+				default -> throw new IllegalArgumentException("Unknown checksum policy: " + policy);
+			};
+		}
+
+		public String getName() {
+			return name;
+		}
+	}
+
+	/**
+	 * @deprecated use the other constructor which takes a policy
+	 */
+	@Deprecated
 	public TrustedChecksums(File trustedChecksumFile) {
 		this.sidecarFile = trustedChecksumFile;
+		this.checksumPolicy = ChecksumPolicy.LENIENT;
+	}
+
+	public TrustedChecksums(File trustedChecksumFile, ChecksumPolicy policy) {
+		this.sidecarFile = trustedChecksumFile;
+		this.checksumPolicy = policy != null ? policy : ChecksumPolicy.LENIENT;
 	}
 
 	public File getFile() {
 		return this.sidecarFile;
+	}
+
+	public ChecksumPolicy getChecksumPolicy() {
+		return this.checksumPolicy;
 	}
 
 	/**
@@ -67,17 +123,31 @@ public final class TrustedChecksums {
 	 * @return {@code true} if a trusted checksum exists for the artifact and
 	 *         the file successfully matches it; {@code false} if no trusted
 	 *         checksum is configured
-	 * @throws TrustedChecksumException if checksum calculation fails or the
-	 *             file does not match the configured trusted checksum. In the
-	 *             mismatch case the file is deleted before the exception is
-	 *             thrown.
+	 * @throws TrustedChecksumException if checksum calculation fails, the file
+	 *             does not match the configured trusted checksum, or in strict
+	 *             mode when no checksum entry exists. In the mismatch case the
+	 *             file is deleted before the exception is thrown.
 	 */
 	public boolean checkTrustedChecksum(Archive archive, File file) {
-		if (!indexExists)
+		// STRICT_JAR_ONLY: Skip classifiers (sources, javadoc, etc.)
+		if (checksumPolicy == ChecksumPolicy.STRICT_JAR_ONLY && archive.hasClassifier()) {
+			return false; // Skip checksum validation for classifiers
+		}
+
+		if (!indexExists) {
+			if (checksumPolicy == ChecksumPolicy.STRICT || checksumPolicy == ChecksumPolicy.STRICT_JAR_ONLY) {
+				throw new TrustedChecksumException(
+					"Strict checksum policy enabled but no trusted checksums file found", null);
+			}
 			return false;
+		}
 
 		ArtifactChecksum expected = get(archive);
 		if (expected == null) {
+			if (checksumPolicy == ChecksumPolicy.STRICT || checksumPolicy == ChecksumPolicy.STRICT_JAR_ONLY) {
+				throw new TrustedChecksumException(
+					"Strict checksum policy enabled but no checksum entry found for: " + archive, null);
+			}
 			return false;
 		}
 
@@ -105,6 +175,7 @@ public final class TrustedChecksums {
 			return;
 		}
 		indexExists = true;
+		trustedChecksumCache.clear(); // Clear validation cache
 		Collection<ArtifactChecksum> set = read(IO.collect(sidecarFile));
 		index = set.stream()
 			.collect(Collectors.toMap(acs -> acs.archive(), acs -> acs));
@@ -126,10 +197,7 @@ public final class TrustedChecksums {
 			checksumFile);
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
 
-			writer.write("# Generated (" + Dates.formatMillis(DateTimeFormatter
-				.ofPattern("yyyy/MM/dd HH:mm:ss", Locale.ROOT)
-				.withZone(Dates.UTC_ZONE_ID), new Date().getTime())
-				+ "): Trusted Checksums for each GAV in the maven index");
+			writer.write("# Generated Trusted Checksums for each GAV in the maven index");
 			writer.newLine();
 
 			List<Archive> sorted = archives.stream()

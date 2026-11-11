@@ -134,6 +134,7 @@ public class Analyzer extends Processor {
 		PackageRef.class, true);
 	private final Contracts							contracts				= new Contracts(this);
 	private final Packages							classpathExports		= new Packages();
+	private final Packages							stagedConditionalPackages = new Packages();
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
 	private final Map<TypeRef, Clazz>				classspace				= map();
@@ -441,6 +442,7 @@ public class Analyzer extends Processor {
 		uses.clear();
 		apiUses.clear();
 		classpathExports.clear();
+		stagedConditionalPackages.clear();
 		contracts.clear();
 		packagesVisited.clear();
 		nonClassReferences.clear();
@@ -980,6 +982,28 @@ public class Analyzer extends Processor {
 	}
 
 	protected Jar getExtra() throws Exception {
+		stageConditionalImports();
+		Iterator<Entry<PackageRef, Attrs>> stagedIterator = stagedConditionalPackages.entrySet()
+			.iterator();
+		while (stagedIterator.hasNext()) {
+			Entry<PackageRef, Attrs> staged = stagedIterator.next();
+			PackageRef packageRef = staged.getKey();
+			stagedIterator.remove();
+			Jar extra = new Jar(Constants.IMPORT_PACKAGE);
+			addClose(extra);
+			for (Jar cpe : getClasspath()) {
+				Map<String, Resource> packageDir = cpe.getDirectory(packageRef.getPath());
+				if (packageDir != null && !packageDir.isEmpty()) {
+					JarCopyUtil.copyPackageWithPreprocessing(extra, cpe, packageRef.getPath(), false, this);
+
+					if (!extra.getDirectories()
+						.isEmpty()) {
+						return extra;
+					}
+					break;
+				}
+			}
+		}
 		return null;
 	}
 
@@ -2191,6 +2215,9 @@ public class Analyzer extends Processor {
 		Packages regularImports = new Packages(imports);
 		Parameters dynamicImports = getDynamicImportPackage();
 
+		// First, handle conditional imports before processing dynamic imports
+		processConditionalImports(regularImports);
+
 		Iterator<Entry<PackageRef, Attrs>> regularImportsIterator = regularImports.entrySet()
 			.iterator();
 		while (regularImportsIterator.hasNext()) {
@@ -2205,6 +2232,85 @@ public class Analyzer extends Processor {
 			}
 		}
 		return new Pair<>(regularImports, dynamicImports);
+	}
+
+	/**
+	 * Process imports with resolution:=conditional directive.
+	 * For each conditional import:
+	 * 1. If package is from an OSGi bundle (in classpathExports with INTERNAL_EXPORTED_DIRECTIVE),
+	 *    keep it as a regular import (remove the resolution directive)
+	 * 2. If package is from a non-OSGi jar (in classpathExports but without INTERNAL_EXPORTED_DIRECTIVE),
+	 *    remove from imports and add to conditional packages to be embedded
+	 * 3. If package is not on classpath at all, change resolution to optional
+	 */
+	private void processConditionalImports(Packages regularImports) {
+		Iterator<Entry<PackageRef, Attrs>> importsIterator = regularImports.entrySet()
+			.iterator();
+		while (importsIterator.hasNext()) {
+			Entry<PackageRef, Attrs> packageEntry = importsIterator.next();
+			PackageRef packageRef = packageEntry.getKey();
+			Attrs attrs = packageEntry.getValue();
+			String resolution = attrs.get(Constants.RESOLUTION_DIRECTIVE);
+
+			if (Constants.RESOLUTION_CONDITIONAL.equals(resolution)) {
+				attrs.remove(Constants.RESOLUTION_DIRECTIVE);
+
+				Attrs classpathAttrs = classpathExports.get(packageRef);
+				if (classpathAttrs != null) {
+					// Package is on the classpath
+					if (classpathAttrs.containsKey(Constants.INTERNAL_EXPORTED_DIRECTIVE)) {
+						// Package is from an OSGi bundle - keep as regular import
+						// Directive already removed, nothing else to do
+					} else if (contained.containsKey(packageRef)) {
+						// Package is already embedded through conditional processing
+						importsIterator.remove();
+					} else {
+						// Package is from a non-OSGi jar - stage it for embedding
+						stagedConditionalPackages.put(packageRef, new Attrs(attrs));
+						importsIterator.remove();
+					}
+				} else {
+					// Package not found in classpathExports; check classpath directly
+					// (e.g. non-OSGi jars with a non-null manifest are not added to
+					// classpathExports by learnPackage but may still supply the package)
+					boolean foundOnNonOSGiClasspath = false;
+					for (Jar cpe : getClasspath()) {
+						Map<String, Resource> packageDir = cpe.getDirectory(packageRef.getPath());
+						if (packageDir != null && !packageDir.isEmpty()) {
+							try {
+								if (cpe.getBsn() == null) {
+									// Non-OSGi jar - stage for embedding
+									foundOnNonOSGiClasspath = true;
+								}
+							} catch (Exception e) {
+								// ignore, treat as non-OSGi
+								foundOnNonOSGiClasspath = true;
+							}
+							break;
+						}
+					}
+					if (foundOnNonOSGiClasspath && !contained.containsKey(packageRef)) {
+						stagedConditionalPackages.put(packageRef, new Attrs(attrs));
+						importsIterator.remove();
+					} else if (!foundOnNonOSGiClasspath) {
+						// Package not found on classpath - make it optional
+						attrs.put(Constants.RESOLUTION_DIRECTIVE, Constants.OPTIONAL);
+					}
+				}
+			}
+		}
+	}
+
+	private void stageConditionalImports() {
+		String h = getProperty(IMPORT_PACKAGE);
+		if (h == null) {
+			h = "*";
+		}
+		Instructions filter = new Instructions(h);
+		Packages conditionalImports = filter(filter, new Packages(referred), Create.set());
+		if (!conditionalImports.isEmpty()) {
+			processConditionalImports(conditionalImports);
+		}
 	}
 
 	String applyVersionPolicy(String exportVersion, String importRange, boolean provider) {

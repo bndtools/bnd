@@ -1551,10 +1551,10 @@ public class MavenBndRepoTest {
 		map.put("checksumFile", trustedChecksumsFileFailing.toString());
 		config(map);
 		File file = repo.get("commons-cli:commons-cli", new Version("1.0"), null);
-		assertFalse(file.isFile());
+		assertNull(file);
 
 		File file2 = repo.get("commons-cli:commons-cli", new Version("1.2"), null);
-		assertFalse(file2.isFile());
+		assertNull(file2);
 	}
 
 }

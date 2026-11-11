@@ -20,3 +20,7 @@ For example:
 
 	-runblacklist: \
 		osgi.identity;filter:='(osgi.identity=com.foo.bad.bundle)'
+
+## Platform Specific Bundles
+
+The bundles of an Eclipse feature that are for another platform than the target platform are not resolved, they do not have to be blacklisted. See [-runrequires](runrequires.html#eclipse-features).

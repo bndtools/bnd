@@ -659,8 +659,8 @@ class P2Export {
 							}
 						});
 						units.add(b);
-						BundleId range = toExact(bundleId);
 						Map<String, String> attributes = c.getAttributes();
+						BundleId range = toRequirement(bundleId, attributes);
 						boolean optional = attributes != null
 							? BundleNamespace.RESOLUTION_OPTIONAL
 								.equals(attributes.get(BundleNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE))
@@ -963,13 +963,26 @@ class P2Export {
 		return getBundleId(featureName, version);
 	}
 
-	private VersionRange exact(Version low) {
+	private static VersionRange exact(Version low) {
 		return new VersionRange('[', low, low, ']');
 	}
 
 	private VersionRange compatible(Version low) {
 		Version high = new Version(low.getMajor() + 1, 0, 0);
 		return new VersionRange('[', low, high, ')');
+	}
+
+	private BundleId toRequirement(BundleId id, Map<String, String> attributes) {
+		String requestedVersion = attributes.get(Constants.VERSION_ATTRIBUTE);
+		return new BundleId(id.getBsn(), toRequirementRange(id.getVersion(), requestedVersion));
+	}
+
+	static String toRequirementRange(String resolvedVersion, String requestedVersion) {
+		if (aQute.bnd.version.VersionRange.isVersionRange(requestedVersion)) {
+			return VersionRange.valueOf(requestedVersion)
+				.toString();
+		}
+		return toExact(resolvedVersion);
 	}
 
 	private BundleId toExact(BundleId id) {
@@ -980,7 +993,7 @@ class P2Export {
 		return new BundleId(id.getBsn(), toCompatible(id.getVersion()));
 	}
 
-	private String toExact(String version) {
+	private static String toExact(String version) {
 		if (version == null)
 			version = "0.0.0";
 

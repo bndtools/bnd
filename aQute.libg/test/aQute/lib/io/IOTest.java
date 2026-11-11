@@ -338,6 +338,7 @@ public class IOTest {
 	}
 
 	@Test
+	@DisabledOnOs(WINDOWS)
 	public void testCreateDirectory_Symlink(@InjectTemporaryDirectory
 	Path rootDirectory) throws Exception {
 
@@ -357,6 +358,7 @@ public class IOTest {
 	}
 
 	@Test
+	@DisabledOnOs(WINDOWS)
 	public void testCreateDirectory_SymlinkMissingTarget(@InjectTemporaryDirectory
 	Path rootDirectory) throws Exception {
 

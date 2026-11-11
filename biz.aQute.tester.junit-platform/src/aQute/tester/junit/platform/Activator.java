@@ -42,6 +42,7 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherConstants;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherConfig;
@@ -79,6 +80,7 @@ public class Activator implements BundleActivator, Runnable {
 	private File							reportDir;
 	private SummaryGeneratingListener		summary;
 	private List<TestExecutionListener>		listeners	= new ArrayList<>();
+	private ServiceTracker<PostDiscoveryFilter, PostDiscoveryFilter>	filterTracker;
 	final BlockingDeque<DiscoverySelector>	queue		= new LinkedBlockingDeque<>();
 
 	public Activator() {}
@@ -111,6 +113,9 @@ public class Activator implements BundleActivator, Runnable {
 			thread.interrupt();
 			thread.join(10000);
 		}
+		if (filterTracker != null) {
+			filterTracker.close();
+		}
 	}
 
 	public boolean active() {
@@ -140,6 +145,8 @@ public class Activator implements BundleActivator, Runnable {
 		} finally {
 			thread.setContextClassLoader(contextClassLoader);
 		}
+		filterTracker = new ServiceTracker<>(context, PostDiscoveryFilter.class, null);
+		filterTracker.open();
 		List<TestExecutionListener> listenerList = new ArrayList<>();
 
 		setTesterNames(context.getProperty(TESTER_NAMES));
@@ -381,11 +388,14 @@ public class Activator implements BundleActivator, Runnable {
 			.ofNullable(context.getProperty(LauncherConstants.CAPTURE_STDOUT_PROPERTY_NAME));
 		Optional<String> captureStderr = Optional
 			.ofNullable(context.getProperty(LauncherConstants.CAPTURE_STDERR_PROPERTY_NAME));
+		PostDiscoveryFilter[] filters = filterTracker != null ? filterTracker.getServices(new PostDiscoveryFilter[0])
+			: new PostDiscoveryFilter[0];
 		return LauncherDiscoveryRequestBuilder.request()
 			.configurationParameter(BundleEngine.CHECK_UNRESOLVED, unresolved)
 			.configurationParameter(LauncherConstants.CAPTURE_STDOUT_PROPERTY_NAME, captureStdout.orElse("true"))
 			.configurationParameter(LauncherConstants.CAPTURE_STDERR_PROPERTY_NAME, captureStderr.orElse("true"))
 			.selectors(selectors)
+			.filters(filters)
 			.build();
 	}
 

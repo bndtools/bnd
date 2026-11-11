@@ -42,7 +42,7 @@ jobs:
       with:
         ref: next
     - name: Set up Ruby
-      uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b
+      uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199
       with:
         ruby-version: 3.4.5
         bundler-cache: true
@@ -76,7 +76,7 @@ jobs:
                            -delete
         
 
-    - uses: actions/upload-artifact@v7.0.1
+    - uses: actions/upload-artifact@v7.0.2
       with:
         name: releasedocs
         path: docs/_site/
@@ -126,7 +126,7 @@ jobs:
         ref: master
 
     - name: download docs/releases/${{ github.event.inputs.V1 }}
-      uses: actions/download-artifact@v8.0.1
+      uses: actions/download-artifact@v8.0.2
       with:
         name: releasedocs
         path: docs/releases/${{ github.event.inputs.V1 }}/

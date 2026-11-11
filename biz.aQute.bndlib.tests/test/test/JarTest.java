@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.text.Collator;
+import java.util.List;
 import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -35,6 +36,7 @@ import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
@@ -819,5 +821,51 @@ public class JarTest {
 			jar.putResource("foo/../ok.txt", new EmbeddedResource("ok", 0L));
 			assertThat(jar.exists("ok.txt")).isTrue();
 		}
+	}
+
+	/**
+	 * <p>
+	 * {@code Jar.writeManifest} cleans the manifest and, since 018ebcfd7 ("Fix
+	 * directive ordering inconsistency in OSGi headers"), reorders the clauses
+	 * of all OSGi syntax headers in {@code Jar.reorderClause}. It does that by
+	 * parsing the header with {@code OSGiHeader.parseHeader}, which keeps only
+	 * one of two attributes/directives with the same name, and printing it
+	 * again. This test verifies that duplicate removal and also ensures that
+	 * the problem is logged with a warning.
+	 */
+	@Test
+	public void testManifestRemoveDuplicateDirectivesWithWarning() throws Exception {
+		String header = "a.b;fragment-attachment:=\"always\";fragment-attachment:=\"never\"";
+		System.err.println("\n=== #7452: duplicate directive in manifest ===");
+		System.err.println("Bundle-SymbolicName in : " + header);
+
+		Manifest manifest = new Manifest(
+			new ByteArrayInputStream(("Manifest-Version: 1.0\nBundle-SymbolicName: " + header + "\n").getBytes()));
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+		Jar jar = new Jar("foo");
+		jar.setManifest(manifest);
+
+		try (Verifier v = new Verifier(jar)) {
+			v.setPedantic(true);
+			v.verify();
+			jar.writeManifest(bout);
+
+			List<String> warnings = v.getWarnings();
+			System.err.println(warnings);
+			assertEquals(
+				"Duplicate attribute/directive name fragment-attachment: in a.b;fragment-attachment:=\"always\";fragment-attachment:=\"never\". This attribute/directive will be ignored",
+				warnings.get(0));
+
+			Manifest written = new Manifest(new ByteArrayInputStream(bout.toByteArray()));
+			String out = written.getMainAttributes()
+				.getValue(Constants.BUNDLE_SYMBOLICNAME);
+			System.err.println("Bundle-SymbolicName out: " + out
+				+ (header.equals(out) ? "" : "   <-- duplicate dropped by Jar.reorderClause"));
+
+			assertEquals("a.b;fragment-attachment:=never", out);
+		}
+
 	}
 }

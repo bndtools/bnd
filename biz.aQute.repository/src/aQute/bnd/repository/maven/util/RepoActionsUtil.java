@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Jar;
@@ -17,7 +18,7 @@ public class RepoActionsUtil {
 
 	public static void addSources(final Archive archive, Function<Archive, Promise<File>> lookup,
 		Map<String, Runnable> map) throws Exception {
-		Promise<File> pBinary = lookup.apply(archive);
+		Promise<File> pBinary = lookup(lookup, archive);
 
 		if (pBinary.getFailure() == null) {
 			final File binary = pBinary.getValue();
@@ -25,7 +26,7 @@ public class RepoActionsUtil {
 
 			if (!out.isFile()) {
 				Archive a = archive.revision.archive("jar", "sources");
-				Promise<File> pSources = lookup.apply(a);
+				Promise<File> pSources = lookup(lookup, a);
 
 				if (pSources.getFailure() == null) {
 					final File sources = pSources.getValue();
@@ -57,6 +58,15 @@ public class RepoActionsUtil {
 		}
 
 		map.put("-Add Sources", null);
+	}
+
+	// a cached file without trusted checksum makes the lookup throw instead of failing the promise
+	private static Promise<File> lookup(Function<Archive, Promise<File>> lookup, Archive archive) {
+		try {
+			return lookup.apply(archive);
+		} catch (Exception e) {
+			return Promises.failed(e);
+		}
 	}
 
 }

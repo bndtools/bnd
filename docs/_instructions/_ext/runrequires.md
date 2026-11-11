@@ -22,6 +22,23 @@ Bnd also supports *alias* namespaces -- see below.
 
 This specifies a requirement for the resource identified as "org.example.foo" (with any version) AND the resource identified as "org.example.bar" with version in the range 1.0 inclusive to 2.0 exclusive.
 
+## Eclipse Features
+
+A requirement can reference an Eclipse feature of a [p2 repository](/plugins/p2repo.html) by adding the `type=org.eclipse.update.feature` attribute. The resolver then resolves the bundles of the feature, i.e. the `<plugin>` references of its `feature.xml` and, recursively, the ones of its included features. A feature can also be put on the container paths, see [-buildpath].
+
+	-runrequires: \
+		bnd.identity; id=org.eclipse.e4.rcp; version='[4.35,5)'; type=org.eclipse.update.feature
+	-runproperties: \
+		osgi.os=win32,\
+		osgi.ws=win32,\
+		osgi.arch=x86_64
+
+A feature lists the launcher and SWT fragments of all platforms, only the ones of the target platform are resolved. The target platform is given by `osgi.os`, `osgi.ws` and `osgi.arch` in the [-runproperties]; a value that is not set defaults to the platform bnd runs on and `ws` follows `os`. The `os`, `ws` and `arch` of the `<plugin>` and `<includes>` of the feature are matched, and so is the `Eclipse-PlatformFilter` header of the bundles. A [-runblacklist] for the other platforms is therefore not needed. The feature itself is always resolved.
+
+The value `*` matches every platform, which resolves the members of all platforms. The [-runproperties] are also set as system properties when the bndrun is run, so only use `*` in a bndrun that is just resolved.
+
+The `Eclipse-PlatformFilter` header of a bundle is recorded when a p2 repository is indexed, as requirement in the `eclipse.platform` namespace. Refresh a repository that was indexed by an earlier bnd to get it. The resolver provides the target platform as capability in this namespace, unless the [-runsystemcapabilities] define one. A filter that is about more than `osgi.os`, `osgi.ws` and `osgi.arch` is not recorded.
+
 ## Requirement Aliases
 
 To ease manual entry of requirements bnd supports alias namespaces which translate to standard namespaces and filters.
@@ -74,3 +91,11 @@ is translated to:
 ## See Also
 
 * [-runbundles](runbundles.html)
+* [-buildpath] for Eclipse features on the container paths.
+* [-runproperties] for the platform of the resolve.
+* [-runblacklist] to exclude bundles from the resolve.
+
+[-buildpath]: buildpath.html#eclipse-features
+[-runproperties]: runproperties.html
+[-runblacklist]: runblacklist.html
+[-runsystemcapabilities]: runsystemcapabilities.html

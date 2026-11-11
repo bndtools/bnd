@@ -1,6 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.net.URI;
@@ -16,6 +17,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 
@@ -27,15 +31,253 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
+import aQute.lib.converter.Converter;
+import aQute.lib.io.IO;
 import aQute.p2.packed.Unpack200;
 import aQute.p2.provider.Feature;
 
 public class P2RepositoryTest {
 	@InjectTemporaryDirectory
 	File tmp;
+
+	@ParameterizedTest
+	@CsvSource({"false, false", "false, true", "true, false", "true, true"})
+	public void testLocationAsDirectory(boolean separateCache, boolean existingDirectory) throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File location = new File(tmp, "directory-location");
+		File cache = separateCache ? new File(tmp, "bundles") : location;
+		if (existingDirectory)
+			assertThat(location.mkdirs()).isTrue();
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("url", repository.toURI()
+				.toString());
+			config.put("name", "test");
+			config.put("location", location.getAbsolutePath() + (existingDirectory ? "" : "/"));
+			if (separateCache)
+				config.put("cache", cache.getAbsolutePath());
+			p2r.setProperties(config);
+
+			List<String> bundles = p2r.list(null);
+			assertThat(bundles).isNotEmpty();
+			String bsn = bundles.get(0);
+			File bundle = p2r.get(bsn, p2r.versions(bsn).last(), null);
+			assertThat(bundle).isFile().hasParent(cache);
+			assertThat(new File(location, "index.xml.gz")).isFile();
+			assertThat(p2r.getRoot()).isEqualTo(cache);
+			if (separateCache)
+				assertThat(new File(location, bundle.getName())).doesNotExist();
+		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	public void testLocationAsIndexFile(boolean separateCache) throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File location = new File(tmp, "file-location");
+		File indexFile = new File(location, "custom-index.xml.gz");
+		File cache = separateCache ? new File(tmp, "bundles") : location;
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("url", repository.toURI()
+				.toString());
+			config.put("name", "test");
+			config.put("location", indexFile.getAbsolutePath());
+			if (separateCache)
+				config.put("cache", "bundles");
+			p2r.setProperties(config);
+
+			List<String> bundles = p2r.list(null);
+			assertThat(bundles).isNotEmpty();
+			String bsn = bundles.get(0);
+			Version version = p2r.versions(bsn).last();
+			File bundle = p2r.get(bsn, version, null);
+			assertThat(bundle).isFile().hasParent(cache);
+			assertThat(indexFile).isFile();
+			assertThat(new File(location, "index.xml.gz")).doesNotExist();
+			assertThat(p2r.getRoot()).isEqualTo(cache);
+			assertThat(p2r.getLocation()).isEqualTo(cache.getPath());
+			if (separateCache)
+				assertThat(new File(location, bundle.getName())).doesNotExist();
+			assertThat(p2r.refresh()).isTrue();
+			assertThat(p2r.get(bsn, version, null)).isEqualTo(bundle).isFile();
+			assertThat(indexFile).isFile();
+			try (P2Repository reopened = new P2Repository()) {
+				reopened.setRegistry(w);
+				reopened.setProperties(config);
+				assertThat(reopened.get(bsn, version, null)).isEqualTo(bundle).isFile();
+				assertThat(reopened.getRoot()).isEqualTo(cache);
+			}
+		}
+	}
+
+	/**
+	 * An earlier bnd version created a directory at an index file location.
+	 * The index must be written as a file at that location and be readable
+	 * by an OSGiRepository.
+	 */
+	@Test
+	public void testLocationAsIndexFileReplacesLegacyIndexDirectory() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File indexFile = new File(tmp, "cnf/ext/macbadge_p2.index.xml.gz");
+		IO.mkdirs(indexFile);
+		IO.store("stale", new File(indexFile, "index.xml.gz"));
+		IO.store("link", new File(indexFile, "some.bundle-1.0.0.jar"));
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+			p2r.setReporter(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("url", repository.toURI()
+				.toString());
+			config.put("name", "test");
+			config.put("location", indexFile.getAbsolutePath());
+			config.put("cache", "cnf/cache/p2-test");
+			p2r.setProperties(config);
+
+			List<String> bundles = p2r.list(null);
+			assertThat(bundles).isNotEmpty();
+			assertThat(indexFile).isFile();
+			assertThat(w.getWarnings()).anyMatch(warning -> warning.contains("earlier bnd version"));
+
+			try (OSGiRepository osgi = new OSGiRepository()) {
+				osgi.setRegistry(w);
+				osgi.setReporter(w);
+				osgi.setProperties(Map.of("name", "osgi", "locations", indexFile.toURI()
+					.toString(), "cache", new File(tmp, "cnf/cache/osgi").getAbsolutePath()));
+				assertThat(osgi.list(null)).containsExactlyInAnyOrderElementsOf(bundles);
+			}
+		}
+	}
+
+	@Test
+	public void testLocationAsIndexFileKeepsForeignDirectory() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File indexFile = new File(tmp, "cnf/ext/macbadge_p2.index.xml.gz");
+		File foreign = new File(indexFile, "notes.txt");
+		IO.mkdirs(indexFile);
+		IO.store("keep me", foreign);
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("url", repository.toURI()
+				.toString());
+			config.put("name", "test");
+			config.put("location", indexFile.getAbsolutePath());
+			p2r.setProperties(config);
+
+			assertThatThrownBy(() -> p2r.list(null)).hasMessageContaining("is a directory, not an index file");
+			assertThat(foreign).isFile();
+		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	public void testLocationDefault(boolean separateCache) throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File location = new File(tmp, "cnf/cache/p2-test");
+		File cache = separateCache ? new File(tmp, "bundles") : location;
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+			Map<String, String> config = new HashMap<>();
+			config.put("url", repository.toURI().toString());
+			config.put("name", "test");
+			if (separateCache)
+				config.put("cache", "bundles");
+			p2r.setProperties(config);
+
+			List<String> bundles = p2r.list(null);
+			assertThat(bundles).isNotEmpty();
+			String bsn = bundles.get(0);
+			Version version = p2r.versions(bsn).last();
+			File bundle = p2r.get(bsn, version, null);
+			assertThat(bundle).isFile().hasParent(cache);
+			assertThat(new File(location, "index.xml.gz")).isFile();
+			assertThat(p2r.getRoot()).isEqualTo(cache);
+		}
+	}
+
+	@Test
+	public void testLocationWithInvalidCache() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File cache = new File(tmp, "not-a-directory");
+		IO.store("existing file", cache);
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			w.setBase(tmp);
+			p2r.setRegistry(w);
+			p2r.setProperties(Map.of("url", repository.toURI().toString(), "name", "test", "cache",
+				cache.getAbsolutePath()));
+
+			assertThatThrownBy(() -> p2r.list(null)).hasMessageContaining(cache.getPath());
+			assertThat(IO.collect(cache)).isEqualTo("existing file");
+		}
+	}
+
+	@Test
+	public void testLocationCacheConfiguration() throws Exception {
+		assertThat(Converter.cnv(P2Config.class, Map.of()).cache()).isNull();
+		assertThat(Converter.cnv(P2Config.class, Map.of("cache", "bundles")).cache()).isEqualTo("bundles");
+		assertThat(P2Config.class.getMethod("cache").isDefault()).isTrue();
+		P2Config legacy = new P2Config() {
+			@Override
+			public String name(String defaultName) {
+				return defaultName;
+			}
+
+			@Override
+			public URI url() {
+				return null;
+			}
+
+			@Override
+			public String location() {
+				return null;
+			}
+
+			@Override
+			public String location(String defaultLocation) {
+				return defaultLocation;
+			}
+
+			@Override
+			public String tags() {
+				return null;
+			}
+
+			@Deprecated
+			@Override
+			public boolean targetPlatform() {
+				return false;
+			}
+		};
+		assertThat(legacy.cache()).isNull();
+	}
 
 	@Test
 	public void testSimple() throws Exception {

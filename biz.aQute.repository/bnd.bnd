@@ -62,6 +62,7 @@ Export-Package: \
 -fixupmessages.tag: "Export aQute.maven.provider,* private references \\[aQute.lib.tag\\]"
 -fixupmessages.lib: "Export aQute.bnd.repository.maven.provider,* private references \\[aQute.lib.collections, aQute.lib.getopt\\]"
 -fixupmessages.configurable: "Export aQute.bnd.repository.osgi,* private references \\[aQute.configurable\\]"
+-fixupmessages.provider: "Export aQute.p2.provider,* private references \\[aQute.p2.packed\\]"
 
 -baseline: *
 -metatypeannotations: *
