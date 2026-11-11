@@ -236,6 +236,44 @@ public class BndWorkspaceManager {
 		}
 	}
 
+	/**
+	 * Whether the file belongs to the workspace configuration in
+	 * {@code cnf}.
+	 */
+	public boolean isWorkspaceConfiguration(File file) {
+		Workspace ws = getWorkspaceForFile(file);
+		return ws != null && file.getAbsoluteFile()
+			.toPath()
+			.startsWith(ws.getBuildDir()
+				.getAbsoluteFile()
+				.toPath());
+	}
+
+	/**
+	 * Read the workspace and project configuration again. Needed when a
+	 * file was added to or removed from the workspace configuration, which
+	 * {@link #refreshWorkspace(File)} does not notice.
+	 */
+	public void reloadWorkspace(File file) {
+		Workspace ws = getWorkspaceForFile(file);
+		if (ws != null) {
+			ReentrantLock lock = locks.computeIfAbsent(ws.getBase(), k -> new ReentrantLock());
+			lock.lock();
+			try {
+				ws.forceRefresh();
+				ws.refresh();
+				for (Project project : ws.getAllProjects()) {
+					project.forceRefresh();
+				}
+				logger.info("Reloaded bnd workspace at {}", ws.getBase());
+			} catch (Exception e) {
+				logger.error("Failed to reload workspace at {}", ws.getBase(), e);
+			} finally {
+				lock.unlock();
+			}
+		}
+	}
+
 	public <T> Future<T> executeWithWorkspaceLock(File file, WorkspaceTask<T> task) {
 		return executor.submit(() -> {
 			Workspace ws = getWorkspaceForFile(file);

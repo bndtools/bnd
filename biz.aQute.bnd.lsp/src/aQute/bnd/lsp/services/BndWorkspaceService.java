@@ -558,7 +558,13 @@ public class BndWorkspaceService implements WorkspaceService {
 		for (FileEvent event : params.getChanges()) {
 			File file = getFileFromUri(event.getUri());
 			if (file != null) {
-				workspaceManager.refreshWorkspace(file);
+				// a refresh does not notice files added to the workspace
+				// configuration, for example in cnf/ext
+				if (event.getType() != FileChangeType.Changed && workspaceManager.isWorkspaceConfiguration(file)) {
+					workspaceManager.reloadWorkspace(file);
+				} else {
+					workspaceManager.refreshWorkspace(file);
+				}
 			}
 		}
 	}

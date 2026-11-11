@@ -62,6 +62,23 @@ public class BndJdtLsBridge {
 		}
 	}
 
+	/**
+	 * Read the workspace and project configuration again. A refresh only
+	 * notices changes to files it already knows; a file that was added to
+	 * the workspace configuration, for example in {@code cnf/ext}, needs
+	 * this.
+	 */
+	public void reloadWorkspace(File file) throws Exception {
+		Workspace workspace = getWorkspace(file);
+		if (workspace != null) {
+			workspace.forceRefresh();
+			workspace.refresh();
+			for (Project project : workspace.getAllProjects()) {
+				project.forceRefresh();
+			}
+		}
+	}
+
 	private Workspace getWorkspace(File file) throws Exception {
 		Optional<File> root = detector.findWorkspaceRoot(file);
 		if (root.isEmpty()) {

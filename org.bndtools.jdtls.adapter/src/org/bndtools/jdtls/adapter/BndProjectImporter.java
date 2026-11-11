@@ -1,6 +1,8 @@
 package org.bndtools.jdtls.adapter;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,8 +34,16 @@ import aQute.bnd.build.Workspace;
 
 public class BndProjectImporter extends AbstractProjectImporter {
     public static final String CONTAINER_ID = "org.bndtools.jdtls.BND_CONTAINER";
+    /** The container Eclipse Bndtools writes to {@code .classpath}. */
+    public static final String BNDTOOLS_CONTAINER_ID = "aQute.bnd.classpath.container";
+    private static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
     private static final String PLUGIN_ID = "org.bndtools.jdtls.adapter";
     private static final BndJdtLsBridge BRIDGE = new BndJdtLsBridge();
+
+    static {
+        // Lets a workspace route tool specific directories with the ${driver} macro
+        Workspace.setDriver(System.getProperty("bnd.driver", "vscode"));
+    }
 
     @Override
     public boolean applies(IProgressMonitor monitor) {
@@ -75,12 +85,16 @@ public class BndProjectImporter extends AbstractProjectImporter {
     public void reset() {}
 
     private static void configure(IProject project, BndProjectInfo info, IProgressMonitor monitor) throws Exception {
-        IProjectDescription description = project.getDescription();
-        description.setNatureIds(new String[] { JavaCore.NATURE_ID });
-        var builder = description.newCommand();
-        builder.setBuilderName(JavaCore.BUILDER_ID);
-        description.setBuildSpec(new org.eclipse.core.resources.ICommand[] { builder });
-        project.setDescription(description, monitor);
+        boolean adopted = isEclipseOwned(new File(info.getBasePath()));
+        if (adopted && !project.hasNature(JavaCore.NATURE_ID)) return;
+        if (!adopted) {
+            IProjectDescription description = project.getDescription();
+            description.setNatureIds(new String[] { JavaCore.NATURE_ID });
+            var builder = description.newCommand();
+            builder.setBuilderName(JavaCore.BUILDER_ID);
+            description.setBuildSpec(new org.eclipse.core.resources.ICommand[] { builder });
+            project.setDescription(description, monitor);
+        }
         IJavaProject javaProject = JavaCore.create(project);
         List<IClasspathEntry> entries = new ArrayList<>();
         for (String source : info.getSourcePaths()) {
@@ -103,12 +117,29 @@ public class BndProjectImporter extends AbstractProjectImporter {
         for (String file : info.getTestPath()) {
             if (!info.getBuildPath().contains(file)) entries.add(library(file, true));
         }
-        javaProject.setRawClasspath(entries.toArray(IClasspathEntry[]::new), local(project, info.getOutputPath()), monitor);
+        // Eclipse owns the metadata of its projects: keep the classpath in memory only
+        javaProject.setRawClasspath(entries.toArray(IClasspathEntry[]::new), local(project, info.getOutputPath()),
+            !adopted, monitor);
         JavaCore.setClasspathContainer(new Path(CONTAINER_ID), new IJavaProject[] { javaProject },
             new IClasspathContainer[] { container(info, new Path(CONTAINER_ID)) }, monitor);
+        if (adopted) return;
         javaProject.setOption(JavaCore.COMPILER_SOURCE, model.getProperty("javac.source", runee));
         javaProject.setOption(JavaCore.COMPILER_COMPLIANCE, runee);
         javaProject.setOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, runee);
+    }
+
+    /**
+     * A project that Eclipse Bndtools manages. Its {@code .project},
+     * {@code .classpath} and {@code .settings} are read by Eclipse and must
+     * not be changed by this importer.
+     */
+    static boolean isEclipseOwned(File base) {
+        try {
+            File description = new File(base, IProjectDescription.DESCRIPTION_FILE_NAME);
+            return description.isFile() && Files.readString(description.toPath()).contains(BNDTOOLS_NATURE);
+        } catch (IOException exception) {
+            return false;
+        }
     }
 
     private static IPath local(IProject project, String path) {
@@ -163,7 +194,8 @@ public class BndProjectImporter extends AbstractProjectImporter {
             try {
                 return Arrays.stream(JavaCore.create(project).getRawClasspath())
                     .anyMatch(entry -> entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER
-                        && CONTAINER_ID.equals(entry.getPath().segment(0)));
+                        && (CONTAINER_ID.equals(entry.getPath().segment(0))
+                            || BNDTOOLS_CONTAINER_ID.equals(entry.getPath().segment(0))));
             } catch (CoreException exception) {
                 return false;
             }
@@ -171,14 +203,21 @@ public class BndProjectImporter extends AbstractProjectImporter {
 
         @Override
         public boolean isBuildFile(IResource resource) {
+            // Eclipse rewriting its .classpath discards the classpath held in memory
             return resource.getType() == IResource.FILE
-                && (resource.getName().endsWith(".bnd") || resource.getName().endsWith(".mvn"));
+                && (resource.getName().endsWith(".bnd") || resource.getName().endsWith(".mvn")
+                    || resource.getName().equals(IJavaProject.CLASSPATH_FILE_NAME));
         }
 
         @Override
         public void update(IProject project, boolean force, IProgressMonitor monitor) throws CoreException {
+            refresh(project, false, monitor);
+        }
+
+        private void refresh(IProject project, boolean reload, IProgressMonitor monitor) throws CoreException {
             try {
-                BRIDGE.refreshWorkspace(project.getLocation().toFile());
+                if (reload) BRIDGE.reloadWorkspace(project.getLocation().toFile());
+                else BRIDGE.refreshWorkspace(project.getLocation().toFile());
                 File root = new BndWorkspaceDetector().findWorkspaceRoot(project.getLocation().toFile()).orElseThrow();
                 for (var model : Workspace.getWorkspace(root).getAllProjects()) model.refresh();
                 for (BndProjectInfo info : BRIDGE.getWorkspaceProjects(project.getLocation().toFile())) {
@@ -192,15 +231,17 @@ public class BndProjectImporter extends AbstractProjectImporter {
 
         @Override
         public boolean fileChanged(IResource resource, CHANGE_TYPE change, IProgressMonitor monitor) throws CoreException {
-            if (isBuildFile(resource)) {
-                update(resource.getProject(), true, monitor);
-                return true;
-            }
-            return false;
+            if (!isBuildFile(resource)) return false;
+            IProject project = resource.getProject();
+            if (resource.getName().equals(IJavaProject.CLASSPATH_FILE_NAME)
+                && (project.getLocation() == null || !isEclipseOwned(project.getLocation().toFile()))) return false;
+            // a refresh does not notice files added to the workspace configuration
+            refresh(project, change != CHANGE_TYPE.CHANGED && project.getName().startsWith("bnd.cnf."), monitor);
+            return true;
         }
 
         @Override
-        public List<String> getWatchPatterns() { return List.of("**/*.bnd", "**/*.mvn"); }
+        public List<String> getWatchPatterns() { return List.of("**/*.bnd", "**/*.mvn", "**/.classpath"); }
 
         @Override
         public String buildToolName() { return "bnd"; }

@@ -79,6 +79,56 @@ public class BndLanguageServerTest {
 	}
 
 	@Test
+	public void clientDriverRoutesOutputDirectories() throws Exception {
+		Files.createDirectories(temporary.resolve("cnf/ext"));
+		Files.writeString(temporary.resolve("cnf/build.bnd"), "");
+		Path project = Files.createDirectories(temporary.resolve("p"));
+		Files.writeString(project.resolve("bnd.bnd"), "Bundle-Version: 1.0.0\n");
+		String expression = "${driver}|${bin}|${testbin}|${target-dir}";
+		ExecuteCommandParams request = new ExecuteCommandParams(Constants.COMMAND_MACRO_EXPAND,
+			List.of(expression, project.resolve("bnd.bnd").toUri().toString()));
+		// the file the VS Code extension generates for parallel use with Eclipse
+		Path outputs = temporary.resolve("cnf/ext/vscode-outputs.bnd");
+		String configuration = String.join("\n", "vscode.outputs: ${if;${driver;vscode};.vscode}",
+			"bin: bin${vscode.outputs}", "testbin: bin_test${vscode.outputs}", "target-dir: generated${vscode.outputs}", "");
+		BndLanguageServer server = new BndLanguageServer();
+		try {
+			aQute.bnd.build.Workspace.setDriver(aQute.bnd.osgi.Constants.BNDDRIVER_ECLIPSE);
+			InitializeParams params = new InitializeParams();
+			params.setInitializationOptions(Map.of("driver", "not a name"));
+			server.initialize(params).get();
+			assertThat(server.getWorkspaceService().executeCommand(request).get())
+				.isEqualTo(Map.of("expression", expression, "result", "eclipse|bin|bin_test|generated"));
+
+			params.setInitializationOptions(Map.of("driver", "vscode"));
+			server.initialize(params).get();
+			assertThat(server.getWorkspaceService().executeCommand(request).get())
+				.isEqualTo(Map.of("expression", expression, "result", "vscode|bin|bin_test|generated"));
+
+			// a file added to the configuration of an already loaded workspace
+			Files.writeString(outputs, configuration);
+			server.getWorkspaceService().didChangeWatchedFiles(new org.eclipse.lsp4j.DidChangeWatchedFilesParams(
+				List.of(new org.eclipse.lsp4j.FileEvent(outputs.toUri().toString(), org.eclipse.lsp4j.FileChangeType.Created))));
+			assertThat(server.getWorkspaceService().executeCommand(request).get()).isEqualTo(
+				Map.of("expression", expression, "result", "vscode|bin.vscode|bin_test.vscode|generated.vscode"));
+
+			aQute.bnd.build.Workspace.setDriver(aQute.bnd.osgi.Constants.BNDDRIVER_ECLIPSE);
+			assertThat(server.getWorkspaceService().executeCommand(request).get())
+				.isEqualTo(Map.of("expression", expression, "result", "eclipse|bin|bin_test|generated"));
+
+			aQute.bnd.build.Workspace.setDriver("vscode");
+			Files.delete(outputs);
+			server.getWorkspaceService().didChangeWatchedFiles(new org.eclipse.lsp4j.DidChangeWatchedFilesParams(
+				List.of(new org.eclipse.lsp4j.FileEvent(outputs.toUri().toString(), org.eclipse.lsp4j.FileChangeType.Deleted))));
+			assertThat(server.getWorkspaceService().executeCommand(request).get())
+				.isEqualTo(Map.of("expression", expression, "result", "vscode|bin|bin_test|generated"));
+		} finally {
+			server.shutdown().get();
+			aQute.bnd.build.Workspace.setDriver("unset");
+		}
+	}
+
+	@Test
 	public void resolutionAnalysisReturnsStructuredRequirementsAndCapabilities() throws Exception {
 		Path consumer = temporary.resolve("consumer.jar");
 		Path provider = temporary.resolve("provider.jar");
