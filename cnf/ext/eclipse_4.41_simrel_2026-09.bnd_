@@ -1,0 +1,30 @@
+# Eclipse Simultaneous Release repository
+eclipse.simrel.baseurl = https://download.eclipse.org/releases
+
+eclipse.platform.version.4.41      = 4.41
+eclipse.simrel.version.2026-09     = 2026-09
+eclipse.simrel.reltag.202609091000 = 202609091000
+
+# p2 repository: reads the p2 site directly; location is the generated index file.
+eclipse.repo.2026-09.p2: \
+    aQute.bnd.repository.p2.provider.P2Repository; \
+        name     = 'Eclipse SimRel ${eclipse.platform.version.4.41}/${eclipse.simrel.version.2026-09} <P2>'; \
+        url      = '${eclipse.simrel.baseurl}/${eclipse.simrel.version.2026-09}'; \
+        location = '${.}/eclipse_${eclipse.platform.version.4.41}_simrel_${eclipse.simrel.version.2026-09}_p2.index.xml.gz'; \
+        cache    = '${build}/cache/ecl_${eclipse.simrel.version.2026-09}'
+
+# Indexed OSGi repository: uses index.xml.gz inside the p2 index archive, cached under cnf/cache.
+eclipse.repo.2026-09.osgi: \
+    aQute.bnd.repository.osgi.OSGiRepository; \
+        name      = 'Eclipse SimRel ${eclipse.platform.version.4.41}/${eclipse.simrel.version.2026-09} <OSGi>'; \
+        locations = '${fileuri;${.}/eclipse_${eclipse.platform.version.4.41}_simrel_${eclipse.simrel.version.2026-09}_p2.index.xml.gz}'; \
+        cache     = '${build}/cache/ecl_${eclipse.platform.version.4.41}'
+
+# OSGiRepository requires the P2Repository index to be created first.
+# indexed=false selects P2Repository and creates the index from download.eclipse.org.
+# indexed=true selects OSGiRepository and uses the generated *_p2.index.xml.gz.
+indexed.ecl-2026-09 = true
+
+# Exactly one repository is active, selected by indexed.
+-plugin.eclipse.simrel_2026-09.p2: ${if;${indexed.ecl-2026-09};;${eclipse.repo.2026-09.p2}}
+-plugin.eclipse.simrel_2026-09.osgi: ${if;${indexed.ecl-2026-09};${eclipse.repo.2026-09.osgi};}

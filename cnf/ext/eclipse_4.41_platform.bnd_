@@ -1,0 +1,29 @@
+# Eclipse Platform Release repository
+eclipse.platform.baseurl = https://download.eclipse.org/eclipse/updates
+
+eclipse.platform.version.4.41 = 4.41
+eclipse.platform.reltag.R-4.41-202608281142 = R-4.41-202608281142
+
+# p2 repository: reads the p2 site directly; location is the generated index file.
+eclipse.repo.4.41.p2: \
+    aQute.bnd.repository.p2.provider.P2Repository; \
+        name     = 'Eclipse Platform ${eclipse.platform.version.4.41} <P2>'; \
+        url      = '${eclipse.platform.baseurl}/${eclipse.platform.version.4.41}'; \
+        location = '${.}/eclipse_${eclipse.platform.version.4.41}_platform_p2.index.xml.gz'; \
+        cache    = '${build}/cache/ecl_${eclipse.platform.version.4.41}'
+
+# Indexed OSGi repository: uses index.xml.gz inside the p2 index archive, cached under cnf/cache.
+eclipse.repo.4.41.osgi: \
+    aQute.bnd.repository.osgi.OSGiRepository; \
+        name      = 'Eclipse Platform ${eclipse.platform.version.4.41} <OSGi>'; \
+        locations = '${fileuri;${.}/eclipse_${eclipse.platform.version.4.41}_platform_p2.index.xml.gz}'; \
+        cache     = '${build}/cache/ecl_${eclipse.platform.version.4.41}'
+
+# OSGiRepository requires the P2Repository index to be created first.
+# indexed=false selects P2Repository andcreates the index from download.eclipse.org.
+# indexed=true selects OSGiRepository anduses the generated *_p2.index.xml.gz.
+indexed.ecl-4.41 = true
+
+# Exactly one repository is active, selected by indexed.
+-plugin.eclipse.repo.4.41.p2: ${if;${indexed.ecl-4.41};;${eclipse.repo.4.41.p2}}
+-plugin.eclipse.repo.4.41.osgi: ${if;${indexed.ecl-4.41};${eclipse.repo.4.41.osgi};}

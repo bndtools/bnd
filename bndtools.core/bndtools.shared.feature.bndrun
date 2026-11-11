@@ -1,0 +1,71 @@
+# This run file contains all the cross-platform bundle and settings to run Bndtools.
+
+# Do not run this, use the platform-specific bndrun files (which "-include" this)
+
+-runfw: org.eclipse.osgi
+
+-runvm: \
+  -Xmx2g, \
+  -ea
+
+-runpath: \
+	ch.qos.logback.classic,\
+	ch.qos.logback.core,\
+	org.apache.felix.logback,\
+	slf4j.api
+
+-runproperties: \
+	eclipse.application=org.eclipse.ui.ide.workbench,\
+	eclipse.consoleLog=,\
+	eclipse.home.location=${fileuri;${.}/../bndtools.test/workspace},\
+	eclipse.launcher=bndtools.core,\
+	eclipse.product=org.eclipse.sdk.ide,\
+	osgi.console=,\
+	osgi.instance.area.default=../bndtools.test/workspace,\
+	org.osgi.framework.bootdelegation='javax.*,org.xml.*',\
+	logback.configurationFile=${fileuri;${.}/logback.xml}
+
+# Keep sorted so that we can diff
+-runrequires: \
+	bnd.identity;id='biz.aQute.bnd.embedded-repo',\
+	bnd.identity;id='bndtools.api',\
+	bnd.identity;id='bndtools.builder',\
+	bnd.identity;id='bndtools.core',\
+	bnd.identity;id='bndtools.core.services',\
+	bnd.identity;id='bndtools.jareditor',\
+	bnd.identity;id='bndtools.m2e',\
+	bnd.identity;id='bndtools.m2e.debug.fragment',\
+	bnd.identity;id='bndtools.pde',\
+	bnd.identity;id='bndtools.release',\
+	bnd.identity;id='org.bndtools.applaunch',\
+	bnd.identity;id='org.bndtools.headless.build.manager',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.gradle',\
+	bnd.identity;id='org.bndtools.launch',\
+	bnd.identity;id='org.bndtools.remoteinstall',\
+	bnd.identity;id='org.bndtools.templates.template',\
+	bnd.identity;id='org.bndtools.templating',\
+	bnd.identity;id='org.bndtools.templating.gitrepo',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.manager',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.plugin.git',\
+	bnd.identity;id='jakarta.inject.jakarta.inject-api',\
+	bnd.identity;id='org.eclipse.sdk';type='org.eclipse.update.feature';version:Version='4.41.0.v20260828-1142'
+
+-runblacklist: \
+	bnd.identity;id='biz.aQute.bnd.annotation',\
+	bnd.identity;id='biz.aQute.bnd.transform',\
+	bnd.identity;id='biz.aQute.junit',\
+	bnd.identity;id='osgi.*',\
+	bnd.identity;id='biz.aQute.bndlib';version='[7.0.0,${baseline.version})'
+
+
+-runee: JavaSE-25
+
+# This will help us keep -runbundles sorted
+-runstartlevel: \
+    order=sortbynameversion,\
+    begin=-1
+-runrepos: \
+	Workspace,\
+	Eclipse Platform 4.41 <OSGi>,\
+	Eclipse SimRel 4.41/2026-09 <OSGi>
