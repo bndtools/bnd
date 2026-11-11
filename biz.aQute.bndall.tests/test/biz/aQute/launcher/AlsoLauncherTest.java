@@ -58,6 +58,7 @@ import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.command.Command;
+import aQute.libg.filelock.ProcessLock;
 import biz.aQute.launcher.LauncherTest.ArgumentRendering;
 import biz.aQute.resolve.Bndrun;
 
@@ -835,6 +836,37 @@ public class AlsoLauncherTest {
 			l.getRunProperties()
 				.put("test.cmd", "getpersistence");
 			assertThat(l.launch()).isEqualTo(65);
+		}
+	}
+
+	/**
+	 * A launch must not delete or share the framework storage of a launch
+	 * that is still running. The running launch is represented by its lock.
+	 */
+	@Test
+	public void testStorageOfRunningLaunchIsNotDeleted() throws Exception {
+		project.setProperty("-runkeep", "false");
+		project.setProperty("-runstorage", "generated/lockedfw");
+		File storage = project.getFile("generated/lockedfw");
+		File marker = new File(storage, "marker");
+		IO.mkdirs(storage);
+		IO.store("in use", marker);
+
+		try (ProcessLock running = ProcessLock.tryLock(project.getFile("generated/lockedfw.lock"))
+			.orElseThrow(); ProjectLauncher l = project.getProjectLauncher()) {
+			l.setTrace(true);
+			l.getRunProperties()
+				.put("test.cmd", "exit");
+			assertThat(l.launch()).isEqualTo(ProjectLauncher.ERROR);
+			assertThat(marker).isFile();
+		}
+
+		try (ProjectLauncher l = project.getProjectLauncher()) {
+			l.setTrace(true);
+			l.getRunProperties()
+				.put("test.cmd", "exit");
+			assertThat(l.launch()).isEqualTo(42);
+			assertThat(marker).doesNotExist();
 		}
 	}
 
