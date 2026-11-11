@@ -5,6 +5,7 @@
   </extension>
   <extension point="org.eclipse.jdt.core.classpathContainerInitializer">
     <classpathContainerInitializer id="org.bndtools.jdtls.BND_CONTAINER" class="org.bndtools.jdtls.adapter.BndProjectImporter$ContainerInitializer"/>
+    <classpathContainerInitializer id="aQute.bnd.classpath.container" class="org.bndtools.jdtls.adapter.BndProjectImporter$ContainerInitializer"/>
   </extension>
   <extension point="org.eclipse.jdt.ls.core.buildSupport">
     <buildSupport id="bndBuildSupport" order="100" class="org.bndtools.jdtls.adapter.BndProjectImporter$BuildSupport"/>

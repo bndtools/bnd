@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -24,6 +25,7 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.lsp.services.BndSemanticTokensProvider;
 import aQute.bnd.lsp.services.BndTextDocumentService;
 import aQute.bnd.lsp.services.BndWorkspaceManager;
@@ -31,6 +33,7 @@ import aQute.bnd.lsp.services.BndWorkspaceService;
 
 public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 	private static final Logger				logger		= LoggerFactory.getLogger(BndLanguageServer.class);
+	private static final Pattern			DRIVER		= Pattern.compile("[A-Za-z][A-Za-z0-9_.-]*");
 
 	private final ScheduledExecutorService	scheduler	= Executors.newScheduledThreadPool(2, r -> {
 															Thread t = new Thread(r, "bnd-lsp-worker");
@@ -58,6 +61,13 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 		boolean trusted = options.isJsonObject() && options.getAsJsonObject().has("workspaceTrusted")
 			&& options.getAsJsonObject().get("workspaceTrusted").getAsBoolean();
 		workspaceService.configureEffectiveProperties(textDocumentService, trusted);
+
+		// The client names itself so workspaces can route tool specific
+		// directories with the ${driver} macro
+		JsonElement driver = options.isJsonObject() ? options.getAsJsonObject().get("driver") : null;
+		if (driver != null && driver.isJsonPrimitive() && DRIVER.matcher(driver.getAsString()).matches()) {
+			Workspace.setDriver(driver.getAsString());
+		}
 
 		ServerCapabilities capabilities = new ServerCapabilities();
 		capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
