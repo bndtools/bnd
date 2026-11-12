@@ -2,6 +2,9 @@
 
 Want to hack on Bnd/Bndtools? Here are instructions to get you started. They are probably not perfect, please let us know if anything feels wrong or incomplete.
 
+See [Developing bnd and Bndtools](docs/development/index.md) for architecture,
+development notes, documentation development, and maintainer procedures.
+
 ## Reporting Issues
 
 When reporting [issues](https://github.com/bndtools/bnd/issues) on GitHub please include the version of Bnd/Bndtools you are using, `bnd version`, as well as the version of Java, `java -version`, and your OS.
@@ -69,6 +72,11 @@ We recommend the section [Build Environment](#build-environment) below to learn 
 ## Running single tests
 
 Sometimes it can be useful to run a single testcase without running a full build.
+
+For Eclipse widget tests, see [bndtools UI Testing](docs/development/bndtools-ui-testing.md).
+These SWTBot tests require an OSGi UI test launch, not the plain Gradle test
+selectors below. The guide documents coverage, platform launches, single-class
+and single-method execution, and opt-in performance runs.
 
 - Running only a specific Test - e.g. runs the test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`
 
@@ -233,7 +241,7 @@ This will help prioritize the most common problems and requests.
 
 ### Conventions
 
-See [Bndtools Development: Tips and Tricks](DEV_README.md) for more detailed information, but the following are the basics.
+See [Bndtools Development: Tips and Tricks](docs/development/development-notes.md) for more detailed information, but the following are the basics.
 
 Fork the repo and make changes on your fork in a feature branch:
 
