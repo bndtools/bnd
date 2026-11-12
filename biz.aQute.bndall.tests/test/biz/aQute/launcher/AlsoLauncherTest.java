@@ -870,6 +870,56 @@ public class AlsoLauncherTest {
 		}
 	}
 
+	/**
+	 * The storage that {@code org.osgi.framework.storage} selects is locked as
+	 * well, since the framework uses that directory and not -runstorage.
+	 */
+	@Test
+	public void testOverriddenStorageOfRunningLaunchIsLocked() throws Exception {
+		File storage = project.getFile("generated/overriddenfw");
+		project.setProperty("-runkeep", "false");
+		project.setProperty("-runstorage", "generated/ownfw");
+		project.setProperty("-runproperties", "org.osgi.framework.storage=" + storage.getAbsolutePath()
+			.replace('\\', '/'));
+		File marker = new File(project.getFile("generated/ownfw"), "marker");
+		IO.mkdirs(marker.getParentFile());
+		IO.store("kept", marker);
+
+		try (ProcessLock running = ProcessLock.tryLock(project.getFile("generated/overriddenfw.lock"))
+			.orElseThrow(); ProjectLauncher l = project.getProjectLauncher()) {
+			l.setTrace(true);
+			l.getRunProperties()
+				.put("test.cmd", "exit");
+			assertThat(l.launch()).isEqualTo(ProjectLauncher.ERROR);
+			assertThat(marker).isFile();
+		}
+	}
+
+	/**
+	 * A launch that cannot establish the storage lock must not delete the
+	 * storage.
+	 */
+	@Test
+	public void testStorageIsNotDeletedWhenLockFails() throws Exception {
+		project.setProperty("-runkeep", "false");
+		project.setProperty("-runstorage", "generated/unlockablefw");
+		File marker = new File(project.getFile("generated/unlockablefw"), "marker");
+		IO.mkdirs(marker.getParentFile());
+		IO.store("kept", marker);
+		// a directory cannot be opened as lock file
+		IO.mkdirs(project.getFile("generated/unlockablefw.lock"));
+
+		try (ProjectLauncher l = project.getProjectLauncher()) {
+			l.setTrace(true);
+			l.getRunProperties()
+				.put("test.cmd", "exit");
+			assertThat(l.launch()).isEqualTo(ProjectLauncher.ERROR);
+			assertThat(marker).isFile();
+		} finally {
+			IO.delete(project.getFile("generated/unlockablefw.lock"));
+		}
+	}
+
 	@Test
 	public void testNoReferences() throws Exception {
 		project.setProperty("-runnoreferences", true + "");

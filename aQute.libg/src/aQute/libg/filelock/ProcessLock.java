@@ -10,9 +10,9 @@ import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Optional;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -33,7 +33,7 @@ public final class ProcessLock implements Closeable {
 	 */
 	private static final long			LOCKED_BYTE	= 1L << 30;
 	private static final long			POLL_MILLIS	= 50L;
-	private static final Set<String>	held		= new HashSet<>();
+	private static final Map<String, String>	held		= new HashMap<>();
 
 	private final File					file;
 	private final String				key;
@@ -60,7 +60,7 @@ public final class ProcessLock implements Closeable {
 		File absolute = file.getAbsoluteFile();
 		String key = absolute.getCanonicalPath();
 		synchronized (held) {
-			if (held.contains(key))
+			if (held.containsKey(key))
 				return Optional.empty();
 
 			Files.createDirectories(absolute.getParentFile()
@@ -79,8 +79,7 @@ public final class ProcessLock implements Closeable {
 					channel.close();
 					return Optional.empty();
 				}
-				describe(channel);
-				held.add(key);
+				held.put(key, describe(channel));
 				return Optional.of(new ProcessLock(absolute, key, channel, lock));
 			} catch (IOException | RuntimeException e) {
 				channel.close();
@@ -118,25 +117,38 @@ public final class ProcessLock implements Closeable {
 	/**
 	 * A description of the process that holds, or last held, the lock. Only
 	 * meaningful while the lock is held.
+	 * <p>
+	 * On POSIX systems closing any descriptor of a file releases all locks
+	 * that the process holds on that file. The file is therefore only read
+	 * when this JVM does not hold the lock.
 	 *
 	 * @param file the lock file
 	 * @return the description, never {@code null}
 	 */
 	public static String holder(File file) {
 		try {
-			String description = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
-			return description.isEmpty() ? "unknown" : description;
+			String key = file.getAbsoluteFile()
+				.getCanonicalPath();
+			synchronized (held) {
+				String own = held.get(key);
+				if (own != null)
+					return own;
+
+				String description = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
+				return description.isEmpty() ? "unknown" : description;
+			}
 		} catch (IOException e) {
 			return "unknown";
 		}
 	}
 
-	private static void describe(FileChannel channel) throws IOException {
-		byte[] description = ("pid " + ProcessHandle.current()
-			.pid()).getBytes(StandardCharsets.UTF_8);
+	private static String describe(FileChannel channel) throws IOException {
+		String description = "pid " + ProcessHandle.current()
+			.pid();
 		channel.truncate(0L);
-		channel.write(ByteBuffer.wrap(description), 0L);
+		channel.write(ByteBuffer.wrap(description.getBytes(StandardCharsets.UTF_8)), 0L);
 		channel.force(false);
+		return description;
 	}
 
 	public File getFile() {

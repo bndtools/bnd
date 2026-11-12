@@ -105,7 +105,8 @@ class P2Indexer implements Closeable {
 		this.urlHash = client.toName(url);
 		if (this.indexFile.isDirectory())
 			throw new IllegalArgumentException(this.indexFile + " is a directory, not an index file");
-		this.lockFile = new File(this.location, this.indexFile.getName() + ".lock");
+		File absoluteIndex = this.indexFile.getAbsoluteFile();
+		this.lockFile = new File(absoluteIndex.getParentFile(), absoluteIndex.getName() + ".lock");
 		IO.mkdirs(this.location);
 
 		validate();

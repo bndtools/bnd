@@ -45,6 +45,7 @@ import java.util.Hashtable;
 import java.util.IllegalFormatException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -123,7 +125,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	private BundleActivator					externalActivator;
 	private boolean							restart					= false;
 	private boolean							frameworkInited			= false;
-	private ProcessLock						storageLock;
+	private final List<ProcessLock>			storageLocks			= new ArrayList<>();
 
 	private ServiceRegistration<?>			launcherServiceRegistraion;
 
@@ -443,8 +445,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		} finally {
 			deactivate();
 			trace("stopped system bundle due to leaving run body");
-			IO.close(storageLock);
-			storageLock = null;
+			releaseStorageLocks();
 			System.setProperties(initialSystemProperties);
 			// TODO should we wait here?
 		}
@@ -1205,7 +1206,13 @@ public class Launcher implements ServiceListener, FrameworkListener {
 
 		trace("using working dir: %s with keeping=%s", workingdir, parms.keep);
 
-		if (!temporary && !lockStorage(workingdir))
+		String storageOverride = System.getProperty(Constants.FRAMEWORK_STORAGE);
+		Set<File> owned = new LinkedHashSet<>();
+		if (storageOverride != null)
+			owned.add(new File(storageOverride).getAbsoluteFile());
+		if (!temporary)
+			owned.add(workingdir.getAbsoluteFile());
+		if (!lockStorage(owned))
 			return null;
 
 		if (!parms.keep && workingdir.exists()) {
@@ -1218,10 +1225,10 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		if (!workingdir.isDirectory())
 			throw new IllegalArgumentException("Cannot create a working dir: " + workingdir);
 
-		if (System.getProperty(Constants.FRAMEWORK_STORAGE) == null)
+		if (storageOverride == null)
 			p.setProperty(Constants.FRAMEWORK_STORAGE, workingdir.getAbsolutePath());
 		else
-			p.setProperty(Constants.FRAMEWORK_STORAGE, System.getProperty(Constants.FRAMEWORK_STORAGE));
+			p.setProperty(Constants.FRAMEWORK_STORAGE, storageOverride);
 
 		if (parms.systemPackages != null) {
 			p.setProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, parms.systemPackages);
@@ -1327,24 +1334,41 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	 * storage neither deletes nor shares it. The lock is released when this
 	 * launch ends or its process dies.
 	 *
-	 * @return {@code false} when another launch holds the storage
+	 * <p>
+	 * The directories are the storage that the framework uses, which
+	 * {@code org.osgi.framework.storage} can override, and the working
+	 * directory that this launcher deletes when the storage is not kept.
+	 *
+	 * @return {@code false} when another launch holds one of the directories
+	 *         or a lock cannot be established
 	 */
-	private boolean lockStorage(File workingdir) {
-		File lockFile = storageLockFile(workingdir);
-		try {
-			storageLock = ProcessLock.tryLock(lockFile)
-				.orElse(null);
-		} catch (IOException e) {
-			trace("cannot lock the working dir %s with %s: %s", workingdir, lockFile, e);
-			return true;
-		}
-		if (storageLock == null) {
-			error(
-				"The framework storage %s is in use by another launch (%s). Stop that launch or use a different -runstorage.",
-				workingdir, ProcessLock.holder(lockFile));
-			return false;
+	private boolean lockStorage(Set<File> directories) {
+		for (File directory : directories) {
+			File lockFile = storageLockFile(directory);
+			ProcessLock lock;
+			try {
+				lock = ProcessLock.tryLock(lockFile)
+					.orElse(null);
+			} catch (IOException e) {
+				error("Cannot lock the framework storage %s with %s: %s", directory, lockFile, e);
+				releaseStorageLocks();
+				return false;
+			}
+			if (lock == null) {
+				error(
+					"The framework storage %s is in use by another launch (%s). Stop that launch or use a different -runstorage.",
+					directory, ProcessLock.holder(lockFile));
+				releaseStorageLocks();
+				return false;
+			}
+			storageLocks.add(lock);
 		}
 		return true;
+	}
+
+	private void releaseStorageLocks() {
+		storageLocks.forEach(IO::close);
+		storageLocks.clear();
 	}
 
 	private static File storageLockFile(File workingdir) {

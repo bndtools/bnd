@@ -95,7 +95,7 @@ public class P2RepositorySharingTest {
 	public void waitsForTheIndexLockOfAnotherReader() throws Exception {
 		File index = new File(tmp, "cnf/ext/locked_index.xml.gz");
 		File cache = new File(tmp, "cache/locked");
-		File lockFile = new File(cache, index.getName() + ".lock");
+		File lockFile = new File(index.getParentFile(), index.getName() + ".lock");
 		try (Workspace w = workspace();
 			P2Repository p2r = repository(w, "locked", IO.getFile("testdata/p2/macbadge"), index, cache)) {
 
@@ -135,7 +135,7 @@ public class P2RepositorySharingTest {
 		P2Indexer.lockTimeout = 200L;
 		try (Workspace w = workspace();
 			P2Repository p2r = repository(w, "timeout", IO.getFile("testdata/p2/macbadge"), index, cache);
-			ProcessLock held = ProcessLock.tryLock(new File(cache, index.getName() + ".lock"))
+			ProcessLock held = ProcessLock.tryLock(new File(index.getParentFile(), index.getName() + ".lock"))
 				.orElseThrow()) {
 
 			assertThat(p2r.list(null)).isNotEmpty();

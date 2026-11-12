@@ -65,8 +65,8 @@ Repositories can share a `cache` directory.
 
 Several bnd processes can have the same workspace open, for example Bndtools, a
 command line build and a language server. While a process validates or creates an
-index, it holds the lock file `<index file name>.lock` in the `cache` directory
-(the index directory when `cache` is not set). Another process waits for that
+index, it holds the lock file `<index file name>.lock` next to the index file, so
+all processes that use the same index agree on the lock, whatever their `cache`. Another process waits for that
 lock, for at most 10 minutes, and then uses the index that was written instead of
 reading the repository again. The operating system releases the lock when the
 process ends. bnd versions without this lock ignore it.
