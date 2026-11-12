@@ -11,6 +11,7 @@ Contributor and maintainer documentation for the bnd repository.
 
 - [Contribution guide](https://github.com/bndtools/bnd/blob/master/CONTRIBUTING.md): development setup, builds, tests, and pull requests.
 - [Development notes]({{ '/development/development-notes.html' | relative_url }}): testing patterns and implementation guidance.
+- [bndtools UI Testing]({{ '/development/bndtools-ui-testing.html' | relative_url }}): SWTBot coverage, direct class/method execution, and opt-in responsiveness tests.
 - [Documentation development]({{ '/development/documentation.html' | relative_url }}): building the website and generating reference pages.
 - [Release documentation]({{ '/development/release-documentation.html' | relative_url }}): publishing versioned documentation.
 - [Patch releases]({{ '/development/patch-releases.html' | relative_url }}): maintainer release procedures.

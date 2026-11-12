@@ -11,6 +11,11 @@ Here are some tips for developing in bnd / bndtools.
 
 ## Unit Tests
 
+For rendered Eclipse widget tests, see
+[bndtools UI Testing]({{ '/development/bndtools-ui-testing.html' | relative_url }}).
+It inventories SWTBot test cases and explains platform launches, single-test
+execution, performance datasets, and test-workspace isolation.
+
 
 ### Soft Assertions
 

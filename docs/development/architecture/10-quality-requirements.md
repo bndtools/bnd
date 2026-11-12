@@ -67,5 +67,15 @@ mindmap
   not intentionally vary, or semantically equivalent otherwise.
 - Documentation names minimum Java/build-tool versions and current deprecations.
 
-[Back to index]({{ '/development/architecture/' | relative_url }})
+### Bndtools UI regression and responsiveness evidence
 
+The [bndtools UI Testing guide]({{ '/development/bndtools-ui-testing.html' | relative_url }})
+records the SWTBot coverage reviewed against master on 2026-11-12, separately
+from the original architecture snapshot. Functional tests exercise feature
+selection and drag and drop, repository filtering, and Maven context menus.
+Opt-in performance tests measure repository selection, Run page filtering, and
+workspace template filtering with explicit timing limits. The guide distinguishes
+asserted behavior from menu availability and sampled rows, and gives direct
+platform launches and isolated test-workspace requirements.
+
+[Back to index]({{ '/development/architecture/' | relative_url }})

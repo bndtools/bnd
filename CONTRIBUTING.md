@@ -73,6 +73,11 @@ We recommend the section [Build Environment](#build-environment) below to learn 
 
 Sometimes it can be useful to run a single testcase without running a full build.
 
+For Eclipse widget tests, see [bndtools UI Testing](docs/development/bndtools-ui-testing.md).
+These SWTBot tests require an OSGi UI test launch, not the plain Gradle test
+selectors below. The guide documents coverage, platform launches, single-class
+and single-method execution, and opt-in performance runs.
+
 - Running only a specific Test - e.g. runs the test class `biz.aQute.launcher.AlsoLauncherTest.java` in the bundle `biz.aQute.bndall.tests`
 
 	```bash
