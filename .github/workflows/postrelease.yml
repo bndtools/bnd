@@ -44,7 +44,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199
       with:
-        ruby-version: 3.4.5
+        ruby-version: 3.4.12
         bundler-cache: true
         working-directory: docs
     - name: update baseline for the current build
