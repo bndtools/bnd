@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *</h1>
+<ul>
+<li>
+<p>Example: <code>-namesection=*;baz=true, abc/def/bar/X.class;bar=3</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/namesection.md -->
+<p>Create a name section (second part of manifest) with optional property expansion and addition of custom attributes.</p>
+<h3 id="matching">Matching</h3>
+<p>The key of the <code>-namesection</code> instruction is an <em>ant style</em> glob. And there are two target groups for matching:</p>
+<ul>
+<li><strong>resources</strong> - the pattern not ending with <code>/</code> or is an exact match for a resource path</li>
+<li><strong>packages</strong> - the pattern ends with <code>/</code> or is an exact match for a package path </li>
+</ul>
+<h4 id="custom-attributes">Custom attributes</h4>
+<p>The goal of named sections is to provide attributes over a specific subset of resources and paths in the jar file. Attributes are specified using the same syntax used elsewhere (such as package attributes). Attributes can contain properties and macros for expansion and replacement.</p>
+<p>Each attribute is processed by bnd and the matching value is passed using the <code>@</code> property.</p>
+<h4 id="resources">Resources</h4>
+<p>Resources are targeted by using a glob pattern not ending with <code>/</code>.</p>
+<p>For example, the following instruction sets the content type attribute for <code>png</code> files:</p>
+<div class="highlight"><pre><span></span><code><span class="na">-namesection</span><span class="o">:</span><span class="w"> </span><span class="s">com/foo/*.png; Content-Type=image/png</span>
+</code></pre></div>
+
+<p>This produces a result like the following:</p>
+<div class="highlight"><pre><span></span><code><span class="na">Name</span><span class="o">:</span><span class="w"> </span><span class="s">org/foo/icon_12x12.png</span>
+<span class="na">Content-Type</span><span class="o">:</span><span class="w"> </span><span class="s">image/png</span>
+
+<span class="na">Name</span><span class="o">:</span><span class="w"> </span><span class="s">org/foo/icon_48x48.png</span>
+<span class="na">Content-Type</span><span class="o">:</span><span class="w"> </span><span class="s">image/png</span>
+</code></pre></div>
+
+<h4 id="packages">Packages</h4>
+<p>Packages are targeted by using a glob pattern that ends with <code>/</code>.</p>
+<p>For example, to produce a Java <a href="https://docs.oracle.com/javase/tutorial/deployment/jar/packageman.html">Package Version Information</a> section use an instruction like this one:</p>
+<div class="highlight"><pre><span></span><code><span class="na">-namesection</span><span class="o">:</span><span class="w"> </span><span class="s">jakarta/annotation/*/;</span><span class="se">\</span>
+<span class="w">    </span><span class="s">Specification-Title=Jakarta Annotations;</span><span class="se">\</span>
+<span class="w">    </span><span class="s">Specification-Version=${annotation.spec.version};</span><span class="se">\</span>
+<span class="w">    </span><span class="s">Specification-Vendor=Eclipse Foundation;</span><span class="se">\</span>
+<span class="w">    </span><span class="s">Implementation-Title=jakarta.annotation;</span><span class="se">\</span>
+<span class="w">    </span><span class="s">Implementation-Version=${annotation.spec.version}.${annotation.revision};</span><span class="se">\</span>
+<span class="w">    </span><span class="s">Implementation-Vendor=Apache Software Foundation</span>
+</code></pre></div>
+
+<p>This produces a result like the following:</p>
+<div class="highlight"><pre><span></span><code><span class="na">Name</span><span class="o">:</span><span class="w"> </span><span class="s">jakarta/annotation/</span>
+<span class="na">Implementation-Title</span><span class="o">:</span><span class="w"> </span><span class="s">jakarta.annotation</span>
+<span class="na">Implementation-Vendor</span><span class="o">:</span><span class="w"> </span><span class="s">Apache Software Foundation</span>
+<span class="na">Implementation-Version</span><span class="o">:</span><span class="w"> </span><span class="s">2.0.0-M1</span>
+<span class="na">Specification-Title</span><span class="o">:</span><span class="w"> </span><span class="s">Jakarta Annotations</span>
+<span class="na">Specification-Vendor</span><span class="o">:</span><span class="w"> </span><span class="s">Eclipse Foundation</span>
+<span class="na">Specification-Version</span><span class="o">:</span><span class="w"> </span><span class="s">2.0</span>
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

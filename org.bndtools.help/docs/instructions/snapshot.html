@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-snapshot STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-snapshot STRING</h1>
+<ul>
+<li>
+<p>Example: <code>-snapshot=${tstamp}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/snapshot.md -->
+<h1 id="-snapshot">-snapshot</h1>
+<p>The <code>-snapshot</code> instruction specifies a string to substitute for "SNAPSHOT" in the bundle version's qualifier. This is useful for customizing versioning schemes during the build process.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-snapshot: 20250708
+</code></pre></div>
+
+<p>If the bundle version's qualifier is "SNAPSHOT" or ends with "-SNAPSHOT", the specified string will be used instead.</p>
+<p>When the bundle version's qualifier equals "SNAPSHOT" or ends with "-SNAPSHOT", the STRING
+value of the <code>-snapshot</code> instruction is substituted for "SNAPSHOT". The STRING value of
+the empty string will remove the qualifier if it equals "SNAPSHOT" or
+will remove "-SNAPSHOT" from the end of the qualifier.</p>
+<p>The default is no substitution.</p>
+<p>For example, the bundle's version can be set with a "SNAPSHOT" qualifier indicating it is
+a maven snapshot version.</p>
+<div class="highlight"><pre><span></span><code>Bundle-Version: 3.2.0.SNAPSHOT
+</code></pre></div>
+
+<p>When time to release, the <code>-snapshot</code> instruction can be used, in a central location such
+as <code>cnf/build.bnd</code>, to substitute "SNAPSHOT" for another value such as the timestamp of
+the build:</p>
+<div class="highlight"><pre><span></span><code>-snapshot: ${tstamp}
+</code></pre></div>
+
+<p>or some other meaningful value:</p>
+<div class="highlight"><pre><span></span><code>-snapshot: REL
+</code></pre></div>
+
+<p>Using "SNAPSHOT" in the bundle version's qualifier and the <code>-snapshot</code> instruction 
+are generally for bundles intended for maven builds.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

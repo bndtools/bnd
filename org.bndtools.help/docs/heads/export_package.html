@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Export-Package  ::= export ( ',' export)*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Export-Package  ::= export ( ',' export)*</h1>
+<ul>
+<li>
+<p>Example: <code>Export-Package: org.osgi.util.tracker;version=1.3</code></p>
+</li>
+<li>
+<p>Values: <code>${packages}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>-noimport:</code> By default, bnd makes all exports also imports. Adding a -noimport: to an exported package will make it export only.</li>
+<li>
+<p>Example: <code>-noimport:=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+<li>
+<p><code>uses:</code> Calculated by bnd: It is a comma-separated list of package names that are used by the exported package.</p>
+</li>
+<li>
+<p>Example: <code>Is calculated by bnd</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>mandatory:</code> A comma-separated list of attribute names. Note that the use of a comma in the value requires it to be enclosed in double quotes. A bundle importing the package must specify the mandatory attributes, with a value that matches, to resolve to the exported package.</p>
+</li>
+<li>
+<p>Example: <code>mandatory:="bar,foo"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>include:</code> A comma-separated list of class names that must be visible to an importer.</p>
+</li>
+<li>
+<p>Example: <code>include:="Qux*"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>exclude:</code> A comma-separated list of class names that must not be visible to an importer.</p>
+</li>
+<li>
+<p>Example: <code>exclude:="QuxImpl*,BarImpl"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>-import:</code> Experimental.</p>
+</li>
+<li>
+<p>Example: ``</p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/export_package.md -->
+<h1 id="export-package">Export-Package</h1>
+<p>The <code>Export-Package</code> header declares which Java packages in the bundle are made available to other bundles. You can use patterns, wildcards, and directives to control which packages are exported and how.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Export-Package: !com.*, *
+</code></pre></div>
+
+<p>This example exports all packages except those starting with <code>com</code>. </p>
+<p><strong>Note:</strong> By default bnd automatically calculates <code>Import-Package</code> references for exported packages. This is called <a href="/chapters/170-versioning.html#substitution">package substitution</a>
+You can use the <code>-noimport:=true</code> directive which instructs bnd to <strong>not</strong> calculate <code>Import-Package</code> references for exported packages.</p>
+<p>Example:</p>
+<p><code>`
+Export-Package: com.*;-noimport:=true</code></p>
+<p>With the <a href="/instructions/nosubstitution.html">-nosubstitution: true</a> instruction, this substitution behavior can be disabled globally.</p>
+<p>See also: <a href="/instructions/exportcontents.html"><code>-exportcontents</code></a>.</p>
+<p>The bnd definition allows the specification to be done using ''patterns'', a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. </p>
+<p>Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. </p>
+<h2 id="examples">Examples</h2>
+<p>The following examples copies everything on the class path except for packages starting with <code>com</code>. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses.</p>
+<div class="highlight"><pre><span></span><code>Export-Package= !com.*, *
+</code></pre></div>
+
+<p>Exports are automatically imported. This features can be disabled with a special directive on the export instruction: <code>-noimport:=true</code>. For example:</p>
+<div class="highlight"><pre><span></span><code>Export-Package= com.acme.impl.*;-noimport:=true, *
+</code></pre></div>
+
+<p>Bnd will automatically calculate the <code>uses:</code> directive. This directive is used by the OSGi framework to create a consistent class space for a bundle. The Export-Package statement allows this directive to be overridden on a package basis by specifying the directive in an Export-Package instruction. </p>
+<div class="highlight"><pre><span></span><code>Export-package = com.acme.impl.*;uses=&quot;my.special.import&quot;
+</code></pre></div>
+
+<p>However, in certain cases it is necessary to augment the uses clause. It is therefore possible to use the special name <code>&lt;&lt;USES&gt;&gt;</code> in the clause. Bnd will replace this special name with the calculated uses set. Bnd will remove any extraneous commas when the <code>&lt;&lt;USES&gt;&gt;</code> is empty.</p>
+<div class="highlight"><pre><span></span><code>Export-package = com.acme.impl.*;uses:=&quot;my.special.import,&lt;&lt;USES&gt;&gt;&quot;
+</code></pre></div>
+
+<p>Directives that are not part of the OSGi specification will give a warning unless they are prefixed with a 'x-'.</p>
+<h2 id="attribute-and-directive-ordering">Attribute and Directive Ordering</h2>
+<p>When bnd processes the <code>Export-Package</code> header, it automatically ensures consistent ordering of attributes and directives within each package clause. Attributes (keys without a trailing colon) are placed before directives (keys with a trailing colon), and both groups are sorted alphabetically. This ensures reproducible builds and easier comparison of manifest files.</p>
+<p>For more details, see <a href="/chapters/160-jars.html#osgi-header-attribute-and-directive-ordering">OSGi Header Attribute and Directive Ordering</a>.</p>
+<div class="highlight"><pre><span></span><code>        //
+        // EXPORTS
+        //
+        {
+            Set&lt;Instruction&gt; unused = Create.set();
+
+            Instructions filter = new Instructions(getExportPackage());
+            filter.append(getExportContents());
+
+            exports = filter(filter, contained, unused);
+
+            if (!unused.isEmpty()) {
+                warning(&quot;Unused &quot; + Constants.EXPORT_PACKAGE + &quot; instructions: %s &quot;, unused);
+            }
+
+            // See what information we can find to augment the
+            // exports. I.e. look on the classpath
+            augmentExports(exports);
+        }
+
+    /**
+ * Check if the given resource is in scope of this bundle. That is, it
+ * checks if the Include-Resource includes this resource or if it is a class
+ * file it is on the class path and the Export-Package or Private-Package
+ * include this resource.
+ *
+ * @param f
+ * @return
+ */
+public boolean isInScope(Collection&lt;File&gt; resources) throws Exception {
+    Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
+    clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
+    clauses.putAll(parseHeader(getProperty(Constants.PRIVATEPACKAGE)));
+    if (isTrue(getProperty(Constants.UNDERTEST))) {
+        clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES, &quot;test;presence:=optional&quot;)));
+    }
+
+    Collection&lt;String&gt; ir = getIncludedResourcePrefixes();
+
+    Instructions instructions = new Instructions(clauses);
+
+    for (File r : resources) {
+        String cpEntry = getClasspathEntrySuffix(r);
+
+        if (cpEntry != null) {
+
+            if (cpEntry.equals(&quot;&quot;)) // Meaning we actually have a CPE
+                return true;
+
+            String pack = Descriptors.getPackage(cpEntry);
+            Instruction i = matches(instructions, pack, null, r.getName());
+            if (i != null)
+                return !i.isNegated();
+        }
+
+        // Check if this resource starts with one of the I-C header
+        // paths.
+        String path = r.getAbsolutePath();
+        for (String p : ir) {
+            if (path.startsWith(p))
+                return true;
+        }
+    }
+    return false;
+}
+
+    /**
+ * Verify that the exports only use versions.
+ */
+private void verifyExports() {
+    if (isStrict()) {
+        Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+        Set&lt;String&gt; noexports = new HashSet&lt;String&gt;();
+
+        for (Entry&lt;String,Attrs&gt; e : map.entrySet()) {
+
+            String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
+            if (version == null) {
+                noexports.add(e.getKey());
+            } else {
+                if (!VERSION.matcher(version).matches()) {
+                    Location location;
+                    if (VERSIONRANGE.matcher(version).matches()) {
+                        location = error(
+                                &quot;Export Package %s version is a range: %s; Exports do not allow for ranges.&quot;,
+                                e.getKey(), version).location();
+                    } else {
+                        location = error(&quot;Export Package %s version has invalid syntax: %s&quot;, e.getKey(), version)
+                                .location();
+                    }
+                    location.header = Constants.EXPORT_PACKAGE;
+                    location.context = e.getKey();
+                }
+            }
+
+            if (e.getValue().containsKey(Constants.SPECIFICATION_VERSION)) {
+                Location location = error(
+                        &quot;Export Package %s uses deprecated specification-version instead of version&quot;, e.getKey())
+                        .location();
+                location.header = Constants.EXPORT_PACKAGE;
+                location.context = e.getKey();
+            }
+
+            String mandatory = e.getValue().get(Constants.MANDATORY_DIRECTIVE);
+            if (mandatory != null) {
+                Set&lt;String&gt; missing = new HashSet&lt;String&gt;(split(mandatory));
+                missing.removeAll(e.getValue().keySet());
+                if (!missing.isEmpty()) {
+                    Location location = error(&quot;Export Package %s misses mandatory attribute: %s&quot;, e.getKey(),
+                            missing).location();
+                    location.header = Constants.EXPORT_PACKAGE;
+                    location.context = e.getKey();
+                }
+            }
+        }
+
+        if (!noexports.isEmpty()) {
+            Location location = error(&quot;Export Package clauses without version range: %s&quot;, noexports).location();
+            location.header = Constants.EXPORT_PACKAGE;
+        }
+    }
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

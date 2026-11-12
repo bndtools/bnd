@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>toclasspath ';' LIST ( ';' BOOLEAN )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>toclasspath ';' LIST ( ';' BOOLEAN )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>toclasspath</code> macro converts fully qualified class names to file paths by replacing dots with path separators and optionally adding <code>.class</code> extension.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${toclasspath;&lt;class-names&gt;[;&lt;add-extension&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>class-names</code> - Comma-separated list of fully qualified class names</li>
+<li><code>add-extension</code> (optional) - Boolean to add <code>.class</code> extension (default: true)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Replaces dots (<code>.</code>) with path separators (<code>/</code>)</li>
+<li>Optionally adds <code>.class</code> extension (default: yes)</li>
+<li>Returns comma-separated list of paths</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Convert class names with extension:</p>
+<div class="highlight"><pre><span></span><code>${toclasspath;com.example.Main,com.example.Util}
+# Returns: &quot;com/example/Main.class,com/example/Util.class&quot;
+</code></pre></div>
+
+<p>Convert without extension:</p>
+<div class="highlight"><pre><span></span><code>${toclasspath;org.test.TestCase;false}
+# Returns: &quot;org/test/TestCase&quot;
+</code></pre></div>
+
+<p>Create paths for lookup:</p>
+<div class="highlight"><pre><span></span><code>paths=${toclasspath;${classes};true}
+</code></pre></div>
+
+<p>Package paths without extension:</p>
+<div class="highlight"><pre><span></span><code>${toclasspath;com.example.api;false}
+# Returns: &quot;com/example/api&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Converting class names to resource paths</li>
+<li>Building file paths from class names</li>
+<li>Creating include/exclude patterns</li>
+<li>Resource lookup paths</li>
+<li>Build script generation</li>
+<li>File system operations on classes</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Always uses forward slash <code>/</code> as separator</li>
+<li>Extension parameter defaults to true</li>
+<li>Inverse operation of <code>${toclassname}</code></li>
+<li>Useful for locating class files</li>
+<li>See also: <code>${toclassname}</code> for reverse operation</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

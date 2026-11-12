@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>uniq (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>uniq (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>uniq</code> macro combines one or more lists and removes all duplicate elements, preserving insertion order (first occurrence is kept).</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${uniq;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists to process</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Combines all provided lists</li>
+<li>Removes duplicate elements</li>
+<li>Preserves insertion order (first occurrence kept)</li>
+<li>Returns comma-separated list of unique elements</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Remove duplicates from single list:</p>
+<div class="highlight"><pre><span></span><code>${uniq;1,2,3,1,2,4}
+# Returns: &quot;1,2,3,4&quot;
+</code></pre></div>
+
+<p>Remove duplicates from multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${uniq;red,green,blue;red,yellow}
+# Returns: &quot;red,green,blue,yellow&quot;
+</code></pre></div>
+
+<p>Clean package list:</p>
+<div class="highlight"><pre><span></span><code>${uniq;${exports};${imports}}
+# Returns unique packages
+</code></pre></div>
+
+<p>Deduplicate configuration:</p>
+<div class="highlight"><pre><span></span><code>unique.values=${uniq;${list1};${list2};${list3}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Removing duplicate entries from lists</li>
+<li>Merging lists without duplicates</li>
+<li>Creating unique sets from multiple sources</li>
+<li>Cleaning up configuration values</li>
+<li>Deduplicating package or class lists</li>
+<li>Set operations on lists</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Preserves insertion order (LinkedHashSet behavior)</li>
+<li>First occurrence of duplicate is kept</li>
+<li>Case-sensitive comparison</li>
+<li>Empty elements are preserved if present</li>
+<li>See also: <code>${sort}</code> to also sort the result</li>
+<li>See also: <code>${removeall}</code> and <code>${retainall}</code> for set operations</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

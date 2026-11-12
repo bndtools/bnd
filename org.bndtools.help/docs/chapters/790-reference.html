@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reference</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Reference</h1>
+<p>The subsequent sections provide the reference part of the manual. This consists of the following:</p>
+<ul>
+<li><a href="800-headers.html">headers</a> – OSGi &amp; bnd Manifest headers</li>
+<li><a href="820-instructions.html">instructions</a> – Instructions of bnd, instructions start with a <code>-</code> (minus sign).</li>
+<li><a href="850-macros.html">macros</a> – Macros in bnd</li>
+</ul>
+<p>Since bnd is a library, it gets used in many different places. This makes some of the headers, instructions, and/or
+macros only applicable in a specific context. This is generally indicated on a page with a <em>class</em> button on the right
+side. For example:</p>
+<div class="pageclass" style="float:none;margin:12px">
+Project
+</div>
+
+<p>The following classes are used:</p>
+<ul>
+<li><strong>Workspace</strong> – A workspace model (not maven or gradle)</li>
+<li><strong>Project</strong> – A workspace model in the context of a project</li>
+<li><strong>Analyzer</strong> – Can be used in the analysis &amp; builder phase</li>
+<li><strong>Macro</strong> – General macro, applicable everywhere</li>
+<li>Maven, Ant, Gradle – Only applicable in the given tool</li>
+</ul>
+<p>Usually the format of both headers and instructions follows the Java properties files specification outlined in <a href="130-concepts.html">Concepts</a>.</p>
+</body>
+</html>

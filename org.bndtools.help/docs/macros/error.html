@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>error ( ';' STRING )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>error ( ';' STRING )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>error</code> macro generates one or more build errors with custom messages. Each message argument is processed (macros are expanded) and then added to the build error list. This causes the build to fail.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${error;&lt;message&gt;[;&lt;message&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>message</code> - One or more error messages to generate. Each message can contain macros that will be expanded.</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Processes each message argument (expanding any macros within)</li>
+<li>Adds each processed message to the build error list</li>
+<li>Returns an empty string</li>
+<li>Causes the build to fail</li>
+<li>Error location is tracked for better diagnostics</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Generate a simple error:</p>
+<div class="highlight"><pre><span></span><code>${error;This configuration is not supported}
+</code></pre></div>
+
+<p>Generate error with variable substitution:</p>
+<div class="highlight"><pre><span></span><code>${error;Invalid version: ${version}}
+</code></pre></div>
+
+<p>Conditional error:</p>
+<div class="highlight"><pre><span></span><code>${if;${is;${someproperty}};${error;Property someproperty must not be set}}
+</code></pre></div>
+
+<p>Multiple error messages:</p>
+<div class="highlight"><pre><span></span><code>${error;First error message;Second error message;Third error message}
+</code></pre></div>
+
+<p>Error with computed values:</p>
+<div class="highlight"><pre><span></span><code>${error;Bundle ${bsn} requires Java ${ee} but ${java.version} is configured}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Enforcing build-time constraints</li>
+<li>Validating configuration values</li>
+<li>Preventing invalid bundle configurations</li>
+<li>Providing clear error messages for misconfiguration</li>
+<li>Failing fast when prerequisites are not met</li>
+<li>Custom validation rules in build files</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The build will fail when an error is generated</li>
+<li>Each argument becomes a separate error message</li>
+<li>Macros within error messages are expanded before display</li>
+<li>Use <code>${warning}</code> instead if you want to generate warnings without failing the build</li>
+<li>Errors are tracked with file and line location for debugging</li>
+<li>Empty return value allows use in property assignments without side effects</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

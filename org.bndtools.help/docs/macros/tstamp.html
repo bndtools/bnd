@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>tstamp ( ';' DATEFORMAT ( ';' TIMEZONE ( ';' LONG )? )? )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>tstamp ( ';' DATEFORMAT ( ';' TIMEZONE ( ';' LONG )? )? )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>tstamp</code> macro creates a formatted timestamp string using a custom date format pattern, timezone, and optional timestamp value.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${tstamp[;&lt;format&gt;[;&lt;timezone&gt;[;&lt;millis&gt;]]]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>format</code> (optional) - Date format pattern (default: "yyyyMMddHHmm")</li>
+<li><code>timezone</code> (optional) - Timezone ID (default: "UTC")</li>
+<li><code>millis</code> (optional) - Timestamp in milliseconds (default: current time)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Formats current time by default</li>
+<li>Uses SimpleDateFormat patterns</li>
+<li>Default format: "yyyyMMddHHmm"</li>
+<li>Default timezone: UTC</li>
+<li>All parameters are optional</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Default format (UTC):</p>
+<div class="highlight"><pre><span></span><code>${tstamp}
+# Returns: &quot;202411201030&quot; (example)
+</code></pre></div>
+
+<p>Custom format:</p>
+<div class="highlight"><pre><span></span><code>${tstamp;yyyy-MM-dd HH:mm:ss}
+# Returns: &quot;2024-11-20 10:30:45&quot;
+</code></pre></div>
+
+<p>With timezone:</p>
+<div class="highlight"><pre><span></span><code>${tstamp;yyyy-MM-dd HH:mm;America/New_York}
+# Returns: &quot;2024-11-20 05:30&quot;
+</code></pre></div>
+
+<p>ISO 8601 format:</p>
+<div class="highlight"><pre><span></span><code>${tstamp;yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;}
+# Returns: &quot;2024-11-20T10:30:45Z&quot;
+</code></pre></div>
+
+<p>Specific timestamp:</p>
+<div class="highlight"><pre><span></span><code>${tstamp;yyyy-MM-dd;;1700000000000}
+# Formats the provided timestamp
+</code></pre></div>
+
+<p>Build timestamp in manifest:</p>
+<div class="highlight"><pre><span></span><code>Build-Timestamp: ${tstamp;yyyy-MM-dd HH:mm:ss z;UTC}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Creating build timestamps</li>
+<li>Generating unique version qualifiers</li>
+<li>Formatting dates for manifests</li>
+<li>Creating timestamped file names</li>
+<li>Documentation generation</li>
+<li>Build reproducibility tracking</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses Java SimpleDateFormat patterns</li>
+<li>Default timezone is UTC</li>
+<li>For current time in millis, use <code>${currenttime}</code></li>
+<li>For conversion from millis, use <code>${long2date}</code></li>
+<li>Format patterns are locale-independent</li>
+<li>Common patterns: yyyy (year), MM (month), dd (day), HH (hour 24), mm (minute), ss (second)</li>
+<li>See also: <code>${currenttime}</code>, <code>${long2date}</code>, <code>${now}</code></li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

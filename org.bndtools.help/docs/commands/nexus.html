@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>nexus</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>nexus</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   nexus [options]  &lt;sub-cmd&gt; ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -c --compatible &lt;compatible&gt; ]</code> </li>
+<li><code>[ -s --settings &lt;string&gt; ]</code> Specify the connection-settings for the HttpClient. Default looks for the normal settings files.</li>
+<li><code>[ -u --url &lt;uri&gt; ]</code> Specify the URL of the Nexus repository.</li>
+</ul>
+<h2 id="available-sub-commands">Available sub-commands</h2>
+<ul>
+<li><code>createstaging</code> - Create a staging repository. The profileId specifies a particular profile. If you go to nexus, select the staging profiles, and then select the profile you want to use. The profile id is then in the url. </li>
+<li><code>delete</code> - Delete a file in a staging repository by id </li>
+<li><code>fetch</code> - Fetch a file to staging repository by id </li>
+<li><code>files</code> -   </li>
+<li><code>index</code> -   </li>
+<li><code>sign</code> -   </li>
+<li><code>upload</code> - Upload a file to staging repository by id </li>
+</ul>
+<h3 id="createstaging">createstaging</h3>
+<p>Create a staging repo</p>
+<h4 id="synopsis_1">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   createstaging [options]  &lt;profileId&gt;
+</code></pre></div>
+
+<h5 id="options_1">Options:</h5>
+<ul>
+<li><code>[ -d --description &lt;string&gt; ]</code> </li>
+</ul>
+<h3 id="delete">delete</h3>
+<h4 id="synopsis_2">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   delete [options]  &lt;repositoryId&gt; &lt;remotepath_or_gav&gt;
+</code></pre></div>
+
+<h5 id="options_2">Options:</h5>
+<ul>
+<li><code>[ -f --force ]</code> </li>
+</ul>
+<h3 id="fetch">fetch</h3>
+<h4 id="synopsis_3">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   fetch [options]  &lt;repositoryId&gt; &lt;remotepath_or_gav&gt;
+</code></pre></div>
+
+<h5 id="options_3">Options:</h5>
+<ul>
+<li><code>[ -f --force ]</code> </li>
+<li><code>[ -o --output &lt;file&gt; ]</code> </li>
+</ul>
+<h3 id="files">files</h3>
+<h4 id="synopsis_4">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   files [options]  &lt;files...&gt;
+</code></pre></div>
+
+<h5 id="options_4">Options:</h5>
+<ul>
+<li><code>[ -e --exclude &lt;string&gt; ]</code> A resource URI is only include if the include pattern appears in the path and the exclude does not appear</li>
+<li><code>[ -i --include &lt;string&gt; ]</code> A resource URI is only include if the include pattern appears in the path and the exclude does not appear</li>
+<li><code>[ -r --relative ]</code> </li>
+</ul>
+<h3 id="index">index</h3>
+<h4 id="synopsis_5">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   index [options]  ...
+</code></pre></div>
+
+<h5 id="options_5">Options:</h5>
+<ul>
+<li><code>[ -d --depth &lt;int&gt; ]</code> </li>
+<li><code>[ -n --name &lt;string&gt; ]</code> </li>
+<li><code>[ -o --output &lt;string&gt; ]</code> </li>
+<li><code>[ -r --referal &lt;uri&gt; ]</code> </li>
+</ul>
+<h3 id="sign">sign</h3>
+<p>Artifact signing subcommand.</p>
+<h4 id="synopsis_6">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   sign [options]  &lt;path...&gt;
+</code></pre></div>
+
+<h5 id="options_6">Options:</h5>
+<ul>
+<li><code>[ -c --command &lt;string&gt; ]</code> Specify the path to the gpg command. The gpg path can also be specified using the 'gpg' system property or the 'GPG' environment variable. Defaults to 'gpg'.</li>
+<li><code>[ -f --from &lt;uri&gt; ]</code> Specify the URL to a Nexus repository from which to obtain the artifacts to sign. Defaults to signing the specified paths to the sign subcommand.</li>
+<li><code>[ -i --include &lt;string&gt; ]</code> Specify the include pattern for artifacts from the '--from' option. Defaults to '**'.</li>
+<li><code>[ -k --key &lt;string&gt; ]</code> Specify the local-user USER-ID for signing. Defaults to signing with the default key.</li>
+<li><code>[ -p --password &lt;string&gt; ]</code> Specify the passpharse to the gpg command. Defaults to reading stdin for the passphrase.</li>
+<li><code>[ -s --show ]</code> Only compute and display the signatures but do not upload them.</li>
+<li><code>[ -t --threads &lt;int&gt; ]</code> Specify the number of threads to use when downloading, signing, and uploading artifacts. Defaults to one thread.</li>
+<li><code>[ -x --xclude &lt;string&gt; ]</code> Specify the exclude pattern for artifacts from the '--from' option. Defaults to no exclude pattern.</li>
+</ul>
+<h3 id="upload">upload</h3>
+<h4 id="synopsis_7">Synopsis:</h4>
+<div class="highlight"><pre><span></span><code>   upload [options]  &lt;repositoryId&gt; &lt;remotepath_or_gav&gt; &lt;file&gt;
+</code></pre></div>
+
+<h5 id="options_7">Options:</h5>
+<ul>
+<li><code>[ -f --force ]</code></li>
+</ul>
+</body>
+</html>

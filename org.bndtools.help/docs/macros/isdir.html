@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>isdir ( ';' FILE )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>isdir ( ';' FILE )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>isdir</code> macro checks whether all specified file paths are directories. It returns "true" only if all paths exist and are directories; otherwise, it returns "false".</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${isdir;&lt;path&gt;[;&lt;path&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>path</code> - One or more file paths to check (can be absolute or relative)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Converts each path to an absolute path</li>
+<li>Checks if each path exists and is a directory</li>
+<li>Returns "true" only if ALL paths are directories</li>
+<li>Returns "false" if any path is not a directory or doesn't exist</li>
+<li>Returns "false" if no paths are provided</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Check a single directory:</p>
+<div class="highlight"><pre><span></span><code>${isdir;src/main/java}
+# Returns: &quot;true&quot; if src/main/java is a directory
+</code></pre></div>
+
+<p>Check multiple directories:</p>
+<div class="highlight"><pre><span></span><code>${isdir;src;test;resources}
+# Returns: &quot;true&quot; only if all three are directories
+</code></pre></div>
+
+<p>Use in conditional logic:</p>
+<div class="highlight"><pre><span></span><code>${if;${isdir;generated};directory-exists;directory-missing}
+</code></pre></div>
+
+<p>Conditional file processing:</p>
+<div class="highlight"><pre><span></span><code>${if;${isdir;${basedir}/config};${cat;config/settings.xml};default-config}
+</code></pre></div>
+
+<p>Validate project structure:</p>
+<div class="highlight"><pre><span></span><code>structure.valid=${isdir;src/main/java;src/main/resources;src/test/java}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Validating that required directories exist</li>
+<li>Conditional logic based on directory presence</li>
+<li>Project structure validation</li>
+<li>Build prerequisite checking</li>
+<li>Directory existence verification</li>
+<li>Distinguishing between files and directories</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns "false" (not error) if paths don't exist</li>
+<li>All paths must be directories for "true" result</li>
+<li>Returns string "true" or "false", not boolean</li>
+<li>Paths are resolved to absolute paths before checking</li>
+<li>No distinction between non-existent and non-directory paths</li>
+<li>See also: <code>${isfile}</code> for checking if paths are files</li>
+<li>Useful with <code>${if}</code> macro for conditional behavior</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

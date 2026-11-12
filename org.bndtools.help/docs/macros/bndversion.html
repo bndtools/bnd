@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>bndversion</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>bndversion</h1>
+<h2 id="summary">Summary</h2>
+<p>Returns the version number of the bnd tool currently being used to process the build.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${bndversion}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None. This macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<p>Returns the current bnd version as a string in the format <code>major.minor.micro</code> (without the qualifier/build timestamp).</p>
+<p>For example: <code>7.0.0</code> or <code>6.4.0</code> or <code>5.3.0</code></p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Display bnd version in bundle manifest
+Bundle-BuildTool: bnd-${bndversion}
+
+# Conditional logic based on bnd version
+-include ${if;${vcompare;${bndversion};7.0.0};modern.bnd;legacy.bnd}
+
+# Document which bnd version was used
+Bundle-Comment: Built with bnd ${bndversion}
+
+# Version-specific features
+-conditionalpackage: ${if;${vcompare;${bndversion};6.4.0};com.new.*;com.legacy.*}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Build Documentation</strong>: Record which version of bnd was used to build a bundle</li>
+<li><strong>Conditional Configuration</strong>: Apply different settings based on bnd version</li>
+<li><strong>Feature Detection</strong>: Enable features only available in newer bnd versions</li>
+<li><strong>Troubleshooting</strong>: Help identify build environment for debugging</li>
+<li><strong>Version Requirements</strong>: Verify minimum bnd version requirements</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The version returned does not include the qualifier (e.g., build timestamp or snapshot indicator)</li>
+<li>This is the runtime version of bnd, not a property that can be set</li>
+<li>Useful for ensuring reproducible builds when combined with version checks</li>
+<li>Can be combined with <a href="vcompare.html">vcompare</a> for version comparisons</li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="vcompare.html">vcompare</a> - Compare version strings</li>
+<li><a href="version.html">version</a> - Format version numbers with masks </li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

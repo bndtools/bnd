@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-nomanifest  BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-nomanifest  BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-nomanifest=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/nomanifest.md -->
+<h1 id="-nomanifest">-nomanifest</h1>
+<p>The <code>-nomanifest</code> instruction controls whether the manifest file is included in the generated JAR. When set to <code>true</code>, the manifest will not be saved in the JAR file. This can be useful in scenarios where a manifest is not required or when you want to minimize the contents of the JAR for specific use cases.</p>
+<p>Typically, most OSGi bundles require a manifest, but in some advanced or custom build scenarios, you may wish to omit it. Use this option with caution, as omitting the manifest may cause the resulting JAR to be unusable in standard OSGi environments.</p>
+<p>By default, the manifest is included in the JAR unless <code>-nomanifest: true</code> is specified.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

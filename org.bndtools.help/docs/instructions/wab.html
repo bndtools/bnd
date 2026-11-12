@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-wab FILE ( ',' FILE )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-wab FILE ( ',' FILE )*</h1>
+<ul>
+<li>
+<p>Example: <code>-wab=static-pages/</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/wab.md -->
+<p>In OSGi Enterprise 4.2 the concept of Web Archive Bundles were introduced. Web Archive Bundles are 100% normal bundles following all the rules of OSGi. Their speciality is that they can be mapped to a web server following several of the rules of Java Enterprise Edition's Servlet model. The big difference is that the WARs of the servlet model have a rather strict layout of their archive because the servlet container also handles class loading. In OSGi, the class loading is very well specified and it would therefore be wrong to create special rules.</p>
+<p>However, the OSGi supports the Bundle-Classpath header. This header allows the organization of the internal layout. It turns out that it is possible to create a valid Web Application Bundle (WAB) that is also a valid Web ARchive (WAR). Being deploy an archive both to OSGi and an application server obviously has advantages. bnd therefore supports a number of instructions that make it easy to create these dual mode archives.</p>
+<p>The <code>-wab</code> instruction instructs bnd to move the root of the created archive to WEB-INF/classes. That is, you build your bundle in the normal way,not using the <code>Bundle-ClassPath</code>. The <code>-wab</code> command then moves the root of the archive so the complete class path for the bundle is no inside the WEB-INF/classes directory. It then adjusts the <code>Bundle-ClassPath</code> header to reflect this new location of the classes and resources.</p>
+<p>The new root now only contains WEB-INF. In the Servlet specification, the root of the archive is mapped to the server's context URL. It is therefore often necessary to place static files in the root. For this reason, the <code>-wab</code> instruction has the same form as <a href="includeresource.html">Include-Resource</a> header, and performs the same function. However, it performs this function of copying resources from the file system after the classes and resources of the original bundle have been moved to WEB-INF.</p>
+<p>For example, the following code creates a simple WAB/WAR:</p>
+<div class="highlight"><pre><span></span><code>  Private-Package:   com.example.impl.*
+  Export-Package:    com.example.service.myapi
+  Include-Resource:  resources/
+  -wab:              static-pages/
+</code></pre></div>
+
+<p>The layout of the resulting archive is:</p>
+<div class="highlight"><pre><span></span><code>  WEB-INF/classes/com/example/impl/
+  WEB-INF/classes/com/example/service/myapi/
+  WEB-INF/classes/resources/
+  index.html // from static-pages
+</code></pre></div>
+
+<p>The <code>Bundle-ClassPath</code> is <code>WEB-INF/classes</code>.</p>
+<p>WARs can carry a <code>WEB-INF/lib</code> directory. Any archive in this directory is mapped to the class path of the WAR. The OSGi specifications do not recognize directories with archives it is therefore necessary to list these archives also on the <code>Bundle-ClassPath</code> header. This is cumbersome to do by hand so the <code>-wablib</code> command will take a list of paths. </p>
+<div class="highlight"><pre><span></span><code>  Private-Package:   com.example.impl.*
+  Export-Package:    com.example.service.myapi
+  Include-Resource:  resources/
+  -wab:              static-pages/
+  -wablib:           lib/a.jar, lib/b.jar
+</code></pre></div>
+
+<p>This results in a layout of:</p>
+<div class="highlight"><pre><span></span><code>  WEB-INF/classes/com/example/impl/
+  WEB-INF/classes/com/example/service/myapi/
+  WEB-INF/classes/resources/
+  WEB-INF/lib/
+    a.jar
+    b.jar
+  index.html ( from static-pages)
+</code></pre></div>
+
+<p>The <code>Bundle-ClassPath</code> is now set to <code>WEB-INF/classes,WEB-INF/lib/a.jar,WEB-INF/lib/a.jar</code></p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="cm">/**</span>
+<span class="cm">     * Turn this normal bundle in a web and add any resources.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @throws Exception</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">Jar</span><span class="w"> </span><span class="nf">doWab</span><span class="p">(</span><span class="n">Jar</span><span class="w"> </span><span class="n">dot</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">wab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getProperty</span><span class="p">(</span><span class="n">WAB</span><span class="p">);</span>
+<span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">wablib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getProperty</span><span class="p">(</span><span class="n">WABLIB</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">wab</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">wablib</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">dot</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">trace</span><span class="p">(</span><span class="s">&quot;wab %s %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">wab</span><span class="p">,</span><span class="w"> </span><span class="n">wablib</span><span class="p">);</span>
+<span class="w">        </span><span class="n">setBundleClasspath</span><span class="p">(</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;WEB-INF/classes&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">getProperty</span><span class="p">(</span><span class="n">BUNDLE_CLASSPATH</span><span class="p">)));</span>
+
+<span class="w">        </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HashSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="p">(</span><span class="n">dot</span><span class="p">.</span><span class="na">getResources</span><span class="p">().</span><span class="na">keySet</span><span class="p">());</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">paths</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="na">indexOf</span><span class="p">(</span><span class="sc">&#39;/&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">Character</span><span class="p">.</span><span class="na">isUpperCase</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="na">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">trace</span><span class="p">(</span><span class="s">&quot;wab: moving: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
+<span class="w">                </span><span class="n">dot</span><span class="p">.</span><span class="na">rename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;WEB-INF/classes/&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">Parameters</span><span class="w"> </span><span class="n">clauses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parseHeader</span><span class="p">(</span><span class="n">getProperty</span><span class="p">(</span><span class="n">WABLIB</span><span class="p">));</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">clauses</span><span class="p">.</span><span class="na">keySet</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">File</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getFile</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">            </span><span class="n">addWabLib</span><span class="p">(</span><span class="n">dot</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">doIncludeResource</span><span class="p">(</span><span class="n">dot</span><span class="p">,</span><span class="w"> </span><span class="n">wab</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">dot</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

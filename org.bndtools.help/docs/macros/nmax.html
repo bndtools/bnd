@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>nmax (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>nmax (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>nmax</code> macro compares numeric values using floating-point comparison and returns the maximum (highest) number.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${nmax;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of numeric values</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Parses all values as doubles</li>
+<li>Compares numerically (not lexicographically)</li>
+<li>Returns the highest number</li>
+<li>Handles integers and decimals</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find maximum number:</p>
+<div class="highlight"><pre><span></span><code>${nmax;10,5,20,3}
+# Returns: &quot;20&quot;
+</code></pre></div>
+
+<p>Multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${nmax;100,200;50,150}
+# Returns: &quot;200&quot;
+</code></pre></div>
+
+<p>Decimals:</p>
+<div class="highlight"><pre><span></span><code>${nmax;1.5,2.3,0.9}
+# Returns: &quot;2.3&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Finding maximum numeric value</li>
+<li>Numeric comparison</li>
+<li>Statistics and analysis</li>
+<li>Peak value detection</li>
+<li>Data processing</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Numeric comparison (not string)</li>
+<li>Handles negative numbers</li>
+<li>Floating-point precision</li>
+<li>See also: <code>${nmin}</code> for minimum</li>
+<li>See also: <code>${max}</code> for string comparison</li>
+<li>See also: <code>${vmax}</code> for version comparison</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

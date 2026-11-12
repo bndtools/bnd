@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>maven ( 'settings' | 'bundle'</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>maven ( 'settings' | 'bundle'</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   maven  ...
+</code></pre></div>
+
+<!-- Manual content from: ext/maven.md -->
+<div class="highlight"><pre><span></span><code>maven 
+[-temp &lt;dir&gt;]            use as temp directory
+settings                 show maven settings
+bundle                   turn a bundle into a maven bundle
+    [-properties &lt;file&gt;]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...
+    [-javadoc &lt;file|url&gt;]  where to find the javadoc (zip/dir), otherwise generated
+    [-source &lt;file|url&gt;]   where to find the source (zip/dir), otherwise from OSGI-OPT/src
+    [-scm &lt;url&gt;]           required scm in pom, otherwise from Bundle-SCM
+    [-url &lt;url&gt;]           required project url in pom
+    [-bsn bsn]             overrides bsn
+    [-version &lt;version&gt;]   overrides version
+    [-developer &lt;email&gt;]   developer email
+    [-nodelete]            do not delete temp files
+    [-passphrase &lt;gpgp passphrase&gt;] signer password
+        &lt;file|url&gt;
+</code></pre></div>
+
+<h2 id="options">Options</h2>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>biz.aQute.bnd (master)$ bnd maven settings
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;settings xmlns=&quot;http://maven.apache.org/settings/1.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd&quot;&gt;
+    &lt;!-- &lt;localRepository&gt;C:/Users/franklan/.m2/repository&lt;/localRepository&gt; --&gt;
+    &lt;pluginGroups&gt;
+        &lt;!-- pluginGroup
+        | Specifies a further group identifier to use for plugin lookup.
+    &lt;pluginGroup&gt;com.your.plugins&lt;/pluginGroup&gt;
+    --&gt;
+    &lt;/pluginGroups&gt;
+    &lt;servers&gt;
+        &lt;server&gt;
+            &lt;id&gt;deploymentRepo&lt;/id&gt;
+            &lt;username&gt;deployment&lt;/username&gt;
+            &lt;password&gt;deployment123&lt;/password&gt;
+    &lt;!-- &lt;privateKey&gt;c://config//Frank_Langel.p12&lt;/privateKey&gt;    --&gt;
+        &lt;/server&gt;
+    &lt;/servers&gt;
+    &lt;mirrors&gt;
+        &lt;mirror&gt;
+        &lt;id&gt;nexus&lt;/id&gt;
+            &lt;mirrorOf&gt;*&lt;/mirrorOf&gt;
+            &lt;url&gt;https://svn.myfarm365.de/nexus/content/groups/public&lt;/url&gt;
+    &lt;privateKey&gt;/Users/aqute/Desktop/Peter_Kriens.p12&lt;/privateKey&gt;
+        &lt;/mirror&gt;
+    &lt;/mirrors&gt;
+    &lt;profiles&gt;
+        &lt;profile&gt;
+                &lt;id&gt;nexus&lt;/id&gt;
+                &lt;!--Enable snapshots for the built in central repo to direct --&gt;
+                &lt;!--all requests to nexus via the mirror --&gt;
+                &lt;repositories&gt;
+                    &lt;repository&gt;
+                        &lt;id&gt;central&lt;/id&gt;
+                        &lt;url&gt;http://central&lt;/url&gt; &lt;!-- URL wird nicht verwendet, da mirror alles zu nexus weiterleitet --&gt;
+                        &lt;releases&gt;
+                            &lt;enabled&gt;true&lt;/enabled&gt;
+                            &lt;updatePolicy&gt;always&lt;/updatePolicy&gt;
+                        &lt;/releases&gt;
+                        &lt;snapshots&gt;
+                            &lt;enabled&gt;true&lt;/enabled&gt;
+                            &lt;updatePolicy&gt;always&lt;/updatePolicy&gt;
+                        &lt;/snapshots&gt;
+                    &lt;/repository&gt;
+                &lt;/repositories&gt;
+                &lt;pluginRepositories&gt;
+                    &lt;pluginRepository&gt;
+                        &lt;url&gt;http://central&lt;/url&gt; &lt;!-- URL wird nicht verwendet, da mirror alles zu nexus weiterleitet --&gt;
+                        &lt;id&gt;central&lt;/id&gt;
+                        &lt;releases&gt;
+                            &lt;enabled&gt;true&lt;/enabled&gt;
+                            &lt;updatePolicy&gt;always&lt;/updatePolicy&gt;
+                        &lt;/releases&gt;
+                        &lt;snapshots&gt;
+                            &lt;enabled&gt;true&lt;/enabled&gt;
+                            &lt;updatePolicy&gt;always&lt;/updatePolicy&gt;
+                        &lt;/snapshots&gt;
+                    &lt;/pluginRepository&gt;
+                &lt;/pluginRepositories&gt;
+            &lt;/profile&gt;
+
+        &lt;/profiles&gt;
+        &lt;activeProfiles&gt;
+                &lt;activeProfile&gt;nexus&lt;/activeProfile&gt;
+        &lt;/activeProfiles&gt;
+&lt;/settings&gt;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

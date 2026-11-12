@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runframeworkrestart BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runframeworkrestart BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-runframeworkrestart: true</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runframeworkrestart.md -->
+<p>Any bundle can stop the framework. After stopping, the launcher receives a notification and normally
+exit the process with <code>System.exit</code>. In some cases, usually testing, it is necessary to do a restart
+in the local VM. </p>
+<p>If <code>-runframeworkrestart</code> is set to <code>true</code>, the launcher will not do a hard exit after the framework is stopped,
+but will restart the framework after doing the normal clean up.</p>
+<p>The launcher keeps a system property <code>launcher.framework.restart.count</code> that is set to the iteration, it is initially zero.</p>
+<p><br /><br /></p>
+</body>
+</html>
