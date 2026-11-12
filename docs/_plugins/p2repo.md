@@ -56,6 +56,21 @@ Omitting `cache` preserves the existing behavior. Setting it does not move or de
 previously cached files, or change the shared HTTP download cache (normally
 `~/.bnd/urlcache`).
 
+## Sharing an index
+
+An index belongs to one repository `url`. Two P2 repositories with different URLs
+must not use the same index file: each discards and rewrites the index of the
+other whenever it is initialized. bnd reports such a configuration as an error.
+Repositories can share a `cache` directory.
+
+Several bnd processes can have the same workspace open, for example Bndtools, a
+command line build and a language server. While a process validates or creates an
+index, it holds the lock file `<index file name>.lock` next to the index file, so
+all processes that use the same index agree on the lock, whatever their `cache`. Another process waits for that
+lock, for at most 10 minutes, and then uses the index that was written instead of
+reading the repository again. The operating system releases the lock when the
+process ends. bnd versions without this lock ignore it.
+
 ## Eclipse Features
 
 Eclipse features are stored in the generated index with identity type

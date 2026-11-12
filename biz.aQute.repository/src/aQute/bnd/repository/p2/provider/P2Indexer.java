@@ -18,7 +18,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -49,6 +51,7 @@ import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.MD5;
+import aQute.libg.filelock.ProcessLock;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.packed.Unpack200;
@@ -65,6 +68,11 @@ import aQute.service.reporter.Reporter;
 class P2Indexer implements Closeable {
 	private final static Logger				logger		= LoggerFactory.getLogger(P2Indexer.class);
 	private static final long				MAX_STALE	= TimeUnit.DAYS.toMillis(100);
+	/**
+	 * How long to wait for another process that reads the same repository
+	 * before the index is read without the lock.
+	 */
+	static volatile long					lockTimeout	= TimeUnit.MINUTES.toMillis(10);
 	private final Reporter					reporter;
 	private final Unpack200					processor;
 	final File								location;
@@ -72,6 +80,7 @@ class P2Indexer implements Closeable {
 	final String							name;
 	final String							urlHash;
 	final File								indexFile;
+	final File								lockFile;
 	private final HttpClient				client;
 	private final PromiseFactory			promiseFactory;
 	private volatile BridgeRepository		bridge;
@@ -96,6 +105,8 @@ class P2Indexer implements Closeable {
 		this.urlHash = client.toName(url);
 		if (this.indexFile.isDirectory())
 			throw new IllegalArgumentException(this.indexFile + " is a directory, not an index file");
+		File absoluteIndex = this.indexFile.getAbsoluteFile();
+		this.lockFile = new File(absoluteIndex.getParentFile(), absoluteIndex.getName() + ".lock");
 		IO.mkdirs(this.location);
 
 		validate();
@@ -103,7 +114,27 @@ class P2Indexer implements Closeable {
 	}
 
 	private void init() throws Exception {
-		bridge = new BridgeRepository(readRepository(indexFile));
+		bridge = new BridgeRepository(locked(() -> readRepository(indexFile)));
+	}
+
+	/**
+	 * Reading a repository validates the index and, when it is missing or
+	 * stale, downloads the artifacts and writes a new index. The lock makes
+	 * another process that uses the same index wait for that result instead
+	 * of doing the same work and replacing the index file concurrently.
+	 */
+	private <T> T locked(Callable<T> action) throws Exception {
+		ProcessLock lock = null;
+		try {
+			lock = ProcessLock.lock(lockFile, lockTimeout, TimeUnit.MILLISECONDS);
+		} catch (TimeoutException | IOException e) {
+			logger.warn("{}: reading index {} without lock: {}", name, indexFile, e.getMessage());
+		}
+		try {
+			return action.call();
+		} finally {
+			IO.close(lock);
+		}
 	}
 
 	private void validate() {
@@ -465,8 +496,10 @@ class P2Indexer implements Closeable {
 	}
 
 	void reread() throws Exception {
-		indexFile.delete();
-		init();
+		bridge = new BridgeRepository(locked(() -> {
+			indexFile.delete();
+			return readRepository(indexFile);
+		}));
 	}
 
 	/**

@@ -78,9 +78,7 @@ public class P2Repository extends BaseRepository
 			File configuredFile = workspace.getFile(configuredLocation);
 			File indexFile;
 			File location;
-			boolean directoryLocation = configuredLocation.endsWith("/") || configuredLocation.endsWith("\\")
-				|| (configuredFile.isDirectory() && !isIndexFileName(configuredFile.getName()));
-			if (directoryLocation) {
+			if (isDirectoryLocation(configuredLocation, configuredFile)) {
 				location = configuredFile;
 				indexFile = new File(location, "index.xml.gz");
 			} else {
@@ -94,9 +92,47 @@ public class P2Repository extends BaseRepository
 			if (cache != null)
 				location = workspace.getFile(cache);
 
+			checkSharedIndex(client, url, indexFile);
+
 			return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
+		}
+	}
+
+	private static boolean isDirectoryLocation(String configuredLocation, File configuredFile) {
+		return configuredLocation.endsWith("/") || configuredLocation.endsWith("\\")
+			|| (configuredFile.isDirectory() && !isIndexFileName(configuredFile.getName()));
+	}
+
+	/**
+	 * The index file as configured. Does not create or read the index.
+	 */
+	private File indexFile(Workspace workspace, HttpClient client) throws Exception {
+		String configuredLocation = config.location("cnf/cache/p2-" + config.name(client.toName(config.url())) + "/");
+		File configuredFile = workspace.getFile(configuredLocation);
+		return isDirectoryLocation(configuredLocation, configuredFile) ? new File(configuredFile, "index.xml.gz")
+			: configuredFile;
+	}
+
+	/**
+	 * An index is only valid for the repository URL it was created from. Two
+	 * repositories with different URLs that share an index file therefore
+	 * rewrite the index of each other on every initialization.
+	 */
+	private void checkSharedIndex(HttpClient client, URI url, File indexFile) throws Exception {
+		for (P2Repository other : registry.getPlugins(P2Repository.class)) {
+			if (other == this || other.config == null)
+				continue;
+
+			URI otherUrl = other.config.url();
+			if (otherUrl == null || otherUrl.equals(url) || !indexFile.equals(other.indexFile(workspace, client)))
+				continue;
+
+			Reporter target = reporter != null ? reporter : workspace;
+			target.error(
+				"P2 repositories %s (%s) and %s (%s) use the same index file %s. Each rewrites the index of the other; set a distinct location for one of them.",
+				name, url, other.config.name(client.toName(otherUrl)), otherUrl, indexFile);
 		}
 	}
 
