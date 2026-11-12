@@ -5,3 +5,9 @@
 /vendor/
 /.jekyll-metadata
 pagefind*
+
+# Generated documentation exports
+bnd-docs-*.html
+bnd-docs-*.pdf
+test-output.*
+bnd-docs.html
