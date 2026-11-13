@@ -39,6 +39,9 @@ fi
 # publish again for jfrog (with env.CANONICAL=true, where jfrog profile is chosen)
 ./mvnw -Dmaven.repo.local=dist/m2 --batch-mode -Pdist -Dreleaserepo=file:dist/bundles ${GPG_ARGS} deploy
 
+# Rebuild the p2 repository with the signing secrets available to this step.
+./gradlew --no-daemon :org.bndtools.p2:clean :org.bndtools.p2:jar
+
 # 3. publish bnd workspace to dist/bundles (and JFrog if CANONICAL)
 ./gradlew --no-daemon -Dmaven.repo.local=dist/m2 :publish "$@"
 
