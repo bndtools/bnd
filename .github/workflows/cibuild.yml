@@ -102,13 +102,18 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
+          JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
+          JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+
+      - name: Sign P2 repository
+        if: ${{ matrix.canonical && (github.event_name != 'pull_request') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) }}
+        run: ./gradlew --no-daemon :org.bndtools.p2:clean :org.bndtools.p2:jar
+        env:
           P2_SIGN: true
           P2_SIGN_KEY: ${{ secrets.GPG_KEY_ID }}
           P2_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           P2_PUB_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
-          SONATYPE_BEARER: ${{ secrets.SONATYPE_BEARER }}
-          JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
-          JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
 
       - name: Upload P2 Repo artifact
         if: ${{ matrix.canonical && github.event_name == 'pull_request' }}
