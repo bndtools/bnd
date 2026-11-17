@@ -111,7 +111,7 @@
 			<dependency>
 				<groupId>org.codehaus.plexus</groupId>
 				<artifactId>plexus-build-api</artifactId>
-				<version>1.2.0</version>
+				<version>1.4.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
