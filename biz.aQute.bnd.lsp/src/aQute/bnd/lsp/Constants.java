@@ -7,6 +7,7 @@ public interface Constants {
 	String	COMMAND_BUILD_PROJECT		= "bnd.build.project";
 	String	COMMAND_BUILD_WORKSPACE		= "bnd.build.workspace";
 	String	COMMAND_BUILD_CLEAN			= "bnd.build.clean";
+	String	COMMAND_BUILD_AUTO			= "bnd.build.auto";
 	String	COMMAND_RESOLVE_BNDRUN		= "bnd.resolve";
 	String	COMMAND_BASELINE			= "bnd.baseline";
 	String	COMMAND_MACRO_EXPAND		= "bnd.macro.expand";
@@ -37,6 +38,10 @@ public interface Constants {
 
 	// Notifications
 	String	NOTIFICATION_STATUS			= "bnd/status";
+	String	NOTIFICATION_BUILD_STATUS	= "bnd/buildStatus";
+
+	// Key in the experimental server capabilities
+	String	CAPABILITY_AUTO_BUILD		= "bndAutoBuild";
 
 	// Diagnostic Source
 	String	DIAGNOSTIC_SOURCE_BND		= "bnd";
