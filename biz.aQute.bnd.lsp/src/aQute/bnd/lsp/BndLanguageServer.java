@@ -1,6 +1,7 @@
 package aQute.bnd.lsp;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.lsp.services.BndAutoBuildService;
 import aQute.bnd.lsp.services.BndSemanticTokensProvider;
 import aQute.bnd.lsp.services.BndTextDocumentService;
 import aQute.bnd.lsp.services.BndWorkspaceManager;
@@ -44,14 +46,18 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 	private final BndWorkspaceManager		workspaceManager;
 	private final BndTextDocumentService	textDocumentService;
 	private final BndWorkspaceService		workspaceService;
+	private final BndAutoBuildService		autoBuildService;
 
 	private LanguageClient					client;
 	private int								exitCode	= 0;
 
 	public BndLanguageServer() {
 		this.workspaceManager = new BndWorkspaceManager();
+		this.autoBuildService = new BndAutoBuildService(workspaceManager, scheduler);
 		this.textDocumentService = new BndTextDocumentService(workspaceManager, scheduler);
 		this.workspaceService = new BndWorkspaceService(workspaceManager);
+		this.textDocumentService.setAutoBuildService(autoBuildService);
+		this.workspaceService.setAutoBuildService(autoBuildService);
 	}
 
 	@Override
@@ -61,6 +67,11 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 		boolean trusted = options.isJsonObject() && options.getAsJsonObject().has("workspaceTrusted")
 			&& options.getAsJsonObject().get("workspaceTrusted").getAsBoolean();
 		workspaceService.configureEffectiveProperties(textDocumentService, trusted);
+
+		// Automatic builds are on unless the client switches them off
+		JsonElement autoBuild = options.isJsonObject() ? options.getAsJsonObject().get("autoBuild") : null;
+		autoBuildService.configure(autoBuild == null || !autoBuild.isJsonPrimitive() || autoBuild.getAsBoolean(),
+			trusted);
 
 		// The client names itself so workspaces can route tool specific
 		// directories with the ${driver} macro
@@ -98,7 +109,8 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 
 		// Execute Command
 		ExecuteCommandOptions cmdOptions = new ExecuteCommandOptions(Arrays.asList(Constants.COMMAND_BUILD_PROJECT,
-			Constants.COMMAND_BUILD_WORKSPACE, Constants.COMMAND_BUILD_CLEAN, Constants.COMMAND_RESOLVE_BNDRUN,
+			Constants.COMMAND_BUILD_WORKSPACE, Constants.COMMAND_BUILD_CLEAN, Constants.COMMAND_BUILD_AUTO,
+			Constants.COMMAND_RESOLVE_BNDRUN,
 			Constants.COMMAND_BASELINE, Constants.COMMAND_MACRO_EXPAND, Constants.COMMAND_REPO_LIST,
 			Constants.COMMAND_JAR_PRINT, Constants.COMMAND_JAR_PRINT_TEXT, Constants.COMMAND_EFFECTIVE_PROPERTIES,
 			Constants.COMMAND_RESOLUTION_ANALYZE, Constants.COMMAND_LAUNCH_PREPARE,
@@ -111,6 +123,7 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 			Constants.COMMAND_WORKSPACE_OFFLINE, Constants.COMMAND_WIZARD_LIST, Constants.COMMAND_WIZARD_PLAN,
 			Constants.COMMAND_WIZARD_APPLY, Constants.COMMAND_WIZARD_DISPOSE, Constants.COMMAND_WIZARD_CREATE));
 		capabilities.setExecuteCommandProvider(cmdOptions);
+		capabilities.setExperimental(Map.of(Constants.CAPABILITY_AUTO_BUILD, true));
 
 		return CompletableFuture.completedFuture(new InitializeResult(capabilities));
 	}
@@ -119,6 +132,7 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 	public CompletableFuture<Object> shutdown() {
 		logger.info("Shutting down bnd Language Server");
 		workspaceService.shutdown();
+		autoBuildService.close();
 		workspaceManager.shutdown();
 		scheduler.shutdown();
 		return CompletableFuture.completedFuture(new Object());
@@ -145,6 +159,9 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 		this.client = client;
 		this.textDocumentService.setClient(client);
 		this.workspaceService.setClient(client);
+		if (client instanceof BndLanguageClient bndClient) {
+			autoBuildService.setListener(bndClient::buildStatus);
+		}
 	}
 
 	public BndWorkspaceManager getWorkspaceManager() {
