@@ -2,16 +2,22 @@ package aQute.bnd.lsp.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import aQute.bnd.lsp.Constants;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.filelock.ProcessLock;
 
 @SuppressWarnings("unchecked")
 class BndWorkspaceServiceTest {
@@ -128,6 +134,44 @@ class BndWorkspaceServiceTest {
 		if (Boolean.TRUE.equals(bundle.get("mismatch"))) {
 			assertThat(bundle.get("suggestedVersion")).isNotNull();
 		}
+	}
+
+	@Test
+	void resolveWriteWaitsForAnotherProcessThatResolvesTheSameFile() throws Exception {
+		Path project = workspace("", "Bundle-Version: 1.0.0\n");
+		Path bndrun = project.resolve("launch.bndrun");
+		Files.writeString(bndrun,
+			"-runfw: org.missing.framework\n-runrequires: osgi.identity;filter:='(osgi.identity=missing)'\n");
+		// the lock of another process, for example a second window
+		File lockFile = temporary.resolve("cnf/cache/locks/bndrun-" + SHA1.digest(bndrun.toRealPath()
+			.toString()
+			.getBytes(StandardCharsets.UTF_8))
+			.asHex() + ".lock")
+			.toFile();
+
+		CompletableFuture<Map<String, Object>> resolved;
+		try (ProcessLock other = ProcessLock.tryLock(lockFile)
+			.orElseThrow()) {
+			resolved = CompletableFuture.supplyAsync(() -> {
+				try {
+					return execute(Constants.COMMAND_RESOLVE_BNDRUN, bndrun.toUri()
+						.toString());
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			});
+			Thread.sleep(500);
+			assertThat(resolved).isNotDone();
+
+			// a dry run does not write and does not wait
+			assertThat(execute(Constants.COMMAND_RESOLVE_BNDRUN, bndrun.toUri()
+				.toString(), false)).doesNotContainEntry("written", true);
+		}
+		assertThat(resolved.get(60, TimeUnit.SECONDS)).containsKey("success");
+		assertThat(lockFile).isFile();
+		ProcessLock.tryLock(lockFile)
+			.orElseThrow()
+			.close();
 	}
 
 	@Test

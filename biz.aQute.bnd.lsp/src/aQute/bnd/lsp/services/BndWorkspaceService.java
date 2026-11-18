@@ -2,6 +2,7 @@ package aQute.bnd.lsp.services;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -42,10 +45,13 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.print.JarPrinter;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.filelock.ProcessLock;
 import biz.aQute.resolve.RunResolution;
 
 public class BndWorkspaceService implements WorkspaceService {
 	private static final Logger			logger	= LoggerFactory.getLogger(BndWorkspaceService.class);
+	private static final long			BNDRUN_LOCK_TIMEOUT_MINUTES	= 10;
 
 	private final BndWorkspaceManager	workspaceManager;
 	private final BndLaunchService		launchService;
@@ -268,6 +274,21 @@ public class BndWorkspaceService implements WorkspaceService {
 			throw new IllegalStateException("Not in a bnd workspace: " + file);
 		}
 
+		// Another process with this workspace open can resolve and write the
+		// same file. Serialize them so the later one resolves the updated file.
+		File lockFile = new File(ws.getBuildDir(),
+			"cache/locks/bndrun-" + SHA1.digest(file.getCanonicalPath()
+				.getBytes(StandardCharsets.UTF_8))
+				.asHex()
+				+ ".lock");
+		ProcessLock lock = null;
+		if (writeChanges) {
+			try {
+				lock = ProcessLock.lock(lockFile, BNDRUN_LOCK_TIMEOUT_MINUTES, TimeUnit.MINUTES);
+			} catch (TimeoutException e) {
+				return Map.of("success", false, "error", "Could not resolve " + file.getName() + ": " + e.getMessage());
+			}
+		}
 		try (biz.aQute.resolve.Bndrun bndrun = biz.aQute.resolve.Bndrun.createBndrun(ws, file)) {
 			RunResolution res = bndrun.resolve();
 			if (res.isOK()) {
@@ -287,6 +308,10 @@ public class BndWorkspaceService implements WorkspaceService {
 				result.put("success", false);
 				result.put("error", res.report(true));
 				return result;
+			}
+		} finally {
+			if (lock != null) {
+				lock.close();
 			}
 		}
 	}

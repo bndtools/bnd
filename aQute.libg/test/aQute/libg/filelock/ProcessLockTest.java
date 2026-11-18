@@ -4,12 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -97,6 +100,40 @@ public class ProcessLockTest {
 		} finally {
 			first.close();
 		}
+	}
+
+	@Test
+	public void lockOrContinueReportsTimeoutAndLockFileProblems() throws Exception {
+		File file = new File(tmp, "test.lock");
+		List<String> problems = new ArrayList<>();
+
+		try (ProcessLock first = ProcessLock.tryLock(file)
+			.orElseThrow()) {
+			ProcessLock.lockOrContinue(file, 100, TimeUnit.MILLISECONDS, problems::add)
+				.close();
+			assertThat(problems).singleElement()
+				.asString()
+				.contains("pid " + ProcessHandle.current()
+					.pid());
+			assertThat(ProcessLock.tryLock(file)).isEmpty();
+		}
+
+		// a directory in place of the lock file cannot be opened
+		File directory = new File(tmp, "directory.lock");
+		assertThat(directory.mkdirs()).isTrue();
+		problems.clear();
+		ProcessLock.lockOrContinue(directory, 100, TimeUnit.MILLISECONDS, problems::add)
+			.close();
+		assertThat(problems).hasSize(1);
+
+		problems.clear();
+		try (Closeable lock = ProcessLock.lockOrContinue(file, 100, TimeUnit.MILLISECONDS, problems::add)) {
+			assertThat(problems).isEmpty();
+			assertThat(ProcessLock.tryLock(file)).isEmpty();
+		}
+		ProcessLock.tryLock(file)
+			.orElseThrow()
+			.close();
 	}
 
 	@Test

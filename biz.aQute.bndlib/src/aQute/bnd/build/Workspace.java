@@ -4,6 +4,7 @@ import static aQute.bnd.exceptions.BiFunctionWithException.asBiFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -113,6 +114,7 @@ import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.filelock.ProcessLock;
 import aQute.libg.glob.Glob;
 import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
@@ -1993,6 +1995,23 @@ public class Workspace extends Processor {
 	public Result<File> getExpandedInCache(String urn, File file) throws IOException {
 		String safeFileName = IO.toSafeFileName(urn);
 		File cache = getCache("expanded/" + safeFileName);
+
+		// The directory is deleted and expanded again when it is stale. Another
+		// process with this workspace must not see or reuse it in between.
+		File lockFile = getFile(buildDir, "cache/locks/expanded-" + Integer.toHexString(urn.hashCode()) + ".lock");
+		try (Closeable lock = buildDir.isDirectory()
+			? ProcessLock.lockOrContinue(lockFile, 2, TimeUnit.MINUTES,
+				problem -> warning("Continuing without the lock of %s: %s", urn, problem))
+			: () -> {}) {
+			return getExpandedInCacheLocked(file, cache, urn);
+		} catch (InterruptedException e) {
+			Thread.currentThread()
+				.interrupt();
+			return Result.err("interrupted while expanding %s from %s", urn, file);
+		}
+	}
+
+	private Result<File> getExpandedInCacheLocked(File file, File cache, String urn) {
 		File receiptFile = IO.getFile(cache, ".receipt");
 		if (cache.exists()) {
 			try {
