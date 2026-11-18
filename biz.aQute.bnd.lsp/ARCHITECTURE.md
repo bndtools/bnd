@@ -96,8 +96,9 @@ The capabilities returned by `BndLanguageServer.initialize` currently include:
 | Code actions | `BndTextDocumentService`, resolve action for `.bndrun` documents plus `BndQuickFixProvider` quick fixes for diagnostics with a known code |
 | Formatting | Not advertised; the method returns no edits |
 | Execute commands | `BndWorkspaceService`, with IDs from `Constants` |
+| Experimental `bndAutoBuild` | Advertises automatic builds and the `bnd/buildStatus` notification |
 
-Completion trigger characters are `-`, `:`, `=`, `$`, `{`, `;`, and `,`. The server does not provide incremental document synchronization: it uses LSP full-sync mode.
+Completion trigger characters are `-`, `:`, `=`, `$`, `{`, `;`, and `,`. The server has one non-standard client interface, `BndLanguageClient`, for the notification `bnd/buildStatus`; `Main` uses it as the remote interface. The server does not provide incremental document synchronization: it uses LSP full-sync mode.
 
 ## Document Model and Analysis
 
@@ -153,6 +154,7 @@ The manager owns cached workspace lifetimes. It closes cached workspaces when th
 | Pending diagnostic debounce tasks | `BndTextDocumentService` | Replaced on subsequent edit; cleared with scheduler shutdown |
 | Workspace objects and workspace locks | `BndWorkspaceManager` | Workspaces close when their configuration disappears or at shutdown; locks remain until shutdown |
 | Prepared external launchers | `BndLaunchService` | From prepare until explicit dispose or server shutdown |
+| Pending automatic builds and the on/off switch | `BndAutoBuildService` | Pending changes until built or switched off; the switch until shutdown |
 | Template catalogs and preview plans | `BndWizardService` | Explicitly disposed, server shutdown, or 15-minute expiry |
 
 ## Workspace Commands
@@ -162,6 +164,7 @@ The client invokes commands through LSP `workspace/executeCommand`. `BndLanguage
 | Command area | Owner | Responsibility |
 | --- | --- | --- |
 | Build project/workspace, resolve `.bndrun`, macro expansion, repository listing, JAR printing | `BndWorkspaceService` | Adapt command arguments to bnd build, resolve, macro, repository, and JAR APIs |
+| Automatic builds (`bnd.build.auto`) | `BndAutoBuildService` | Switch automatic builds on or off, report the state |
 | Effective properties | `BndEffectivePropertiesService` | Evaluate raw/expanded/merged properties, provenance, diagnostics, and source text |
 | Resolution analysis | `BndResolutionService` | Extract OSGi requirements/capabilities from selected `.bnd` or JAR inputs and mark local matches |
 | Launch prepare/dispose | `BndLaunchService` | Prepare run or test launch configuration for the editor/debugger; retain resources until disposal |
@@ -205,6 +208,35 @@ sequenceDiagram
         WS-->>E: command response
     end
 ```
+
+## Automatic Builds
+
+`BndAutoBuildService` rebuilds bnd projects after their inputs changed. It is on by default and can be switched off by the client. A bnd build only packages classes that the Java tooling of the editor already compiled, so the triggers are file changes, not Java compilation.
+
+```mermaid
+sequenceDiagram
+    participant C as LSP client
+    participant S as Workspace / text services
+    participant A as BndAutoBuildService
+    participant WM as BndWorkspaceManager
+    participant P as bnd Project
+
+    C->>S: didSave (.bnd) / didChangeWatchedFiles
+    S->>A: filesChanged(files)
+    A->>A: map files to projects, ignore outputs, collect for 750 ms
+    A->>WM: executeWithWorkspaceLock(workspace)
+    WM->>A: run on the workspace executor
+    A->>C: bnd/buildStatus building (current project)
+    A->>P: build changed projects, then stale dependents in dependency order
+    A->>C: bnd/buildStatus idle (summary, messages)
+```
+
+- **Inputs.** Any file in a project except hidden paths, `.bndrun` files and the project's target and test output directories, so a build never triggers itself. In `cnf`, only `*.bnd` and `*.mvn` files in `cnf` and `cnf/ext`; they make every project subject to a staleness check. Saved `.bnd` documents trigger directly; everything else, including class files, arrives as watched-file changes, so the client must watch them.
+- **Scope.** Changed projects always build. Projects that depend on them build only when `Project.isStale()` says so. A project whose dependency failed is reported as skipped. Dependency cycles do not stop the build order.
+- **Scheduling.** Changes are collected per workspace for 750 ms, then run one build at a time on the workspace executor while holding the workspace lock, so a refresh cannot run in the middle of a build.
+- **Trust.** Builds run only when the client reported `workspaceTrusted` during initialization and automatic builds are enabled. The state is `enabled` (the user's switch) and `active` (enabled and trusted).
+- **Control.** The initialization option `autoBuild` (default `true`), the command `bnd.build.auto` (no argument queries, a boolean sets) and `workspace/didChangeConfiguration` with `bnd.build.auto` set the switch. The server advertises `capabilities.experimental.bndAutoBuild`.
+- **Status.** The server sends the custom notification `bnd/buildStatus` (`BndLanguageClient`, payload `BndBuildStatus`) when the switch changes and while a run builds. A run's last notification has `state` `idle` and carries the summary (built, failed, skipped, error and warning counts) and the messages of the run. Clients that do not implement `BndLanguageClient` simply do not receive it.
 
 ## Extension Workflow
 

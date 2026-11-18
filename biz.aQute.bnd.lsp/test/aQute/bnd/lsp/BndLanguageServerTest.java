@@ -216,4 +216,82 @@ public class BndLanguageServerTest {
 
 		server.shutdown().get();
 	}
+
+	@Test
+	public void autoBuildIsAdvertisedOnByDefaultAndSwitchable() throws Exception {
+		BndLanguageServer server = new BndLanguageServer();
+		try {
+			ServerCapabilities capabilities = server.initialize(new InitializeParams()).get().getCapabilities();
+			assertThat(capabilities.getExecuteCommandProvider().getCommands()).contains(Constants.COMMAND_BUILD_AUTO);
+			assertThat(capabilities.getExperimental()).isEqualTo(Map.of(Constants.CAPABILITY_AUTO_BUILD, true));
+
+			ExecuteCommandParams query = new ExecuteCommandParams(Constants.COMMAND_BUILD_AUTO, List.of());
+			assertThat(server.getWorkspaceService().executeCommand(query).get()).isEqualTo(
+				Map.of("enabled", true, "active", false, "reason", "untrusted"));
+
+			InitializeParams trusted = new InitializeParams();
+			trusted.setInitializationOptions(Map.of("workspaceTrusted", true));
+			server.initialize(trusted).get();
+			assertThat(server.getWorkspaceService().executeCommand(query).get())
+				.isEqualTo(Map.of("enabled", true, "active", true));
+
+			ExecuteCommandParams off = new ExecuteCommandParams(Constants.COMMAND_BUILD_AUTO, List.of(false));
+			assertThat(server.getWorkspaceService().executeCommand(off).get())
+				.isEqualTo(Map.of("enabled", false, "active", false));
+
+			trusted.setInitializationOptions(Map.of("workspaceTrusted", true, "autoBuild", false));
+			server.initialize(trusted).get();
+			assertThat(server.getWorkspaceService().executeCommand(query).get())
+				.isEqualTo(Map.of("enabled", false, "active", false));
+
+			server.getWorkspaceService()
+				.didChangeConfiguration(new org.eclipse.lsp4j.DidChangeConfigurationParams(
+					Map.of("bnd", Map.of("build", Map.of("auto", true)))));
+			assertThat(server.getWorkspaceService().executeCommand(query).get())
+				.isEqualTo(Map.of("enabled", true, "active", true));
+		} finally {
+			server.shutdown().get();
+		}
+	}
+
+	@Test
+	public void buildStatusReachesTheClientAsNotification() throws Exception {
+		java.io.PipedOutputStream clientToServer = new java.io.PipedOutputStream();
+		java.io.PipedInputStream serverIn = new java.io.PipedInputStream(clientToServer);
+		java.io.PipedOutputStream serverToClient = new java.io.PipedOutputStream();
+		java.io.PipedInputStream clientIn = new java.io.PipedInputStream(serverToClient);
+
+		java.util.concurrent.BlockingQueue<aQute.bnd.lsp.models.BndBuildStatus> received = new java.util.concurrent.LinkedBlockingQueue<>();
+		BndLanguageClient client = (BndLanguageClient) java.lang.reflect.Proxy.newProxyInstance(
+			getClass().getClassLoader(), new Class<?>[] {
+				BndLanguageClient.class
+			}, (proxy, method, args) -> {
+				if (method.getName().equals("buildStatus")) {
+					received.add((aQute.bnd.lsp.models.BndBuildStatus) args[0]);
+				}
+				return null;
+			});
+
+		BndLanguageServer server = new BndLanguageServer();
+		var serverLauncher = org.eclipse.lsp4j.jsonrpc.Launcher.createLauncher(server, BndLanguageClient.class,
+			serverIn, serverToClient);
+		var clientLauncher = org.eclipse.lsp4j.jsonrpc.Launcher.createLauncher(client,
+			org.eclipse.lsp4j.services.LanguageServer.class, clientIn, clientToServer);
+		server.connect(serverLauncher.getRemoteProxy());
+		serverLauncher.startListening();
+		clientLauncher.startListening();
+		try {
+			clientLauncher.getRemoteProxy().initialize(new InitializeParams()).get(30, java.util.concurrent.TimeUnit.SECONDS);
+			clientLauncher.getRemoteProxy().getWorkspaceService().executeCommand(
+				new ExecuteCommandParams(Constants.COMMAND_BUILD_AUTO, List.of(false))).get(30,
+					java.util.concurrent.TimeUnit.SECONDS);
+
+			aQute.bnd.lsp.models.BndBuildStatus status = received.poll(30, java.util.concurrent.TimeUnit.SECONDS);
+			assertThat(status).isNotNull();
+			assertThat(status.state).isEqualTo("disabled");
+			assertThat(status.enabled).isFalse();
+		} finally {
+			server.shutdown().get();
+		}
+	}
 }

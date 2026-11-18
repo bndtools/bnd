@@ -53,7 +53,12 @@ public class BndWorkspaceService implements WorkspaceService {
 	private final BndWizardService wizardService = new BndWizardService();
 	private LanguageClient				client;
 	private BndTextDocumentService documents;
+	private volatile BndAutoBuildService autoBuildService;
 	private boolean effectivePropertiesTrusted;
+
+	public void setAutoBuildService(BndAutoBuildService autoBuildService) {
+		this.autoBuildService = autoBuildService;
+	}
 
 	public void configureEffectiveProperties(BndTextDocumentService documents, boolean trusted) {
 		this.documents = documents;
@@ -108,6 +113,8 @@ public class BndWorkspaceService implements WorkspaceService {
 						return executeBuildWorkspace(args);
 					case Constants.COMMAND_BUILD_CLEAN :
 						return executeClean(args);
+					case Constants.COMMAND_BUILD_AUTO :
+						return executeBuildAuto(args);
 					case Constants.COMMAND_BASELINE :
 						return executeBaseline(args);
 					case Constants.COMMAND_MACRO_EXPAND :
@@ -309,6 +316,28 @@ public class BndWorkspaceService implements WorkspaceService {
 		result.put("builtFiles", files);
 		result.put("errors", project.getErrors());
 		result.put("warnings", project.getWarnings());
+		return result;
+	}
+
+	/**
+	 * Argument: optionally a boolean that switches automatic builds on or off.
+	 * Returns the resulting state.
+	 */
+	private Object executeBuildAuto(List<Object> args) {
+		BndAutoBuildService auto = autoBuildService;
+		if (auto == null) {
+			throw new IllegalStateException("Automatic builds are not available");
+		}
+		if (args != null && !args.isEmpty()) {
+			auto.setEnabled(Boolean.parseBoolean(args.get(0)
+				.toString()));
+		}
+		Map<String, Object> result = new HashMap<>();
+		result.put("enabled", auto.isEnabled());
+		result.put("active", auto.isActive());
+		if (auto.isEnabled() && !auto.isTrusted()) {
+			result.put("reason", "untrusted");
+		}
 		return result;
 	}
 
@@ -555,9 +584,16 @@ public class BndWorkspaceService implements WorkspaceService {
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
 		workspaceManager.closeMissingWorkspaces();
+		List<File> changed = new ArrayList<>();
 		for (FileEvent event : params.getChanges()) {
 			File file = getFileFromUri(event.getUri());
 			if (file != null) {
+				changed.add(file);
+				// compiled classes cannot change the workspace configuration
+				if (file.getName()
+					.endsWith(".class")) {
+					continue;
+				}
 				// a refresh does not notice files added to the workspace
 				// configuration, for example in cnf/ext
 				if (event.getType() != FileChangeType.Changed && workspaceManager.isWorkspaceConfiguration(file)) {
@@ -567,11 +603,29 @@ public class BndWorkspaceService implements WorkspaceService {
 				}
 			}
 		}
+		BndAutoBuildService auto = autoBuildService;
+		if (auto != null) {
+			auto.filesChanged(changed);
+		}
 	}
 
 	@Override
 	public void didChangeConfiguration(DidChangeConfigurationParams params) {
 		logger.debug("Workspace configuration changed: {}", params.getSettings());
+		BndAutoBuildService auto = autoBuildService;
+		if (auto == null || params.getSettings() == null) {
+			return;
+		}
+		JsonElement enabled = new Gson().toJsonTree(params.getSettings());
+		for (String key : new String[] {
+			"bnd", "build", "auto"
+		}) {
+			enabled = enabled != null && enabled.isJsonObject() ? enabled.getAsJsonObject()
+				.get(key) : null;
+		}
+		if (enabled != null && enabled.isJsonPrimitive() && enabled.getAsBoolean() != auto.isEnabled()) {
+			auto.setEnabled(enabled.getAsBoolean());
+		}
 	}
 
 	private static File getFileFromUri(String uriStr) {

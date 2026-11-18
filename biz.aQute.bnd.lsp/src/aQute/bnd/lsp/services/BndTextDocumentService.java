@@ -73,6 +73,7 @@ public class BndTextDocumentService implements TextDocumentService {
 	private final Map<String, ScheduledFuture<?>>	pendingDebounce	= new ConcurrentHashMap<>();
 
 	private LanguageClient							client;
+	private volatile BndAutoBuildService			autoBuildService;
 	private final Map<String, DocumentSnapshot> snapshots = new ConcurrentHashMap<>();
 
 	public record DocumentSnapshot(String text, int version) {}
@@ -93,6 +94,10 @@ public class BndTextDocumentService implements TextDocumentService {
 
 	public void setClient(LanguageClient client) {
 		this.client = client;
+	}
+
+	public void setAutoBuildService(BndAutoBuildService autoBuildService) {
+		this.autoBuildService = autoBuildService;
 	}
 
 	public BndDocumentModel getDocument(String uri) {
@@ -145,6 +150,12 @@ public class BndTextDocumentService implements TextDocumentService {
 		String uri = params.getTextDocument()
 			.getUri();
 		triggerDiagnostics(uri);
+		// Only bnd files; a saved source is built when its class files change
+		File saved = BndWorkspaceManager.getFileFromUri(uri);
+		if (autoBuildService != null && saved != null && saved.getName()
+			.endsWith(".bnd")) {
+			autoBuildService.filesChanged(List.of(saved));
+		}
 	}
 
 	private void triggerDiagnostics(String uri) {

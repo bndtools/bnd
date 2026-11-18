@@ -7,8 +7,6 @@ import java.net.Socket;
 import java.util.concurrent.Future;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
-import org.eclipse.lsp4j.launch.LSPLauncher;
-import org.eclipse.lsp4j.services.LanguageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +47,7 @@ public class Main {
 	}
 
 	private static void startServer(BndLanguageServer server, InputStream in, OutputStream out) throws Exception {
-		Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, in, out);
+		Launcher<BndLanguageClient> launcher = Launcher.createLauncher(server, BndLanguageClient.class, in, out);
 		server.connect(launcher.getRemoteProxy());
 		Future<Void> listening = launcher.startListening();
 		listening.get();
