@@ -4,6 +4,7 @@ import static aQute.bnd.build.Container.toPaths;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +41,8 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -47,6 +50,7 @@ import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -117,6 +121,7 @@ import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
+import aQute.libg.filelock.ProcessLock;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
@@ -183,6 +188,9 @@ public class Project extends Processor {
 	final Packages												containedPackages				= new Packages();
 	final PackageInfo											packageInfo						= new PackageInfo(this);
 	private Makefile											makefile;
+	private static final long									OUTPUT_LOCK_TIMEOUT				= TimeUnit.MINUTES
+		.toMillis(10);
+	private volatile Thread										outputLockOwner;
 	private volatile Memoize<List<org.osgi.resource.Resource>>	resources						= Memoize
 		.supplier(this::parseBuildResources);
 	private volatile RefreshData								data							= new RefreshData();
@@ -1984,6 +1992,48 @@ public class Project extends Processor {
 			return files = null;
 		}
 
+		try (Closeable lock = lockOutput()) {
+			return buildLocalLocked(underTest);
+		}
+	}
+
+	/**
+	 * The target and output directories are shared with other processes that
+	 * have this workspace open, for example an IDE next to a command line
+	 * build. Hold a lock while replacing or deleting their content so that a
+	 * build does not interleave with a build or clean in another process.
+	 * <p>
+	 * The lock file is outside the directories that a clean deletes and
+	 * outside the cache of a specific bnd version, so that all bnd versions
+	 * agree on it. After a timeout the work continues without the lock.
+	 * Deleting {@code cnf/cache/locks} while another process builds defeats
+	 * the lock.
+	 *
+	 * @return the lock, or {@code null} when this thread already holds it or
+	 *         the lock is not available
+	 */
+	private Closeable lockOutput() throws InterruptedException {
+		File buildDir = getWorkspace().getBuildDir();
+		if (outputLockOwner == Thread.currentThread() || !buildDir.isDirectory())
+			return null;
+
+		File lockFile = new File(buildDir, "cache/locks/" + getName() + ".lock");
+		try {
+			ProcessLock lock = ProcessLock.lock(lockFile, OUTPUT_LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
+			outputLockOwner = Thread.currentThread();
+			return () -> {
+				outputLockOwner = null;
+				lock.close();
+			};
+		} catch (TimeoutException e) {
+			warning("Continuing without the output lock of %s: %s", this, e.getMessage());
+		} catch (IOException e) {
+			warning("Continuing without the output lock %s of %s: %s", lockFile, this, e);
+		}
+		return null;
+	}
+
+	private File[] buildLocalLocked(boolean underTest) throws Exception {
 		preBuildChecks();
 
 		versionMap.clear();
@@ -2598,15 +2648,43 @@ public class Project extends Processor {
 	}
 
 	public void clean() throws Exception {
-		clean(getTargetDir(), "target");
-		clean(getSrcOutput(), "source output");
-		clean(getTestOutput(), "test output");
-		getGenerate().clean();
+		try (Closeable lock = lockOutput()) {
+			if (!usedByLaunch(getTargetDir()))
+				clean(getTargetDir(), "target");
+			clean(getSrcOutput(), "source output");
+			clean(getTestOutput(), "test output");
+			getGenerate().clean();
+		}
 
 		for (File src : getSourcePath()) {
 			IO.mkdirs(src);
 		}
 		IO.mkdirs(getTestSrc());
+	}
+
+	/**
+	 * A running launch holds {@code <storage>.lock} next to its framework
+	 * storage, by default in the target directory. Deleting that lock file
+	 * would let a second launch share the storage.
+	 */
+	private boolean usedByLaunch(File dir) throws IOException {
+		if (!dir.isDirectory())
+			return false;
+		List<File> locks;
+		try (Stream<Path> files = Files.find(dir.toPath(), 3, (path, attributes) -> attributes.isRegularFile()
+			&& path.getFileName()
+				.toString()
+				.endsWith(".lock"))) {
+			locks = files.map(Path::toFile)
+				.collect(Collectors.toList());
+		}
+		for (File lock : locks) {
+			if (ProcessLock.isLocked(lock)) {
+				error("Not cleaning %s because a running launch holds %s (%s)", dir, lock, ProcessLock.holder(lock));
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void clean(File dir, String type) throws IOException {
