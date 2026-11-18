@@ -175,6 +175,21 @@ The command constants are centralized in [Constants.java](src/aQute/bnd/lsp/Cons
 
 Capability registration is not proof of a working handler: `BndLanguageServer` currently advertises `bnd.build.clean` and `bnd.baseline`, but `BndWorkspaceService.executeCommand` has no dispatch cases for these IDs. They reach the unknown-command fallback and return `null`.
 
+## Multiple Server Processes
+
+Each client starts and owns its own server process, for example one per VS Code window. Servers share no state: documents, workspace objects, launch sessions and wizard plans live in one process. Servers whose clients have the same bnd workspace directory open write the same files, so they rely on cross-process locks (`aQute.libg.filelock.ProcessLock`), which the operating system releases when a process ends:
+
+| Shared file | Lock | When another process holds it |
+| --- | --- | --- |
+| Project output (`bin`, `generated`) | `cnf/cache/locks/<project>.lock`, in bnd `Project` | Wait up to 2 minutes, then continue with a warning |
+| P2 index | `<index file>.lock`, in bnd P2 repository | Wait up to 10 minutes, then read the index without the lock |
+| Maven index file | `cnf/cache/locks/<index>-<hash>.lock`, in bnd Maven repository | Wait up to 2 minutes, then continue without the lock |
+| Expanded JARs in `cnf/cache` | `cnf/cache/locks/expanded-<hash>.lock`, in bnd `Workspace` | Wait up to 2 minutes, then continue without the lock |
+| Launch storage | `<storage>.lock`, in the launcher | The launch fails and names the holder |
+| `.bndrun` write-back of `bnd.resolve` | `cnf/cache/locks/bndrun-<hash>.lock`, in `BndWorkspaceService` | Wait up to 10 minutes, then return an error and leave the file unchanged |
+
+A dry run of `bnd.resolve` does not write and takes no lock. The locks are advisory: bnd versions without them neither take nor honor them.
+
 ## Trust and Side Effects
 
 Trust is supplied by the client at initialization. The workspace service explicitly requires a trusted workspace for effective-properties evaluation, resolution analysis, launch preparation, and repository/wizard requests. The corresponding checks are at the command boundary, before delegation. Other command paths should be reviewed individually when changing trust behavior; do not assume all commands share one authorization check.

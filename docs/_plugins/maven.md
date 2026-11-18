@@ -98,6 +98,8 @@ The index file supports two formats:
 
 Note on auto-detection of index format: If bnd detects xml it assumes `pom.xml`, otherwise the text-file format is assumed.
 
+Several bnd processes can have the same workspace open, for example Bndtools, a command line build and a language server. While a process reads or changes the index file, it holds the lock file `cnf/cache/locks/<index file name>-<hash>.lock` (`<index file>.lock` when the repository has no workspace). Another process waits for that lock, for at most 2 minutes, and then continues without it. Changes to a text index are merged with the file content that is current when the lock is taken, so archives that another process added are kept. A `pom.xml` index is written as a whole from the archives of the process that saves it. The operating system releases the lock when the process ends. bnd versions without this lock ignore it.
+
 Alternative, the GAV's can be specified in the file where the repository is defined with the  `source` configuration property. This is a string separated by either whitespace, commas, semicolons, or any combination thereof.
 
 Both the index file and the source configuration can be replaced by macros. The only difference is that the source can use macros for more than one GAV while the indexFile is processed per line and that line must deliver at most single GAV.

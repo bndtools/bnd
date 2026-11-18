@@ -747,8 +747,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 			Set<String> multi = Strings.splitAsStream(configuration.multi())
 				.collect(Sets.toSet());
+			File indexLock = workspace.map(ws -> new File(ws.getBuildDir(),
+				"cache/locks/" + indexFile.getName() + "-" + Integer.toHexString(indexFile.getAbsolutePath()
+					.hashCode()) + ".lock"))
+				.orElseGet(() -> new File(indexFile.getPath() + ".lock"));
 			// Set the index only after it completes opening
-			IndexFile newIndex = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
+			IndexFile newIndex = new IndexFile(domain, reporter, indexFile, indexLock, source, storage,
+				client.promiseFactory(), multi);
 			newIndex.open();
 			this.index = newIndex;
 

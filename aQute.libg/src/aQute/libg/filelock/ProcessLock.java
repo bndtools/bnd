@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 /**
  * An exclusive lock on a file that is honored by the threads of this JVM and
@@ -165,6 +166,29 @@ public final class ProcessLock implements Closeable {
 				throw new TimeoutException("Could not lock " + file + ", held by " + holder(file));
 
 			Thread.sleep(POLL_MILLIS);
+		}
+	}
+
+	/**
+	 * Acquire the lock for work that can also proceed without it, for example
+	 * to protect a cache that is rebuilt on a miss. When the lock is held for
+	 * longer than the timeout, or the lock file cannot be used, the work
+	 * continues unprotected and the reason is passed to {@code problem}.
+	 *
+	 * @param file the lock file, its parent directory is created when absent
+	 * @param timeout the maximum time to wait
+	 * @param unit the unit of the timeout
+	 * @param problem receives the reason when the lock could not be acquired
+	 * @return the lock to close when the work is done, never {@code null}
+	 * @throws InterruptedException when the waiting thread is interrupted
+	 */
+	public static Closeable lockOrContinue(File file, long timeout, TimeUnit unit, Consumer<String> problem)
+		throws InterruptedException {
+		try {
+			return lock(file, timeout, unit);
+		} catch (TimeoutException | IOException e) {
+			problem.accept(e.getMessage());
+			return () -> {};
 		}
 	}
 
