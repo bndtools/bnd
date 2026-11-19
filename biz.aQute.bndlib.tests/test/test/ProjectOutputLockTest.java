@@ -16,6 +16,7 @@ import aQute.bnd.service.BndListener;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.IO;
 import aQute.libg.filelock.ProcessLock;
+import aQute.libg.filelock.StorageLocks;
 
 /**
  * Another process that has the workspace open, for example an IDE, builds and
@@ -99,6 +100,71 @@ public class ProjectOutputLockTest {
 			project.clear();
 			project.clean();
 			assertThat(storageLock).doesNotExist();
+			assertThat(project.check()).isTrue();
+		}
+	}
+
+	/**
+	 * Storage locks deep in the target, and the lock of a launch that uses
+	 * the target itself as storage, keep the target as well.
+	 */
+	@Test
+	public void cleanKeepsTargetWithDeepOrOwnStorageLock() throws Exception {
+		IO.copy(IO.getFile("testresources/ws"), tmp);
+		try (Workspace ws = new Workspace(tmp)) {
+			Project project = ws.getProject("p6");
+			File target = project.getTarget();
+			File deep = new File(target, "a/b/c/d/fw.lock");
+			File own = new File(target.getParentFile(), target.getName() + ".lock");
+			for (File storageLock : new File[] {
+				deep, own
+			}) {
+				File marker = new File(target, "marker");
+				IO.mkdirs(marker.getParentFile());
+				IO.store("kept", marker);
+				try (ProcessLock launch = ProcessLock.tryLock(storageLock)
+					.orElseThrow()) {
+					project.clean();
+					assertThat(marker).as(storageLock.getName())
+						.isFile();
+					assertThat(project.getErrors()).singleElement()
+						.asString()
+						.contains("running launch");
+				}
+				project.clear();
+			}
+			IO.delete(own);
+		}
+	}
+
+	/**
+	 * A launch takes its storage lock under the guard, so a clean holds the
+	 * guard while it checks and deletes the target.
+	 */
+	@Test
+	public void cleanWaitsForTheStorageGuard() throws Exception {
+		IO.copy(IO.getFile("testresources/ws"), tmp);
+		try (Workspace ws = new Workspace(tmp)) {
+			Project project = ws.getProject("p6");
+			File marker = new File(project.getTarget(), "marker");
+			IO.mkdirs(marker.getParentFile());
+			IO.store("kept", marker);
+
+			CompletableFuture<Void> clean;
+			try (ProcessLock guard = StorageLocks.guard(1, TimeUnit.MINUTES)) {
+				clean = CompletableFuture.runAsync(() -> {
+					try {
+						project.clean();
+					} catch (Exception e) {
+						throw new IllegalStateException(e);
+					}
+				});
+				Thread.sleep(500);
+				assertThat(clean).isNotDone();
+				assertThat(marker).isFile();
+			}
+			clean.get(60, TimeUnit.SECONDS);
+			assertThat(marker).doesNotExist();
 			assertThat(project.check()).isTrue();
 		}
 	}

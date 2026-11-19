@@ -60,6 +60,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -94,6 +95,7 @@ import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.strings.Strings;
 import aQute.libg.filelock.ProcessLock;
+import aQute.libg.filelock.StorageLocks;
 import aQute.libg.uri.URIUtil;
 
 /**
@@ -1362,13 +1364,43 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	 * The directories are the storage that the framework uses, which
 	 * {@code org.osgi.framework.storage} can override, and the working
 	 * directory that this launcher deletes when the storage is not kept.
+	 * <p>
+	 * Other launches may own a directory that contains one of these
+	 * directories, or, when the storage is not kept and therefore deleted, a
+	 * directory inside it. Both are checked under the guard of
+	 * {@link StorageLocks}, which a clean of a project holds as well, so that
+	 * no lock appears between a check and a deletion.
 	 *
 	 * @return {@code false} when another launch holds one of the directories
 	 *         or a lock cannot be established
 	 */
 	private boolean lockStorage(Set<File> directories) {
+		ProcessLock guard;
+		try {
+			guard = StorageLocks.guard(1, TimeUnit.MINUTES);
+		} catch (IOException e) {
+			trace("cannot take the storage guard, continuing without it: %s", e);
+			guard = null;
+		} catch (TimeoutException e) {
+			error("Cannot lock the framework storage %s: %s", directories, e.getMessage());
+			return false;
+		} catch (InterruptedException e) {
+			Thread.currentThread()
+				.interrupt();
+			return false;
+		}
+		try {
+			return lockStorageGuarded(directories);
+		} finally {
+			IO.close(guard);
+		}
+	}
+
+	private boolean lockStorageGuarded(Set<File> directories) {
+		Set<File> lockFiles = new LinkedHashSet<>();
 		for (File directory : directories) {
-			File lockFile = storageLockFile(directory);
+			File lockFile = StorageLocks.lockFile(directory);
+			lockFiles.add(lockFile);
 			ProcessLock lock;
 			try {
 				lock = ProcessLock.tryLock(lockFile)
@@ -1387,16 +1419,28 @@ public class Launcher implements ServiceListener, FrameworkListener {
 			}
 			storageLocks.add(lock);
 		}
+		for (File directory : directories) {
+			try {
+				Optional<File> held = StorageLocks.findHeld(directory, !parms.keep, lockFiles);
+				if (held.isPresent()) {
+					error(
+						"The framework storage %s overlaps with the storage of another launch that holds %s (%s). Stop that launch or use a different -runstorage.",
+						directory, held.get(), ProcessLock.holder(held.get()));
+					releaseStorageLocks();
+					return false;
+				}
+			} catch (IOException e) {
+				error("Cannot check the locks around the framework storage %s: %s", directory, e);
+				releaseStorageLocks();
+				return false;
+			}
+		}
 		return true;
 	}
 
 	private void releaseStorageLocks() {
 		storageLocks.forEach(IO::close);
 		storageLocks.clear();
-	}
-
-	private static File storageLockFile(File workingdir) {
-		return new File(workingdir.getParentFile(), workingdir.getName() + ".lock");
 	}
 
 	private static boolean isInside(File file, File directory) {

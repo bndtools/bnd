@@ -917,6 +917,40 @@ public class AlsoLauncherTest {
 	}
 
 	/**
+	 * Another running launch owns a storage inside the directory that this
+	 * launch would delete, or a directory that contains the storage of this
+	 * launch.
+	 */
+	@Test
+	public void testStorageOverlappingAnotherLaunchIsRejected() throws Exception {
+		project.setProperty("-runkeep", "false");
+		project.setProperty("-runstorage", "generated/sharedouter");
+		File marker = new File(project.getFile("generated/sharedouter/cache/fw"), "marker");
+		IO.mkdirs(marker.getParentFile());
+		IO.store("in use", marker);
+
+		try (ProcessLock inner = ProcessLock.tryLock(project.getFile("generated/sharedouter/cache/fw.lock"))
+			.orElseThrow(); ProjectLauncher l = project.getProjectLauncher()) {
+			l.setTrace(true);
+			l.getRunProperties()
+				.put("test.cmd", "exit");
+			assertThat(l.launch()).isEqualTo(ProjectLauncher.ERROR);
+			assertThat(marker).isFile();
+		}
+
+		project.setProperty("-runkeep", "true");
+		project.setProperty("-runstorage", "generated/sharedouter/cache/fw");
+		try (ProcessLock outer = ProcessLock.tryLock(project.getFile("generated/sharedouter.lock"))
+			.orElseThrow(); ProjectLauncher l = project.getProjectLauncher()) {
+			l.setTrace(true);
+			l.getRunProperties()
+				.put("test.cmd", "exit");
+			assertThat(l.launch()).isEqualTo(ProjectLauncher.ERROR);
+			assertThat(marker).isFile();
+		}
+	}
+
+	/**
 	 * The lock of a storage inside the deleted working directory would be
 	 * deleted with it, so such a layout is rejected.
 	 */

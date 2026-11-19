@@ -50,7 +50,6 @@ import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -122,6 +121,7 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
 import aQute.libg.filelock.ProcessLock;
+import aQute.libg.filelock.StorageLocks;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
@@ -2649,8 +2649,10 @@ public class Project extends Processor {
 
 	public void clean() throws Exception {
 		try (Closeable lock = lockOutput()) {
-			if (!usedByLaunch(getTargetDir()))
-				clean(getTargetDir(), "target");
+			try (Closeable guard = storageGuard()) {
+				if (!usedByLaunch(getTargetDir()))
+					clean(getTargetDir(), "target");
+			}
 			clean(getSrcOutput(), "source output");
 			clean(getTestOutput(), "test output");
 			getGenerate().clean();
@@ -2663,26 +2665,40 @@ public class Project extends Processor {
 	}
 
 	/**
+	 * A launch takes the lock of its framework storage under the same guard,
+	 * so no launch can lock a storage in the target between the check and the
+	 * deletion.
+	 */
+	private Closeable storageGuard() throws InterruptedException {
+		try {
+			return StorageLocks.guard(OUTPUT_LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
+		} catch (TimeoutException | IOException e) {
+			warning("Cleaning %s without the storage guard: %s", this, e.getMessage());
+			return null;
+		}
+	}
+
+	/**
 	 * A running launch holds {@code <storage>.lock} next to its framework
-	 * storage, by default in the target directory. Deleting that lock file
-	 * would let a second launch share the storage.
+	 * storage, by default in the target directory. The target is kept when
+	 * it contains such a lock, when it is itself the storage, or when it is
+	 * inside the storage of a launch. Deleting a held lock file would let a
+	 * second launch share the storage.
 	 */
 	private boolean usedByLaunch(File dir) throws IOException {
-		if (!dir.isDirectory())
+		if (!dir.exists())
 			return false;
-		List<File> locks;
-		try (Stream<Path> files = Files.find(dir.toPath(), 3, (path, attributes) -> attributes.isRegularFile()
-			&& path.getFileName()
-				.toString()
-				.endsWith(".lock"))) {
-			locks = files.map(Path::toFile)
-				.collect(Collectors.toList());
+		Optional<File> held;
+		try {
+			held = StorageLocks.findHeld(dir.getCanonicalFile(), true, Collections.emptySet());
+		} catch (IOException e) {
+			error("Not cleaning %s because its storage locks cannot be checked: %s", dir, e);
+			return true;
 		}
-		for (File lock : locks) {
-			if (ProcessLock.isLocked(lock)) {
-				error("Not cleaning %s because a running launch holds %s (%s)", dir, lock, ProcessLock.holder(lock));
-				return true;
-			}
+		if (held.isPresent()) {
+			error("Not cleaning %s because a running launch holds %s (%s)", dir, held.get(),
+				ProcessLock.holder(held.get()));
+			return true;
 		}
 		return false;
 	}

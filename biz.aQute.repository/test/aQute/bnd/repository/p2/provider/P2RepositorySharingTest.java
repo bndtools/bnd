@@ -73,6 +73,34 @@ public class P2RepositorySharingTest {
 	}
 
 	@Test
+	public void refusesSharedIndexWhileTheFirstRepositoryInitializes() throws Exception {
+		File index = new File(tmp, "cnf/ext/racing_index.xml.gz");
+		try (Workspace w = workspace();
+			P2Repository first = repository(w, "first", IO.getFile("testdata/p2/macbadge"), index,
+				new File(tmp, "cache/first"));
+			P2Repository second = repository(w, "second", copyOfRepository(), index, new File(tmp, "cache/second"))) {
+
+			CompletableFuture<List<String>> listing;
+			// the first repository waits for the index lock after it has chosen the index
+			try (ProcessLock held = ProcessLock.tryLock(new File(index.getParentFile(), index.getName() + ".lock"))
+				.orElseThrow()) {
+				listing = CompletableFuture.supplyAsync(() -> {
+					try {
+						return first.list(null);
+					} catch (Exception e) {
+						throw new IllegalStateException(e);
+					}
+				});
+				Thread.sleep(500);
+				assertThat(listing).isNotDone();
+				assertThatIllegalArgumentException().isThrownBy(() -> second.list(null))
+					.withMessageContainingAll("first", "second", "distinct location");
+			}
+			assertThat(listing.get(60, TimeUnit.SECONDS)).isNotEmpty();
+		}
+	}
+
+	@Test
 	public void acceptsDistinctIndexFilesAndTheSameRepositoryTwice() throws Exception {
 		File repository = IO.getFile("testdata/p2/macbadge");
 		File index = new File(tmp, "cnf/ext/first_index.xml.gz");

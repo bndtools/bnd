@@ -47,6 +47,13 @@ public class P2Repository extends BaseRepository
 	private Registry	registry;
 	private Workspace	workspace;
 	private volatile P2Indexer	p2Index;
+	private static final Object	RESERVATIONS	= new Object();
+	/*
+	 * The index file and URL of this repository once it initializes, guarded
+	 * by RESERVATIONS. The url is written before the index file.
+	 */
+	private volatile File		reservedIndex;
+	private volatile URI		reservedUrl;
 	private Reporter	reporter;
 	private String		name;
 
@@ -92,9 +99,13 @@ public class P2Repository extends BaseRepository
 			if (cache != null)
 				location = workspace.getFile(cache);
 
-			checkSharedIndex(client, url, indexFile);
-
-			return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
+			reserveIndex(url, indexFile);
+			try {
+				return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
+			} catch (Exception | Error e) {
+				reservedIndex = null;
+				throw e;
+			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -110,18 +121,27 @@ public class P2Repository extends BaseRepository
 	 * repositories with different URLs that share an index file would rewrite
 	 * the index of each other on every initialization, so the repository that
 	 * comes second is refused.
+	 * <p>
+	 * The index is reserved before the indexer reads it, and check and
+	 * reservation are atomic across the repository instances, so that two
+	 * repositories that initialize concurrently cannot both pass the check.
 	 */
-	private void checkSharedIndex(HttpClient client, URI url, File indexFile) throws Exception {
+	private void reserveIndex(URI url, File indexFile) throws Exception {
 		File canonical = indexFile.getCanonicalFile();
-		for (P2Repository other : registry.getPlugins(P2Repository.class)) {
-			P2Indexer otherIndex = other.p2Index;
-			if (other == this || otherIndex == null || otherIndex.url.equals(url)
-				|| !canonical.equals(otherIndex.indexFile.getCanonicalFile()))
-				continue;
+		List<P2Repository> others = registry.getPlugins(P2Repository.class);
+		synchronized (RESERVATIONS) {
+			for (P2Repository other : others) {
+				File otherIndex = other.reservedIndex;
+				URI otherUrl = other.reservedUrl;
+				if (other == this || otherIndex == null || otherUrl.equals(url) || !canonical.equals(otherIndex))
+					continue;
 
-			throw new IllegalArgumentException(String.format(
-				"P2 repositories %s (%s) and %s (%s) use the same index file %s. Each would rewrite the index of the other; set a distinct location for one of them.",
-				name, url, otherIndex.name, otherIndex.url, indexFile));
+				throw new IllegalArgumentException(String.format(
+					"P2 repositories %s (%s) and %s (%s) use the same index file %s. Each would rewrite the index of the other; set a distinct location for one of them.",
+					name, url, other.name, otherUrl, indexFile));
+			}
+			reservedUrl = url;
+			reservedIndex = canonical;
 		}
 	}
 
@@ -229,6 +249,7 @@ public class P2Repository extends BaseRepository
 
 	@Override
 	public void close() throws IOException {
+		reservedIndex = null;
 		IO.close(p2Index);
 	}
 
