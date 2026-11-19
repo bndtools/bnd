@@ -46,7 +46,14 @@ public class P2Repository extends BaseRepository
 	private P2Config	config;
 	private Registry	registry;
 	private Workspace	workspace;
-	private P2Indexer	p2Index;
+	private volatile P2Indexer	p2Index;
+	private static final Object	RESERVATIONS	= new Object();
+	/*
+	 * The index file and URL of this repository once it initializes, guarded
+	 * by RESERVATIONS. The url is written before the index file.
+	 */
+	private volatile File		reservedIndex;
+	private volatile URI		reservedUrl;
 	private Reporter	reporter;
 	private String		name;
 
@@ -78,9 +85,7 @@ public class P2Repository extends BaseRepository
 			File configuredFile = workspace.getFile(configuredLocation);
 			File indexFile;
 			File location;
-			boolean directoryLocation = configuredLocation.endsWith("/") || configuredLocation.endsWith("\\")
-				|| (configuredFile.isDirectory() && !isIndexFileName(configuredFile.getName()));
-			if (directoryLocation) {
+			if (isDirectoryLocation(configuredLocation, configuredFile)) {
 				location = configuredFile;
 				indexFile = new File(location, "index.xml.gz");
 			} else {
@@ -94,9 +99,49 @@ public class P2Repository extends BaseRepository
 			if (cache != null)
 				location = workspace.getFile(cache);
 
-			return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
+			reserveIndex(url, indexFile);
+			try {
+				return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
+			} catch (Exception | Error e) {
+				reservedIndex = null;
+				throw e;
+			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
+		}
+	}
+
+	private static boolean isDirectoryLocation(String configuredLocation, File configuredFile) {
+		return configuredLocation.endsWith("/") || configuredLocation.endsWith("\\")
+			|| (configuredFile.isDirectory() && !isIndexFileName(configuredFile.getName()));
+	}
+
+	/**
+	 * An index is only valid for the repository URL it was created from. Two
+	 * repositories with different URLs that share an index file would rewrite
+	 * the index of each other on every initialization, so the repository that
+	 * comes second is refused.
+	 * <p>
+	 * The index is reserved before the indexer reads it, and check and
+	 * reservation are atomic across the repository instances, so that two
+	 * repositories that initialize concurrently cannot both pass the check.
+	 */
+	private void reserveIndex(URI url, File indexFile) throws Exception {
+		File canonical = indexFile.getCanonicalFile();
+		List<P2Repository> others = registry.getPlugins(P2Repository.class);
+		synchronized (RESERVATIONS) {
+			for (P2Repository other : others) {
+				File otherIndex = other.reservedIndex;
+				URI otherUrl = other.reservedUrl;
+				if (other == this || otherIndex == null || otherUrl.equals(url) || !canonical.equals(otherIndex))
+					continue;
+
+				throw new IllegalArgumentException(String.format(
+					"P2 repositories %s (%s) and %s (%s) use the same index file %s. Each would rewrite the index of the other; set a distinct location for one of them.",
+					name, url, other.name, otherUrl, indexFile));
+			}
+			reservedUrl = url;
+			reservedIndex = canonical;
 		}
 	}
 
@@ -204,6 +249,7 @@ public class P2Repository extends BaseRepository
 
 	@Override
 	public void close() throws IOException {
+		reservedIndex = null;
 		IO.close(p2Index);
 	}
 
@@ -219,8 +265,9 @@ public class P2Repository extends BaseRepository
 				Map<String, Runnable> menu = new LinkedHashMap<>();
 				menu.put("Refresh from " + p2Index.url, () -> {
 					try {
+						// may wait for another process, so outside the workspace lock
+						p2Index.reread();
 						workspace.writeLocked(() -> {
-							p2Index.reread();
 							workspace.refresh();
 							return null;
 						});
