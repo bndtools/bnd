@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -70,7 +71,9 @@ public final class StorageLocks {
 	 * @param deleted {@code true} when the directory will be deleted
 	 * @param ignore lock files of the caller, canonical
 	 * @return the held lock file, or empty
-	 * @throws IOException when an existing lock file cannot be checked
+	 * @throws IOException when an existing lock file cannot be checked, or a
+	 *             directory below cannot be read, so that the check is
+	 *             incomplete
 	 */
 	public static Optional<File> findHeld(File directory, boolean deleted, Collection<File> ignore)
 		throws IOException {
@@ -94,7 +97,17 @@ public final class StorageLocks {
 			}
 
 			@Override
-			public FileVisitResult visitFileFailed(Path file, IOException e) {
+			public FileVisitResult visitFileFailed(Path file, IOException e) throws IOException {
+				// removed while walking, so it holds no lock
+				if (e instanceof NoSuchFileException)
+					return FileVisitResult.CONTINUE;
+				throw e;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
+				if (e != null && !(e instanceof NoSuchFileException))
+					throw e;
 				return FileVisitResult.CONTINUE;
 			}
 		});

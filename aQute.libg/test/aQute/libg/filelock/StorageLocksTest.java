@@ -1,8 +1,11 @@
 package aQute.libg.filelock;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIOException;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Set;
 
@@ -38,6 +41,21 @@ public class StorageLocksTest {
 			assertThat(StorageLocks.findHeld(inner, false, Collections.emptySet())).contains(outerLock);
 			assertThat(StorageLocks.findHeld(outer, false, Collections.emptySet())).contains(outerLock);
 			assertThat(StorageLocks.findHeld(inner, true, Set.of(outerLock))).isEmpty();
+		}
+	}
+
+	@Test
+	public void unreadableDirectoryBelowFailsTheCheck() throws Exception {
+		File outer = new File(tmp, "outer").getCanonicalFile();
+		File hidden = new File(outer, "hidden");
+		hidden.mkdirs();
+		assumeTrue(hidden.setReadable(false) && !Files.isReadable(hidden.toPath()),
+			"directory cannot be made unreadable");
+		try {
+			assertThatIOException().isThrownBy(() -> StorageLocks.findHeld(outer, true, Collections.emptySet()));
+			assertThat(StorageLocks.findHeld(outer, false, Collections.emptySet())).isEmpty();
+		} finally {
+			hidden.setReadable(true);
 		}
 	}
 }
