@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>findname</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>findname</h1>
+<hr />
+<p>layout: default
+class: Project
+title:  findname ';' REGEX ( ';' REPLACEMENT )?
+summary: Find bundle resources by filename with optional regex replacement</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>The <code>findname</code> macro finds resources in the current bundle by matching filenames (not full paths) against a regular expression, with optional replacement to transform the results.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${findname[;&lt;regex&gt;[;&lt;replacement&gt;]]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>regex</code> (optional) - Regular expression to match filenames (default: ".*" matches all)</li>
+<li><code>replacement</code> (optional) - Replacement pattern using regex groups (e.g., "$1")</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Searches bundle resources by filename only (not full path)</li>
+<li>Matches filename against regex pattern</li>
+<li>Optionally applies replacement to matched names</li>
+<li>Returns comma-separated list of results</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find all resources:</p>
+<div class="highlight"><pre><span></span><code>${findname}
+</code></pre></div>
+
+<p>Find by pattern:</p>
+<div class="highlight"><pre><span></span><code>${findname;.*\.properties}
+# Returns filenames ending in .properties
+</code></pre></div>
+
+<p>Find and transform:</p>
+<div class="highlight"><pre><span></span><code>${findname;(.*)\.class;$1}
+# Returns class names without .class extension
+</code></pre></div>
+
+<p>Extract parts of filenames:</p>
+<div class="highlight"><pre><span></span><code>${findname;config-(.*)\.xml;$1}
+# Returns: &quot;dev,prod,test&quot; from &quot;config-dev.xml&quot;, &quot;config-prod.xml&quot;, etc.
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Resource discovery by name</li>
+<li>Filename pattern matching</li>
+<li>Name transformation</li>
+<li>Bundle content analysis</li>
+<li>Dynamic resource lists</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Matches filename only, not directory path</li>
+<li>Uses Java regex syntax</li>
+<li>See also: <code>${findpath}</code> for full path matching</li>
+<li>See also: <code>${lsr}</code> for file system searches</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

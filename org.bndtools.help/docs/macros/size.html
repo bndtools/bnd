@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>size ( ';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>size ( ';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>size</code> macro counts and returns the total number of elements across one or more comma-separated lists.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${size;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more comma-separated lists to count</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Splits each list on commas</li>
+<li>Counts all elements across all lists</li>
+<li>Returns total count as integer</li>
+<li>Empty elements are counted</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Count elements in a list:</p>
+<div class="highlight"><pre><span></span><code>${size;a,b,c,d}
+# Returns: 4
+</code></pre></div>
+
+<p>Count multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${size;red,green;blue,yellow}
+# Returns: 4
+</code></pre></div>
+
+<p>Count packages:</p>
+<div class="highlight"><pre><span></span><code>package.count=${size;${packages}}
+</code></pre></div>
+
+<p>Conditional on list size:</p>
+<div class="highlight"><pre><span></span><code>${if;${size;${exports}};has-exports;no-exports}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Counting list elements</li>
+<li>Validating list sizes</li>
+<li>Conditional logic based on count</li>
+<li>Build statistics</li>
+<li>Dependency counting</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns integer count</li>
+<li>Combines all provided lists</li>
+<li>Empty strings are counted as elements</li>
+<li>Maximum 16 lists (implementation limit)</li>
+<li>See also: <code>${length}</code> for string length</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

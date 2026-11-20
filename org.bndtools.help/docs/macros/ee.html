@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ee</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>ee</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>ee</code> macro returns the name of the highest Java Execution Environment (EE) required by the classes in the current bundle being analyzed. This is determined by analyzing the bytecode version of all classes in the JAR.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${ee}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Analyzes all class files in the bundle</li>
+<li>Determines the highest Java class file version used</li>
+<li>Returns the corresponding EE name (e.g., "JavaSE-1.8", "JavaSE-11", "JavaSE-17")</li>
+<li>Available during bundle analysis and JAR generation</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Set the Bundle-RequiredExecutionEnvironment based on analyzed classes:</p>
+<div class="highlight"><pre><span></span><code>Bundle-RequiredExecutionEnvironment: ${ee}
+</code></pre></div>
+
+<p>Use in conditional logic:</p>
+<div class="highlight"><pre><span></span><code># Check if Java 11+ is required
+java11plus=${if;${vcompare;${ee};JavaSE-11};true;false}
+</code></pre></div>
+
+<p>Document the requirement:</p>
+<div class="highlight"><pre><span></span><code>Bundle-Description: Requires ${ee} or higher
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Automatically determining minimum Java version requirements</li>
+<li>Validating that bundle dependencies match execution environment</li>
+<li>Generating accurate OSGi manifest headers</li>
+<li>Documenting Java version requirements</li>
+<li>Ensuring compatibility across different Java versions</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The EE is determined by bytecode analysis, not source code</li>
+<li>Returns the <em>highest</em> (most recent) EE found among all classes</li>
+<li>The EE name follows OSGi execution environment naming conventions</li>
+<li>Common values include: JavaSE-1.8, JavaSE-11, JavaSE-17, JavaSE-21</li>
+<li>This is typically used to set the <code>Bundle-RequiredExecutionEnvironment</code> header</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

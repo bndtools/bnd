@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>toclassname ';' FILES</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>toclassname ';' FILES</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>toclassname</code> macro converts a list of file paths (<code>.class</code> or <code>.java</code> files) to fully qualified class names by removing the extension and converting path separators to dots.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${toclassname;&lt;file-paths&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>file-paths</code> - Comma-separated list of file paths ending in <code>.class</code> or <code>.java</code></li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Removes <code>.class</code> or <code>.java</code> extension</li>
+<li>Converts path separators (<code>/</code>) to dots (<code>.</code>)</li>
+<li>Generates warning for files without proper extension</li>
+<li>Filters out invalid paths</li>
+<li>Returns comma-separated list of class names</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Convert class file paths:</p>
+<div class="highlight"><pre><span></span><code>${toclassname;com/example/Main.class,com/example/Util.class}
+# Returns: &quot;com.example.Main,com.example.Util&quot;
+</code></pre></div>
+
+<p>Convert Java source paths:</p>
+<div class="highlight"><pre><span></span><code>${toclassname;org/test/TestCase.java}
+# Returns: &quot;org.test.TestCase&quot;
+</code></pre></div>
+
+<p>Use with file lists:</p>
+<div class="highlight"><pre><span></span><code>classes=${toclassname;${lsr;bin;*.class}}
+</code></pre></div>
+
+<p>Mixed extensions:</p>
+<div class="highlight"><pre><span></span><code>${toclassname;com/Foo.java,com/Bar.class}
+# Returns: &quot;com.Foo,com.Bar&quot;
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Converting build output paths to class names</li>
+<li>Generating class lists for manifests</li>
+<li>Processing compilation results</li>
+<li>Creating package lists from files</li>
+<li>Build automation and scripting</li>
+<li>Class path analysis</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Only processes <code>.class</code> and <code>.java</code> files</li>
+<li>Invalid paths generate warnings but don't fail</li>
+<li>Path separator is always <code>/</code> (converted to <code>.</code>)</li>
+<li>Returns FQN (Fully Qualified Names)</li>
+<li>See also: <code>${toclasspath}</code> for inverse operation</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

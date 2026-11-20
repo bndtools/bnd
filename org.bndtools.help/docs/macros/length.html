@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>length STRING</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>length STRING</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>length</code> macro returns the number of characters in a string. Returns 0 if no argument is provided.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${length[;&lt;string&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> (optional) - The string to measure. If omitted, returns 0.</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the character count</li>
+<li>Returns 0 if no string provided</li>
+<li>Counts all characters including spaces</li>
+<li>Unicode characters count as single characters</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get string length:</p>
+<div class="highlight"><pre><span></span><code>${length;hello world}
+# Returns: 11
+</code></pre></div>
+
+<p>Check if empty:</p>
+<div class="highlight"><pre><span></span><code>${if;${length;${value}};has-value;empty}
+</code></pre></div>
+
+<p>Validate input length:</p>
+<div class="highlight"><pre><span></span><code>${if;${length;${password}};password-ok;password-required}
+</code></pre></div>
+
+<p>No argument:</p>
+<div class="highlight"><pre><span></span><code>${length}
+# Returns: 0
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>String length validation</li>
+<li>Checking for empty strings</li>
+<li>Input validation</li>
+<li>String size limits</li>
+<li>Conditional logic based on length</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns integer count</li>
+<li>Includes all characters (spaces, newlines, etc.)</li>
+<li>Unicode safe</li>
+<li>See also: <code>${size}</code> for list element count</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

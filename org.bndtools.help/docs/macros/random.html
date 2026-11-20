@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>random</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>random</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>random</code> macro generates a random string that is guaranteed to be a valid Java identifier. The first character is always a letter, and subsequent characters are letters or numbers.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${random[;&lt;length&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>length</code> (optional) - Number of characters to generate (default: 8)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Generates a random string of specified length</li>
+<li>First character is always an ASCII letter (a-z, A-Z)</li>
+<li>Subsequent characters are ASCII letters or numbers (a-z, A-Z, 0-9)</li>
+<li>Result is always a valid Java identifier</li>
+<li>Default length is 8 characters</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Generate default 8-character identifier:</p>
+<div class="highlight"><pre><span></span><code>${random}
+# Returns: &quot;aB3xY9kL&quot; (example)
+</code></pre></div>
+
+<p>Generate specific length:</p>
+<div class="highlight"><pre><span></span><code>${random;12}
+# Returns: &quot;K5mPqR7sT2uV&quot; (example, 12 chars)
+</code></pre></div>
+
+<p>Create unique package name:</p>
+<div class="highlight"><pre><span></span><code>test.package=${random;16}
+</code></pre></div>
+
+<p>Generate unique property:</p>
+<div class="highlight"><pre><span></span><code>temp.id.${random;6}=value
+</code></pre></div>
+
+<p>Create unique class names:</p>
+<div class="highlight"><pre><span></span><code>TestClass${random;4}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Generating unique identifiers</li>
+<li>Creating temporary package or class names</li>
+<li>Generating random test data</li>
+<li>Creating unique property keys</li>
+<li>Avoiding naming conflicts</li>
+<li>Temporary file or directory naming</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Output is always a valid Java identifier</li>
+<li>First character is never a number</li>
+<li>Uses only ASCII letters and numbers (no special characters)</li>
+<li>Not cryptographically secure - don't use for security purposes</li>
+<li>Each invocation generates a new random value</li>
+<li>See also: <code>${rand}</code> for random numbers</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-diffpackages SELECTORS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-diffpackages SELECTORS</h1>
+<ul>
+<li>
+<p>Example: <code>-diffpackages=!*.internal.*, *</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/diffpackages.md -->
+<p>You can use the <code>-diffpackages</code> instruction to specify the names of exported packages
+to be baseline compared. The default is all exported packages.</p>
+<h2 id="attributes">Attributes</h2>
+<p>The following attributes can be specified on each package selector:</p>
+<h3 id="threshold">threshold</h3>
+<p>Specifies the minimum change level that should be reported. Valid values are <code>MICRO</code>, <code>MINOR</code>, or <code>MAJOR</code>. Changes below this threshold will be ignored during baselining.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-diffpackages: *;threshold=MAJOR
+</code></pre></div>
+
+<p>This will only report MAJOR changes and ignore MINOR and MICRO changes.</p>
+<h2 id="examples">Examples</h2>
+<p>Exclude internal packages from baselining:</p>
+<div class="highlight"><pre><span></span><code>-diffpackages: !*.internal.*, *
+</code></pre></div>
+
+<p>Set threshold for changes:</p>
+<div class="highlight"><pre><span></span><code>-diffpackages: *;threshold=MINOR
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

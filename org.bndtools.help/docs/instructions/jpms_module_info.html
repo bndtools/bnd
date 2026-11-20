@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-jpms-module-info modulename [; version=<version>] [; access=OPEN|SYNTHETIC|MANDATED]</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-jpms-module-info modulename [; version=<version>] [; access=OPEN|SYNTHETIC|MANDATED]</h1>
+<ul>
+<li>
+<p>Example: <code>-jpms-module-info: foo.module;version=5.4.1; access="OPEN,SYNTHETIC"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/jpms_module_info.md -->
+<p>See <a href="../chapters/330-jpms.html">jpms</a> for an overview and the detailed rules how the <code>module-info.class</code> file is
+calculated. </p>
+<p>The <code>-jpms-module-info</code> instruction is a single parameter</p>
+<div class="highlight"><pre><span></span><code>-jpms-module-info   ::= module-name [ &#39;;version=&#39; VERSION ] access
+access              ::= `;access=&#39; &#39;&quot;&#39; item ( &#39;,&#39; item ) * &#39;&quot;&#39;
+item                ::= &#39;OPEN&#39; | &#39;SYNTHETIC&#39; | &#39;MANDATED&#39;
+</code></pre></div>
+
+<ul>
+<li>Key – The key is the module name. If not set, the <code>Automatic-Module-Name</code> is used, or if that one is not set, the Bundle-SymbolicName.</li>
+<li><code>version</code> – The version, otherwise the bundle version is used.</li>
+<li><code>access</code> – The access flags. These indicate the access mode of the module.</li>
+</ul>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-jpms-module-info: foo.module;version=5.4.1; access=&quot;OPEN,SYNTHETIC&quot;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

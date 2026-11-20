@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-make</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-make</h1>
+<ul>
+<li>
+<p>Example: <code>-make: (*).jar;type=bnd; recipe="bnd/$1.bnd"</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<h3 id="directives">Directives</h3>
+<ul>
+<li><code>type</code> Type name for plugin.</li>
+<li>
+<p>Example: <code>type=bnd</code></p>
+</li>
+<li>
+<p>Values: <code>bnd</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>recipe</code> Recipe for the plugin, can use back references.</p>
+</li>
+<li>
+<p>Example: <code>recipe="bnd/$1.bnd"</code></p>
+</li>
+<li>
+<p>Values: <code>bnd</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/make.md -->
+<div class="highlight"><pre><span></span><code>    package aQute.bnd.make;
+
+    import java.util.*;
+    import java.util.Map.Entry;
+    import java.util.regex.*;
+
+    import aQute.bnd.header.*;
+    import aQute.bnd.osgi.*;
+    import aQute.bnd.service.*;
+
+    public class Make {
+        Builder                             builder;
+        Map&lt;Instruction,Map&lt;String,String&gt;&gt; make;
+
+        public Make(Builder builder) {
+            this.builder = builder;
+        }
+
+        public Resource process(String source) {
+            Map&lt;Instruction,Map&lt;String,String&gt;&gt; make = getMakeHeader();
+            builder.trace(&quot;make &quot; + source);
+
+            for (Map.Entry&lt;Instruction,Map&lt;String,String&gt;&gt; entry : make.entrySet()) {
+                Instruction instr = entry.getKey();
+                Matcher m = instr.getMatcher(source);
+                if (m.matches() || instr.isNegated()) {
+                    Map&lt;String,String&gt; arguments = replace(m, entry.getValue());
+                    List&lt;MakePlugin&gt; plugins = builder.getPlugins(MakePlugin.class);
+                    for (MakePlugin plugin : plugins) {
+                        try {
+                            Resource resource = plugin.make(builder, source, arguments);
+                            if (resource != null) {
+                                builder.trace(&quot;Made &quot; + source + &quot; from args &quot; + arguments + &quot; with &quot; + plugin);
+                                return resource;
+                            }
+                        }
+                        catch (Exception e) {
+                            builder.error(&quot;Plugin &quot; + plugin + &quot; generates error when use in making &quot; + source
+                                    + &quot; with args &quot; + arguments, e);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        private Map&lt;String,String&gt; replace(Matcher m, Map&lt;String,String&gt; value) {
+            Map&lt;String,String&gt; newArgs = Processor.newMap();
+            for (Map.Entry&lt;String,String&gt; entry : value.entrySet()) {
+                String s = entry.getValue();
+                s = replace(m, s);
+                newArgs.put(entry.getKey(), s);
+            }
+            return newArgs;
+        }
+
+        String replace(Matcher m, CharSequence s) {
+            StringBuilder sb = new StringBuilder();
+            int max = &#39;0&#39; + m.groupCount() + 1;
+            for (int i = 0; i &lt; s.length(); i++) {
+                char c = s.charAt(i);
+                if (c == &#39;$&#39; &amp;&amp; i &lt; s.length() - 1) {
+                    c = s.charAt(++i);
+                    if (c &gt;= &#39;0&#39; &amp;&amp; c &lt;= max) {
+                        int index = c - &#39;0&#39;;
+                        String replacement = m.group(index);
+                        if (replacement != null)
+                            sb.append(replacement);
+                    } else {
+                        if (c == &#39;$&#39;)
+                            i++;
+                        sb.append(c);
+                    }
+                } else
+                    sb.append(c);
+            }
+            return sb.toString();
+        }
+
+        Map&lt;Instruction,Map&lt;String,String&gt;&gt; getMakeHeader() {
+            if (make != null)
+                return make;
+            make = Processor.newMap();
+
+            String s = builder.getProperty(Builder.MAKE);
+            Parameters make = builder.parseHeader(s);
+
+            for (Entry&lt;String,Attrs&gt; entry : make.entrySet()) {
+                String pattern = Processor.removeDuplicateMarker(entry.getKey());
+
+                Instruction instr = new Instruction(pattern);
+                this.make.put(instr, entry.getValue());
+            }
+
+            return this.make;
+        }
+    }
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

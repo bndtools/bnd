@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>def ';' KEY (';' STRING)?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>def ';' KEY (';' STRING)?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>def</code> macro looks up a property by key and returns its value, or returns a default value if the property is not set. The default is an empty string if not specified.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${def;&lt;key&gt;[;&lt;default&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>key</code> - The property name to look up</li>
+<li><code>default</code> (optional) - Value to return if property not set (default: empty string)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Looks up property by key</li>
+<li>Returns property value if set</li>
+<li>Returns default if property not set</li>
+<li>Default is empty string if not specified</li>
+<li>Handles undefined properties gracefully</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get property with default:</p>
+<div class="highlight"><pre><span></span><code>${def;version;1.0.0}
+# Returns property value or &quot;1.0.0&quot; if not set
+</code></pre></div>
+
+<p>Empty default:</p>
+<div class="highlight"><pre><span></span><code>${def;optional.setting}
+# Returns property value or &quot;&quot; if not set
+</code></pre></div>
+
+<p>Use in paths:</p>
+<div class="highlight"><pre><span></span><code>output.dir=${def;custom.dir;target}
+</code></pre></div>
+
+<p>Conditional with default:</p>
+<div class="highlight"><pre><span></span><code>${if;${def;debug.mode;false};debug-on;debug-off}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Providing default values</li>
+<li>Optional properties</li>
+<li>Configuration fallbacks</li>
+<li>Safe property access</li>
+<li>Avoiding undefined property errors</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Safer than direct property reference</li>
+<li>Default prevents empty/undefined issues</li>
+<li>Unlike <code>${key}</code>, returns default instead of literal</li>
+<li>Empty string is valid default</li>
+<li>See also: <code>${get}</code> for list element access</li>
+<li>See also: <code>${if}</code> for conditional defaults </li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

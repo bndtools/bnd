@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-noparallel CATEGORY;task=TASKS</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-noparallel CATEGORY;task=TASKS</h1>
+<ul>
+<li>
+<p>Example: <code>-noparallel=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/noparallel.md -->
+<p>Gradle supports <code>--parallel</code> to run build tasks in parallel when possible. This can be a great speed improvement for a build. But sometimes, certain tasks cannot be run in parallel due to certain resource contention.</p>
+<p>The <code>-noparallel</code> Bnd instruction can be used to state that any tasks assigned to a category must not be run in parallel with any other task assigned to the same category. The category names are open ended. Any task names specified must be the names of actual Gradle tasks in the project. Multiple categories and multiple task names per category can be specified.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-noparallel: launchpad;task=&quot;test&quot;, port80;task=&quot;testOSGi&quot;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

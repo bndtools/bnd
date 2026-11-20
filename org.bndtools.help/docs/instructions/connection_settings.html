@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-connection-settings</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-connection-settings</h1>
+<ul>
+<li>
+<p>Example: <code>-connection-settings= ~/.bnd/connection-settings.xml</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/connection_settings.md -->
+<p>This chapter discusses the connection settings of bnd that are used when bnd is asked to download or upload a file
+from a remote server. The connection settings can provide a userid/password for basic authentication, proxies, and/or
+the trust policy for verifying the host name of a TLS/SSL server. These settings can obviously not be part of the workspace 
+since they are unique to the actual  user of the workspace. That is, they need to be stored outside the workspace
+in a user accessible area.</p>
+<p>Since Maven is very popular we've followed the same syntax for settings. The supported elements in this file are 
+<code>&lt;server&gt;</code> and <code>&lt;proxy&gt;</code>. Other elements are ignored.</p>
+<h2 id="finding-the-settings">Finding the Settings</h2>
+<p>The default order in which bnd looks for settings is:</p>
+<div class="highlight"><pre><span></span><code>`~/.bnd/connection-settings.xml`
+`~/.m2/settings.xml`
+</code></pre></div>
+
+<p>If you want to disable the use of default from the workspace then you can use the <code>-connection-settings</code> instruction
+in the workspace's <code>cnf/build.bnd</code> file. If you set the instruction to <code>false</code> then it will not look for the aforementioned files.</p>
+<div class="highlight"><pre><span></span><code>-connection-settings: false
+</code></pre></div>
+
+<p>In this setting, you can also list additional files to parse that must be of the same syntax as the Maven settings file. The names 
+<code>maven</code> and <code>bnd</code> are recognized as <code>~/.m2/settings.xml</code> and <code>~/.bnd/connection-settings.xml</code> respectively. For example, if
+we first want to look in the home directory in <code>~/foo/settings.xml</code> and then in the bnd settings, we can set the <code>-connection-settings</code> to: </p>
+<div class="highlight"><pre><span></span><code>-connection-settings: ~/foo/settings.xml, bnd
+</code></pre></div>
+
+<p>In addition, you could also specify the maven settings inline. For example:</p>
+<div class="highlight"><pre><span></span><code>-connection-settings: \
+   server; \
+       id=&quot;http://server&quot;; \
+       username=&quot;myUser&quot;; \
+       password=${env;PASSWORD}
+</code></pre></div>
+
+<h2 id="logging">Logging</h2>
+<p>You can create a log file specific for the connections by specifying:</p>
+<div class="highlight"><pre><span></span><code>-connection-log: somefile.txt
+</code></pre></div>
+
+<p>This file will contain the detailed trace output. The file given is relative to the working directory.</p>
+<h2 id="syntax">Syntax</h2>
+<p>The settings files have the following XML structure:</p>
+<div class="highlight"><pre><span></span><code>&lt;settings&gt;
+  &lt;proxies&gt;
+    &lt;proxy&gt;
+    &lt;id/&gt;
+      &lt;active&gt;        &#39;true&#39; | &#39;false&#39; &lt;/active&gt;
+      &lt;protocol&gt;      &#39;http&#39;| &#39;direct&#39; | &#39;socks&#39; &lt;/protocol&gt;
+      &lt;host&gt;          domain name &lt;/host&gt;
+      &lt;port&gt;          port to use &lt;/port&gt;
+      &lt;username&gt;      user name to use for the proxy &lt;/username&gt;
+      &lt;password&gt;      password to use for the proxy &lt;/password&gt;
+      &lt;verify&gt; true | false &lt;/verify&gt;
+      &lt;nonProxyHosts&gt; glob ( &#39;|&#39; glob )* &lt;/nonProxyHosts&gt;
+    &lt;/proxy&gt;
+  &lt;/proxies&gt;
+  &lt;servers&gt;
+    &lt;server&gt;
+      &lt;id&gt;default&lt;/id&gt;
+        &lt;username&gt;username&lt;/username&gt;
+        &lt;password&gt;password&lt;/password&gt;
+        &lt;verify&gt; true | false &lt;/verify&gt;
+        &lt;trust&gt; comma separated paths to X509 certificates &lt;/trust&gt;
+        &lt;maxConcurrentConnections&gt;10&lt;/maxConcurrentConnections&gt;
+    &lt;/server&gt;
+  &lt;/servers&gt;
+&lt;/settings&gt;
+</code></pre></div>
+
+<p>Any additional elements are ignored.</p>
+<h3 id="proxies">Proxies</h3>
+<p>The purpose of the proxy definitions is to define a communication proxy. We support <code>HTTP</code> and <code>SOCKS</code> proxies. An additional built-in proxy is the <code>DIRECT</code> 'proxy'. Proxies can be authenticated with a username and password.</p>
+<p>| Tag               | Default      | Values         | Description                               |
+|-----------------------------------------------------------------------------------------------|
+| <code>id</code>              | <code>default</code>    | <code>NAME</code>         | Identifies the proxy, must be unique in   |
+|                   |              |                | the list of proxies.                      |
+| <code>active</code>          | <code>true</code>       | <code>true | false</code> | If this proxy is active                   |
+| <code>protocol</code>        | <code>http</code>       | <code>socks | http  | direct</code> | The proxy protocol to use.      |
+| <code>host</code>            |              | <code>domain-name</code>  | The domain name or IP address of the proxy host |
+| <code>port</code>            |              | <code>INTEGER</code>      | Port number, maybe absent if default      |
+|                   |              |                | port for protocol                         |
+| <code>username</code>        |              |                | User name for authentication to the proxy |
+| <code>password</code>        |              |                | Password for authentication to the proxy  |
+| <code>nonProxyHosts</code>   | none         | <code>GLOB ('|' GLOB)*</code> | Filter on the destination hosts that should not be proxied                     |</p>
+<h3 id="servers">Servers</h3>
+<p>In maven, the servers are identified by an <em>id</em>; when you define a repository you tell which id to use. In bnd this works 
+slightly different. Instead of using the id we use the id in the settings as a <em>glob</em> expression on the protocol, host name, 
+and port number.  The glob expression must match the scheme, the host and the port if the port is not the default port. 
+To match the url <code>https://maven2-repository.dev.java.net/</code>, the server component could look like (pay attention to the missing trailing slash):</p>
+<div class="highlight"><pre><span></span><code>&lt;server&gt;
+    &lt;id&gt;https://*java.net&lt;/id&gt;
+    ...
+&lt;/server&gt;
+</code></pre></div>
+
+<p>The first server that matches the id will provide the parameters.</p>
+<p>| Tag               | Default      | Values         | Description                               |
+|-----------------------------------------------------------------------------------------------|
+| <code>id</code>              |              | <code>GLOB</code>         | A glob expression on the scheme + host + port   |
+| <code>username</code>        |              |                | User name for authentication to the server |
+| <code>password</code>        |              |                | Password for authentication to the server  |
+| <code>verify</code>          |  <code>true</code>      | <code>false | true</code> | Enable/disable the verification of the host name against a certificate for HTTPS |
+| <code>trust</code>           |              |                | Provide paths to certificate that provide trust to the host certificate. The format most of a X.509 certificate file. Normally the extension is <code>.cer</code> |
+| <code>maxConcurrentConnections</code>|0 (unlimited)|0..      | Limits the number of parallel connections to a host. Some hosts use the number of concurrent connections as a sign of a denial of service attack. |</p>
+<h2 id="oauth2-authentication">oAuth2 authentication</h2>
+<p>It also supports Bearer (OAuth2) authentication. If the <code>&lt;server&gt;</code> configuration has only a password and no username, then Bearer authentication is in effect with the password used as the token.</p>
+<div class="highlight"><pre><span></span><code>-connection-settings: server;id=&quot;https://*.server.com&quot;;password=&quot;oauth2token&quot;
+</code></pre></div>
+
+<p>will cause</p>
+<div class="highlight"><pre><span></span><code>Authorization: Bearer oauth2token
+</code></pre></div>
+
+<p>request header to be sent to servers matching the glob https://*.server.com.</p>
+<p>See https://github.github.com/maven-plugins/site-plugin/authentication.html for an example of a <code>&lt;server&gt;</code> configuration for OAuth2.</p>
+<h2 id="commands">Commands</h2>
+<p>The bnd command line provides a number of commands to display and verify the settings as well as getting the information from
+getting a remote file.</p>
+<div class="highlight"><pre><span></span><code>$ bnd com
+Available sub-commands:
+
+clear                       -         Clear the cached file that is
+                                     associated with the givenURI 
+info                        -         Show the information used by the
+                                      Http Client to get aremote file 
+settings                    -         Show the bnd -connection-settings
+</code></pre></div>
+
+<h2 id="certificate-authentication">Certificate Authentication</h2>
+<p><a href="https://bnd.discourse.group/t/using-client-certificate-for-server-authentication/85">Certificate authentication</a> is only suppprted using the Java settings through system properties. Either with <code>-D</code> on the command line 
+or in the <code>eclipse.ini</code> file or through some other means. In that case, make sure not specify the <code>&lt;trust/&gt;</code> nor <code>&lt;verify/&gt;</code> element 
+in a <code>connection-settings.xml</code>. The reason is that once you specify those element, the built-in Java mechanism is replaced with bnd code.</p>
+<p><br /><br /></p>
+</body>
+</html>

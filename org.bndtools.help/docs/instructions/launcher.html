@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-launcher</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-launcher</h1>
+<ul>
+<li>
+<p>Example: <code>-launcher manage = all</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/launcher.md -->
+<p>This instruction has as purpose to collect options and special settings for the launcher. The
+following options are architected:</p>
+<ul>
+<li><code>manage</code>  – Indicates to the launcher how to treat unrecognized bundles. When the launcher starts 
+  it gets a list of run bundles, also called its <em>scope</em>. However, previous runs could've installed
+  other bundles that do not occur in the scope. By default the launcher should manage <em>all</em>
+  bundles. However, sometimes these bundles were installed by an agent and the launcher should
+  not touch them. Therefore the values for the 'manage' part are:</li>
+<li><code>all</code> – This is the default and the launcher assumes it owns all the bundles</li>
+<li><code>narrow</code> – The launcher will only touch the bundles that are part of its scope</li>
+<li><code>none</code> – The launcher should defer from managing any bundles. </li>
+</ul>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre><span></span><code>-launcher manage = all
+</code></pre></div>
+
+<h2 id="background">Background</h2>
+<p>This instruction was primarily designed to handle start levels. Originally the launcher was
+<em>narrowly</em> managing only the bundles that were in its scope. However, this was inadvertently
+changed and not discovered for several reasons. The option to narrowly manage was therefore
+introduced with the default being the latest behavior.</p>
+<p><br /><br /></p>
+</body>
+</html>

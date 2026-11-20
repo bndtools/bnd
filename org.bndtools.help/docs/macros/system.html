@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>system ';' STRING ( ';' STRING )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>system ';' STRING ( ';' STRING )?</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>system</code> macro executes an operating system command and returns its standard output. The command runs in the project's base directory. The build fails if the command returns a non-zero exit code.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${system;&lt;command&gt;[;&lt;input&gt;]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>command</code> - The system command to execute</li>
+<li><code>input</code> (optional) - Text to send to the command's standard input</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Executes the command in the project base directory</li>
+<li>On Windows, automatically wraps command with <code>cmd /c</code></li>
+<li>Captures and returns standard output (trimmed)</li>
+<li>If input is provided, writes it to the command's stdin</li>
+<li>Returns empty string and generates error if command fails</li>
+<li>Build fails on non-zero exit codes</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get Git commit hash:</p>
+<div class="highlight"><pre><span></span><code>Git-Commit: ${system;git rev-parse HEAD}
+</code></pre></div>
+
+<p>Get current date:</p>
+<div class="highlight"><pre><span></span><code>Build-Date: ${system;date}
+</code></pre></div>
+
+<p>Execute command with input:</p>
+<div class="highlight"><pre><span></span><code>${system;wc -l;line1\nline2\nline3}
+</code></pre></div>
+
+<p>Get Maven version:</p>
+<div class="highlight"><pre><span></span><code>mvn.version=${system;mvn --version}
+</code></pre></div>
+
+<p>List files:</p>
+<div class="highlight"><pre><span></span><code>files=${system;ls -la}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Embedding command output in manifests</li>
+<li>Getting version control information</li>
+<li>Capturing build environment details</li>
+<li>Running custom build scripts</li>
+<li>Platform-specific build information</li>
+<li>Integration with external tools</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li><strong>Security Warning</strong>: Be cautious with user input in commands</li>
+<li>Commands run in the project base directory</li>
+<li>Windows commands are automatically wrapped with <code>cmd /c</code></li>
+<li>Standard output is captured and trimmed</li>
+<li>Standard error is not captured</li>
+<li>Build fails on command failure</li>
+<li>See also: <code>${system-allow-fail}</code> for non-failing variant</li>
+<li>May be disabled in restricted execution modes</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

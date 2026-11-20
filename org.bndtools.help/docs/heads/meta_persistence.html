@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meta-Persistence ::= ( RESOURCE ( ',' RESOURCE )* )?</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Meta-Persistence ::= ( RESOURCE ( ',' RESOURCE )* )?</h1>
+<ul>
+<li>
+<p>Example: <code>Meta-Persistence: persistence/myPu.xml</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/meta_persistence.md -->
+<h1 id="meta-persistence">Meta-Persistence</h1>
+<p>The <code>Meta-Persistence</code> header marks a bundle as a JPA (Java Persistence API) persistence bundle. It lists one or more resource paths (typically XML files) that describe the persistence units. If this header is not present, the bundle is not considered a persistence bundle and should be ignored by JPA providers.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>Meta-Persistence: META-INF/persistence.xml
+</code></pre></div>
+
+<p>bnd will verify that the listed resources exist in the bundle. This header is required for JPA persistence bundles.</p>
+<div class="highlight"><pre><span></span><code>/**
+ * Verify the Meta-Persistence header
+ * 
+ * @throws Exception
+ */
+
+public void verifyMetaPersistence() throws Exception {
+    List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+    String mp = dot.getManifest().getMainAttributes().getValue(META_PERSISTENCE);
+    for (String location : OSGiHeader.parseHeader(mp).keySet()) {
+        String[] parts = location.split(&quot;!/&quot;);
+
+        Resource resource = dot.getResource(parts[0]);
+        if (resource == null)
+            list.add(location);
+        else {
+            if (parts.length &gt; 1) {
+                Jar jar = new Jar(&quot;&quot;, resource.openInputStream());
+                try {
+                    resource = jar.getResource(parts[1]);
+                    if (resource == null)
+                        list.add(location);
+                }
+                catch (Exception e) {
+                    list.add(location);
+                }
+                finally {
+                    jar.close();
+                }
+            }
+        }
+    }
+    if (list.isEmpty())
+        return;
+
+    error(Constants.META_PERSISTENCE + &quot; refers to resources not in the bundle: %s&quot;, list).header(Constants.META_PERSISTENCE);
+}
+</code></pre></div>
+
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

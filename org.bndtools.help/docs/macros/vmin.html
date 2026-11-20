@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>vmin (';' LIST )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>vmin (';' LIST )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>vmin</code> macro compares version strings using OSGi semantic versioning rules and returns the minimum (lowest) version.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${vmin;&lt;list&gt;[;&lt;list&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>list</code> - One or more semicolon-separated lists of version strings</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Parses all values as OSGi versions</li>
+<li>Compares using semantic versioning rules</li>
+<li>Returns the lowest version string</li>
+<li>Handles major.minor.micro.qualifier format</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Find minimum version:</p>
+<div class="highlight"><pre><span></span><code>${vmin;1.2.3,2.0.0,1.0.5}
+# Returns: &quot;1.0.5&quot;
+</code></pre></div>
+
+<p>Multiple lists:</p>
+<div class="highlight"><pre><span></span><code>${vmin;1.5.0,2.0.0;1.2.3,3.0.0}
+# Returns: &quot;1.2.3&quot;
+</code></pre></div>
+
+<p>Check compatibility:</p>
+<div class="highlight"><pre><span></span><code>min.required=${vmin;${bundle.versions}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Finding oldest compatible version</li>
+<li>Version range calculations</li>
+<li>Dependency analysis</li>
+<li>Compatibility checking</li>
+<li>Version comparison</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses OSGi semantic versioning</li>
+<li>Qualifiers compared lexicographically</li>
+<li>Invalid versions may cause errors</li>
+<li>See also: <code>${vmax}</code> for maximum version</li>
+<li>See also: <code>${vcompare}</code> for comparison</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

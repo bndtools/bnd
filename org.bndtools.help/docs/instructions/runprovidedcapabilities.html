@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-runprovidedcapabilities</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-runprovidedcapabilities</h1>
+<ul>
+<li>
+<p>Example: <code>-runprovidedcapabilities=some.namespace; some.namespace=foo</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/runprovidedcapabilities.md -->
+<h1 id="-runprovidedcapabilities">-runprovidedcapabilities</h1>
+<p>The <code>-runprovidedcapabilities</code> instruction is used with the <code>-distro</code> instruction to specify extra capabilities that are provided by the target system but not listed in the distro file. This helps the resolver understand what is available at runtime.</p>
+<p>The <code>-runprovidedcapabilities</code> instruction allows you to declare additional capabilities for a distribution that are not explicitly mentioned in the distribution file. By using this instruction, you enable the resolver to take into account these extra capabilities when determining the set of available features and functionalities in the target environment. This can be particularly useful in scenarios where certain capabilities are provided by the system but are not included in the default distribution configuration.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-runprovidedcapabilities: some.namespace;some.namespace=foo
+</code></pre></div>
+
+<p>This instruction is only relevant when working with distribution-based resolves.</p>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>split ';' REGEX (';' STRING )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>split ';' REGEX (';' STRING )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>split</code> macro splits one or more strings into a list using a regular expression as the delimiter. Empty segments are filtered out.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${split;&lt;regex&gt;[;&lt;string&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>regex</code> - Regular expression pattern to split on</li>
+<li><code>string</code> - One or more strings to split</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Splits each string using the regex pattern</li>
+<li>Filters out empty segments</li>
+<li>Combines results from all strings</li>
+<li>Returns comma-separated list</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Split on comma:</p>
+<div class="highlight"><pre><span></span><code>${split;,;red,green,blue}
+# Returns: &quot;red,green,blue&quot;
+</code></pre></div>
+
+<p>Split on whitespace:</p>
+<div class="highlight"><pre><span></span><code>${split;\s+;one two  three   four}
+# Returns: &quot;one,two,three,four&quot;
+</code></pre></div>
+
+<p>Split on pipe:</p>
+<div class="highlight"><pre><span></span><code>${split;\|;apple|banana|cherry}
+# Returns: &quot;apple,banana,cherry&quot;
+</code></pre></div>
+
+<p>Split multiple strings:</p>
+<div class="highlight"><pre><span></span><code>${split;:;path1:path2;path3:path4}
+# Returns: &quot;path1,path2,path3,path4&quot;
+</code></pre></div>
+
+<p>Split path on separator:</p>
+<div class="highlight"><pre><span></span><code>${split;${pathseparator};${some.path}}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Parsing delimited strings</li>
+<li>Breaking paths into components</li>
+<li>Processing formatted data</li>
+<li>Converting between delimiter formats</li>
+<li>Extracting list elements from strings</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses Java regex syntax</li>
+<li>Empty segments are automatically filtered</li>
+<li>Multiple input strings are processed</li>
+<li>See also: <code>${join}</code> and <code>${sjoin}</code> for combining</li>
+<li>See also: <code>${filter}</code> for pattern-based filtering</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

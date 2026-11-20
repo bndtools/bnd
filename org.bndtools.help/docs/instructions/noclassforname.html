@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-noclassforname BOOLEAN</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-noclassforname BOOLEAN</h1>
+<ul>
+<li>
+<p>Example: <code>-noclassforname=true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/noclassforname.md -->
+<p>Normally Bnd will examine the method bodies of classes looking for the instruction sequence:</p>
+<div class="highlight"><pre><span></span><code>ldc(_w) &quot;some.Class&quot;
+invokestatic &quot;java/lang/Class&quot; &quot;forName(Ljava/lang/String;)Ljava/lang/Class;&quot;
+</code></pre></div>
+
+<p>which results from calls to <code>Class.forName(String)</code> passing a String constant for the class name. Bnd will use the String constant as a class reference for the purposes of calculating package references for generating the Import-Package manifest header.</p>
+<p>The <code>-noclassforname</code> instruction can be used to tell Bnd to not search the method bodies for this instruction sequence.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-noclassforname: true
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>
