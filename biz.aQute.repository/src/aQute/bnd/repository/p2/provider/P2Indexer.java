@@ -74,6 +74,7 @@ class P2Indexer implements Closeable {
 	final File								indexFile;
 	private final HttpClient				client;
 	private final PromiseFactory			promiseFactory;
+	private final Runnable					beforeWrite;
 	private volatile BridgeRepository		bridge;
 	private static final SupportingResource	RECOVERY	= new ResourceBuilder().build();
 	private static final String				ECLIPSE_FEATURE_CAPABILITY	= "org.eclipse.update.feature";
@@ -85,6 +86,12 @@ class P2Indexer implements Closeable {
 
 	P2Indexer(Unpack200 processor, Reporter reporter, File location, File indexFile, HttpClient client, URI url,
 		String name) throws Exception {
+		this(processor, reporter, location, indexFile, client, url, name, () -> {});
+	}
+
+	P2Indexer(Unpack200 processor, Reporter reporter, File location, File indexFile, HttpClient client, URI url,
+		String name, Runnable beforeWrite) throws Exception {
+		this.beforeWrite = beforeWrite;
 		this.processor = processor;
 		this.reporter = reporter;
 		this.location = location;
@@ -96,6 +103,7 @@ class P2Indexer implements Closeable {
 		this.urlHash = client.toName(url);
 		if (this.indexFile.isDirectory())
 			throw new IllegalArgumentException(this.indexFile + " is a directory, not an index file");
+		beforeWrite.run();
 		IO.mkdirs(this.location);
 
 		validate();
@@ -136,6 +144,7 @@ class P2Indexer implements Closeable {
 		// name to avoid overwriting the bundle in the cache (and vice versa)
 		boolean isFeature = ResourceUtils.hasType(resource, ECLIPSE_FEATURE_CAPABILITY);
 		final File link = new File(location, bsn + "-" + version + (isFeature ? ".feature.jar" : ".jar"));
+		beforeWrite.run();
 
 		IO.createSymbolicLinkOrCopy(link, source);
 
@@ -441,6 +450,7 @@ class P2Indexer implements Closeable {
 	}
 
 	private ResourcesRepository save(ResourcesRepository repository) throws IOException, Exception {
+		beforeWrite.run();
 		XMLResourceGenerator xrg = new XMLResourceGenerator();
 		xrg.repository(repository)
 			.name(urlHash)

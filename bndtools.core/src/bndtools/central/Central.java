@@ -284,7 +284,8 @@ public class Central implements IStartupParticipant {
 					ws.refresh();
 					ws.refreshProjects();
 					applyRebuildTriggerPolicy(ws);
-					return tryResolve(cnfWorkspaceDeferred);
+					return tryResolve(cnfWorkspaceDeferred)
+						.andThen(adjustedWorkspace -> repositoriesViewRefresher.refreshRepositories(null));
 				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
 					// There is no "cnf" project and the current workspace is
 					// not the default, so switch the workspace to the default
@@ -294,7 +295,7 @@ public class Central implements IStartupParticipant {
 					ws.refresh();
 					ws.refreshProjects();
 					applyRebuildTriggerPolicy(ws);
-					return null;
+					return adjustedWorkspace -> repositoriesViewRefresher.refreshRepositories(null);
 				}
 				return null;
 			});

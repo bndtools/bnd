@@ -31,7 +31,6 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
-import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.bnd.version.Version;
@@ -125,73 +124,6 @@ public class P2RepositoryTest {
 		}
 	}
 
-	/**
-	 * An earlier bnd version created a directory at an index file location.
-	 * The index must be written as a file at that location and be readable
-	 * by an OSGiRepository.
-	 */
-	@Test
-	public void testLocationAsIndexFileReplacesLegacyIndexDirectory() throws Exception {
-		File repository = IO.getFile("testdata/p2/macbadge");
-		File indexFile = new File(tmp, "cnf/ext/macbadge_p2.index.xml.gz");
-		IO.mkdirs(indexFile);
-		IO.store("stale", new File(indexFile, "index.xml.gz"));
-		IO.store("link", new File(indexFile, "some.bundle-1.0.0.jar"));
-		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
-			P2Repository p2r = new P2Repository()) {
-			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
-			w.setBase(tmp);
-			p2r.setRegistry(w);
-			p2r.setReporter(w);
-
-			Map<String, String> config = new HashMap<>();
-			config.put("url", repository.toURI()
-				.toString());
-			config.put("name", "test");
-			config.put("location", indexFile.getAbsolutePath());
-			config.put("cache", "cnf/cache/p2-test");
-			p2r.setProperties(config);
-
-			List<String> bundles = p2r.list(null);
-			assertThat(bundles).isNotEmpty();
-			assertThat(indexFile).isFile();
-			assertThat(w.getWarnings()).anyMatch(warning -> warning.contains("earlier bnd version"));
-
-			try (OSGiRepository osgi = new OSGiRepository()) {
-				osgi.setRegistry(w);
-				osgi.setReporter(w);
-				osgi.setProperties(Map.of("name", "osgi", "locations", indexFile.toURI()
-					.toString(), "cache", new File(tmp, "cnf/cache/osgi").getAbsolutePath()));
-				assertThat(osgi.list(null)).containsExactlyInAnyOrderElementsOf(bundles);
-			}
-		}
-	}
-
-	@Test
-	public void testLocationAsIndexFileKeepsForeignDirectory() throws Exception {
-		File repository = IO.getFile("testdata/p2/macbadge");
-		File indexFile = new File(tmp, "cnf/ext/macbadge_p2.index.xml.gz");
-		File foreign = new File(indexFile, "notes.txt");
-		IO.mkdirs(indexFile);
-		IO.store("keep me", foreign);
-		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
-			P2Repository p2r = new P2Repository()) {
-			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
-			w.setBase(tmp);
-			p2r.setRegistry(w);
-
-			Map<String, String> config = new HashMap<>();
-			config.put("url", repository.toURI()
-				.toString());
-			config.put("name", "test");
-			config.put("location", indexFile.getAbsolutePath());
-			p2r.setProperties(config);
-
-			assertThatThrownBy(() -> p2r.list(null)).hasMessageContaining("is a directory, not an index file");
-			assertThat(foreign).isFile();
-		}
-	}
-
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})
 	public void testLocationDefault(boolean separateCache) throws Exception {
@@ -218,6 +150,47 @@ public class P2RepositoryTest {
 			assertThat(bundle).isFile().hasParent(cache);
 			assertThat(new File(location, "index.xml.gz")).isFile();
 			assertThat(p2r.getRoot()).isEqualTo(cache);
+		}
+	}
+
+	@Test
+	public void testDeletedWorkspaceDoesNotRecreateIndex() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File cnf = new File(tmp, "ws/cnf");
+		IO.mkdirs(cnf);
+		IO.store("", new File(cnf, "build.bnd"));
+		File indexFile = new File(cnf, "ext/test.index.xml.gz");
+		try (Workspace w = new Workspace(cnf.getParentFile()); P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			p2r.setRegistry(w);
+			p2r.setProperties(Map.of("url", repository.toURI()
+				.toString(), "name", "test", "location", "cnf/ext/test.index.xml.gz"));
+			IO.delete(cnf);
+
+			assertThatThrownBy(() -> p2r.list(null)).hasMessageContaining("no longer exists");
+			assertThat(indexFile).doesNotExist();
+			assertThat(cnf).doesNotExist();
+		}
+	}
+
+	@Test
+	public void testDeletedWorkspaceDoesNotRefreshIndex() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File cnf = new File(tmp, "ws/cnf");
+		IO.mkdirs(cnf);
+		IO.store("", new File(cnf, "build.bnd"));
+		File indexFile = new File(cnf, "ext/test.index.xml.gz");
+		try (Workspace w = new Workspace(cnf.getParentFile()); P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			p2r.setRegistry(w);
+			p2r.setProperties(Map.of("url", repository.toURI()
+				.toString(), "name", "test", "location", "cnf/ext/test.index.xml.gz"));
+			assertThat(p2r.list(null)).isNotEmpty();
+			assertThat(indexFile).isFile();
+			IO.delete(cnf);
+
+			assertThatThrownBy(p2r::refresh).hasMessageContaining("no longer exists");
+			assertThat(cnf).doesNotExist();
 		}
 	}
 

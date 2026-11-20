@@ -1,6 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,6 +40,33 @@ public class P2IndexerTest {
 
 	private String getName() {
 		return tmp.getName();
+	}
+
+	@Test
+	public void testDeletionDuringIndexingDoesNotRecreateLocation() throws Exception {
+		File cnf = new File(tmp, "ws/cnf");
+		File indexFile = new File(cnf, "ext/test.index.xml.gz");
+		IO.mkdirs(cnf);
+		AtomicInteger checks = new AtomicInteger();
+		Runnable beforeWrite = () -> {
+			if (checks.incrementAndGet() == 2) {
+				IO.delete(cnf);
+			}
+			if (!cnf.isDirectory()) {
+				throw new IllegalStateException("cnf no longer exists");
+			}
+		};
+
+		try (HttpClient client = new HttpClient()) {
+			client.setCache(IO.getFile(tmp, "cache"));
+			assertThatThrownBy(() -> new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class),
+				indexFile.getParentFile(), indexFile, client, IO.getFile("testdata/p2/macbadge")
+					.toURI(),
+				getName(), beforeWrite)).hasMessageContaining("cnf no longer exists");
+		}
+
+		assertThat(checks).hasValue(2);
+		assertThat(cnf).doesNotExist();
 	}
 
 	@Test

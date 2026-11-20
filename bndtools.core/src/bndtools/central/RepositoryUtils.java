@@ -46,6 +46,9 @@ public class RepositoryUtils {
 	}
 
 	public static List<RepositoryPlugin> listRepositories(final Workspace localWorkspace, final boolean hideCache) {
+		if (localWorkspace.isDefaultWorkspace()) {
+			return Collections.emptyList();
+		}
 		try {
 			return localWorkspace.readLocked(() -> {
 				List<RepositoryPlugin> plugins = localWorkspace.getPlugins(RepositoryPlugin.class);

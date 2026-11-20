@@ -71,6 +71,7 @@
 	org.eclipse.jdt.ui,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
+	org.eclipse.ltk.core.refactoring,\
 	org.eclipse.osgi,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.ide.application,\
