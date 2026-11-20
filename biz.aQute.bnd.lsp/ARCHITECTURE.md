@@ -25,6 +25,7 @@ flowchart LR
     Model[BndDocumentModel and header models]
     Providers[Completion, hover, diagnostics, semantic tokens]
     Launch[BndLaunchService]
+    Export[BndExportService]
     Repositories[BndRepositoriesService]
     Wizard[BndWizardService]
     Resolution[BndResolutionService]
@@ -40,11 +41,13 @@ flowchart LR
     Text --> Manager
     WorkspaceService --> Manager
     WorkspaceService --> Launch
+    WorkspaceService --> Export
     WorkspaceService --> Repositories
     WorkspaceService --> Wizard
     WorkspaceService --> Resolution
     Manager --> BndAPI
     Launch --> BndAPI
+    Export --> BndAPI
     Repositories --> BndAPI
     Wizard --> BndAPI
     Resolution --> BndAPI
@@ -168,6 +171,7 @@ The client invokes commands through LSP `workspace/executeCommand`. `BndLanguage
 | Effective properties | `BndEffectivePropertiesService` | Evaluate raw/expanded/merged properties, provenance, diagnostics, and source text |
 | Resolution analysis | `BndResolutionService` | Extract OSGi requirements/capabilities from selected `.bnd` or JAR inputs and mark local matches |
 | Launch prepare/dispose | `BndLaunchService` | Prepare run or test launch configuration for the editor/debugger; retain resources until disposal |
+| Export (`bnd.export`) | `BndExportService` | Export a `.bndrun` or `bnd.bnd` with a bnd exporter, by default `bnd.executablejar`; `bnd.runbundles` writes a folder. Builds the exported bundles first unless `build` is false and writes to `<target>/export` of the owning project |
 | Repository browse and management | `BndRepositoriesService` | List repositories, bundles, versions, features, search, get/put, refresh, actions, download, and offline mode |
 | Template wizard | `BndWizardService` | List workspace templates or fragments, create directly after confirmation, or use the legacy preview/apply flow; dispose retained state |
 
@@ -194,7 +198,7 @@ A dry run of `bnd.resolve` does not write and takes no lock. The locks are advis
 
 ## Trust and Side Effects
 
-Trust is supplied by the client at initialization. The workspace service explicitly requires a trusted workspace for effective-properties evaluation, resolution analysis, launch preparation, and repository/wizard requests. The corresponding checks are at the command boundary, before delegation. Other command paths should be reviewed individually when changing trust behavior; do not assume all commands share one authorization check.
+Trust is supplied by the client at initialization. The workspace service explicitly requires a trusted workspace for effective-properties evaluation, resolution analysis, launch preparation, export, and repository/wizard requests. The corresponding checks are at the command boundary, before delegation. Other command paths should be reviewed individually when changing trust behavior; do not assume all commands share one authorization check.
 
 Operations that mutate or retain state have explicit lifecycle handling:
 
@@ -273,7 +277,7 @@ Run project tests and build the bundle from the repository root:
 ./gradlew :biz.aQute.bnd.lsp:test :biz.aQute.bnd.lsp:jar
 ```
 
-Tests are under `test/aQute/bnd/lsp`. `BndLanguageServerTest` covers capability advertisement and command behavior; service and model tests cover focused behavior such as completion, hover, effective properties, repositories, launches, wizard planning, and document parsing.
+Tests are under `test/aQute/bnd/lsp`. `BndLanguageServerTest` covers capability advertisement and command behavior, and `BndWorkspaceServiceTest.everyAdvertisedCommandIsDispatched` checks that no advertised command reaches the unknown-command fallback; service and model tests cover focused behavior such as completion, hover, effective properties, repositories, launches, wizard planning, and document parsing.
 
 ## Source Map
 

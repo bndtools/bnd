@@ -18,6 +18,7 @@ public interface Constants {
 	String	COMMAND_RESOLUTION_ANALYZE	= "bnd.resolution.analyze";
 	String	COMMAND_LAUNCH_PREPARE		= "bnd.launch.prepare";
 	String	COMMAND_LAUNCH_DISPOSE		= "bnd.launch.dispose";
+	String	COMMAND_EXPORT				= "bnd.export";
 	String	COMMAND_REPOSITORIES_LIST		= "bnd.repositories.list";
 	String	COMMAND_REPOSITORIES_BUNDLES	= "bnd.repositories.bundles";
 	String	COMMAND_REPOSITORIES_VERSIONS	= "bnd.repositories.versions";

@@ -42,6 +42,134 @@ class BndWorkspaceServiceTest {
 		}
 	}
 
+	private Map<String, Object> executeTrusted(String command, Object... args) throws Exception {
+		BndWorkspaceService service = new BndWorkspaceService(new BndWorkspaceManager());
+		service.configureEffectiveProperties(null, true);
+		try {
+			return (Map<String, Object>) service.executeCommand(new ExecuteCommandParams(command, List.of(args)))
+				.get();
+		} finally {
+			service.shutdown();
+		}
+	}
+
+	@Test
+	void everyAdvertisedCommandIsDispatched() throws Exception {
+		workspace("", "Bundle-Version: 1.0.0\n");
+		var server = new aQute.bnd.lsp.BndLanguageServer();
+		List<String> commands = server.initialize(new org.eclipse.lsp4j.InitializeParams())
+			.get()
+			.getCapabilities()
+			.getExecuteCommandProvider()
+			.getCommands();
+		assertThat(commands).contains(Constants.COMMAND_EXPORT);
+		BndWorkspaceService service = new BndWorkspaceService(new BndWorkspaceManager());
+		try {
+			for (String command : commands) {
+				// unknown commands return null; known ones a result or an error
+				assertThat(service.executeCommand(new ExecuteCommandParams(command, List.of()))
+					.get()).as(command)
+					.isNotNull();
+			}
+		} finally {
+			service.shutdown();
+			server.shutdown();
+		}
+	}
+
+	@Test
+	void buildProjectAndWorkspaceReportBuiltOutput() throws Exception {
+		Path project = workspace("", "Bundle-Version: 1.0.0\n-includeresource: a.txt;literal=a\n");
+		String uri = project.resolve("bnd.bnd")
+			.toUri()
+			.toString();
+
+		Map<String, Object> built = execute(Constants.COMMAND_BUILD_PROJECT, uri);
+		assertThat(built.get("success")).isEqualTo(true);
+		assertThat((List<String>) built.get("builtFiles")).singleElement()
+			.asString()
+			.endsWith("p.jar");
+
+		Map<String, Object> workspace = execute(Constants.COMMAND_BUILD_WORKSPACE, uri);
+		assertThat((List<String>) workspace.get("builtProjects")).containsExactly("p");
+	}
+
+	@Test
+	void repoListAndJarPrintDescribeContent() throws Exception {
+		Path project = workspace(
+			"-plugin.release: aQute.lib.deployer.FileRepo;name=Release;location=${workspace}/cnf/release\n",
+			"Bundle-SymbolicName: p\nBundle-Version: 1.0.0\n-includeresource: a.txt;literal=a\n");
+		execute(Constants.COMMAND_BUILD_PROJECT, project.resolve("bnd.bnd")
+			.toUri()
+			.toString());
+
+		Map<String, Object> repos = execute(Constants.COMMAND_REPO_LIST, project.resolve("bnd.bnd")
+			.toUri()
+			.toString());
+		assertThat((List<Map<String, Object>>) repos.get("repositories")).extracting(r -> r.get("name"))
+			.contains("Release");
+
+		Map<String, Object> printed = execute(Constants.COMMAND_JAR_PRINT, project.resolve("generated/p.jar")
+			.toString());
+		assertThat((Map<String, String>) printed.get("manifest")).containsEntry("Bundle-SymbolicName", "p")
+			.containsEntry("Bundle-Version", "1.0.0");
+	}
+
+	@Test
+	void exportWritesRunbundlesFolder() throws Exception {
+		Path project = workspace("",
+			"Bundle-SymbolicName: p\nBundle-Version: 1.0.0\n-includeresource: a.txt;literal=a\n");
+		Path bndrun = Files.writeString(project.resolve("app.bndrun"), "-runbundles: p;version=snapshot\n");
+
+		Map<String, Object> result = executeTrusted(Constants.COMMAND_EXPORT,
+			Map.of("uri", bndrun.toUri()
+				.toString(), "exporter", "bnd.runbundles"));
+
+		assertThat(result).as("%s", result)
+			.containsEntry("success", true)
+			.containsEntry("exporter", "bnd.runbundles");
+		Path folder = project.resolve("generated/export/app.bndrun");
+		assertThat(Path.of((String) result.get("output"))).isEqualTo(folder);
+		assertThat(folder.resolve("p.jar")).isRegularFile();
+	}
+
+	@Test
+	void exportWritesExecutableJar() throws Exception {
+		Path project = workspace("",
+			"Bundle-SymbolicName: p\nBundle-Version: 1.0.0\n-includeresource: a.txt;literal=a\n");
+		Path bndrun = Files.writeString(project.resolve("app.bndrun"), "-runbundles: p;version=snapshot\n");
+
+		Map<String, Object> result = executeTrusted(Constants.COMMAND_EXPORT, Map.of("uri", bndrun.toUri()
+			.toString()));
+
+		assertThat(result).as("%s", result)
+			.containsEntry("success", true)
+			.containsEntry("exporter", "bnd.executablejar");
+		Path jar = Path.of((String) result.get("output"));
+		assertThat(jar).isRegularFile()
+			.hasParent(project.resolve("generated/export"));
+		try (var exported = new aQute.bnd.osgi.Jar(jar.toFile())) {
+			assertThat(exported.getManifest()
+				.getMainAttributes()
+				.getValue("Main-Class")).isNotBlank();
+		}
+	}
+
+	@Test
+	void exportReportsErrorsAndRequiresTrust() throws Exception {
+		Path project = workspace("", "Bundle-Version: 1.0.0\n");
+		Path bndrun = Files.writeString(project.resolve("app.bndrun"), "-runbundles: p;version=snapshot\n");
+		Map<String, Object> request = Map.of("uri", bndrun.toUri()
+			.toString(), "exporter", "unknown.exporter", "build", false);
+
+		assertThat(String.valueOf(execute(Constants.COMMAND_EXPORT, request).get("error"))).contains("trusted");
+
+		Map<String, Object> result = executeTrusted(Constants.COMMAND_EXPORT, request);
+		assertThat(result).containsEntry("success", false)
+			.doesNotContainKey("output");
+		assertThat((List<String>) result.get("errors")).anySatisfy(e -> assertThat(e).contains("unknown.exporter"));
+	}
+
 	@Test
 	void cleanRemovesProjectOutput() throws Exception {
 		Path project = workspace("", "Bundle-Version: 1.0.0\n");

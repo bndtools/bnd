@@ -56,6 +56,7 @@ public class BndWorkspaceService implements WorkspaceService {
 	private final BndWorkspaceManager	workspaceManager;
 	private final BndLaunchService		launchService;
 	private final BndRepositoriesService	repositoriesService;
+	private final BndExportService		exportService;
 	private final BndWizardService wizardService = new BndWizardService();
 	private LanguageClient				client;
 	private BndTextDocumentService documents;
@@ -75,6 +76,7 @@ public class BndWorkspaceService implements WorkspaceService {
 		this.workspaceManager = workspaceManager;
 		this.launchService = new BndLaunchService(workspaceManager);
 		this.repositoriesService = new BndRepositoriesService(workspaceManager);
+		this.exportService = new BndExportService(workspaceManager);
 	}
 
 	public void shutdown() {
@@ -135,6 +137,8 @@ public class BndWorkspaceService implements WorkspaceService {
 						return executeLaunchPrepare(args);
 					case Constants.COMMAND_LAUNCH_DISPOSE :
 						return executeLaunchDispose(args);
+					case Constants.COMMAND_EXPORT :
+						return executeExport(args);
 					case Constants.COMMAND_REPOSITORIES_LIST :
 						return repositoriesService.list(repositoriesRequest(args));
 					case Constants.COMMAND_REPOSITORIES_BUNDLES :
@@ -237,6 +241,33 @@ public class BndWorkspaceService implements WorkspaceService {
 			throw new IllegalArgumentException("Expected one repositories request.");
 		}
 		return request.getAsJsonObject();
+	}
+
+	/**
+	 * Argument: {@code {uri, exporter?, build?}}. The exporter defaults to
+	 * {@code bnd.executablejar}; {@code bnd.runbundles} writes a folder.
+	 * Builds the exported bundles first unless {@code build} is false.
+	 */
+	private Object executeExport(List<Object> args) throws Exception {
+		if (!effectivePropertiesTrusted) {
+			throw new IllegalStateException("Exporting requires a trusted workspace.");
+		}
+		if (args == null || args.size() != 1 || args.get(0) == null) {
+			throw new IllegalArgumentException("Expected one export request.");
+		}
+		JsonObject request = new Gson().toJsonTree(args.get(0))
+			.getAsJsonObject();
+		if (!request.has("uri")) {
+			throw new IllegalArgumentException("Missing export file URI");
+		}
+		File file = getFileFromUri(request.get("uri")
+			.getAsString());
+		String exporter = request.has("exporter") && !request.get("exporter")
+			.isJsonNull() ? request.get("exporter")
+				.getAsString() : null;
+		boolean build = !request.has("build") || request.get("build")
+			.getAsBoolean();
+		return exportService.export(new BndExportService.Request(file, exporter, build));
 	}
 
 	private Object executeLaunchDispose(List<Object> args) {
