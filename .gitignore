@@ -16,3 +16,4 @@ Archive
 target/
 *.code-workspace
 bndtools.test/workspace/
+.github/scripts/manual/runtime-*
