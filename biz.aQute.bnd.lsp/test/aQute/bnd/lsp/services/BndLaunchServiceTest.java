@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.lsp.Constants;
+import aQute.libg.filelock.ProcessLock;
+import aQute.libg.filelock.StorageLocks;
 
 class BndLaunchServiceTest {
 	@TempDir
@@ -125,6 +128,25 @@ class BndLaunchServiceTest {
 			BndLaunchService.build(run, true);
 
 			assertThat(bundle).isFile();
+		}
+	}
+
+	@Test
+	void reportsStorageHeldByAnotherLaunch() throws Exception {
+		Path dir = workspace();
+		Files.writeString(dir.resolve("bnd.bnd"), "-runstorage: fw\n-runkeep: true\n");
+		try (Workspace ws = new Workspace(temporary.toFile()); Project project = ws.getProject("p");
+			FakeLauncher launcher = new FakeLauncher(project)) {
+			File storage = launcher.getStorageDir();
+			assertThat(BndLaunchService.storageInUse(launcher)).isEmpty();
+
+			try (ProcessLock lock = ProcessLock.lock(StorageLocks.lockFile(storage.getCanonicalFile()), 1,
+				TimeUnit.SECONDS)) {
+				assertThat(BndLaunchService.storageInUse(launcher)).hasValueSatisfying(error -> assertThat(error)
+					.contains("in use by another launch", "-runstorage"));
+			}
+
+			assertThat(BndLaunchService.storageInUse(launcher)).isEmpty();
 		}
 	}
 

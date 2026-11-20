@@ -173,7 +173,7 @@ The client invokes commands through LSP `workspace/executeCommand`. `BndLanguage
 
 The command constants are centralized in [Constants.java](src/aQute/bnd/lsp/Constants.java). When adding a command, keep its constant, advertised ID, dispatch case, argument/result contract, and tests aligned. The dispatcher converts exceptions into an `{ "error": ... }` result for command callers; feature services may also return structured errors for expected outcomes.
 
-Capability registration is not proof of a working handler: `BndLanguageServer` currently advertises `bnd.build.clean` and `bnd.baseline`, but `BndWorkspaceService.executeCommand` has no dispatch cases for these IDs. They reach the unknown-command fallback and return `null`.
+Capability registration is not proof of a working handler: check that every advertised ID has a dispatch case in `BndWorkspaceService.executeCommand`, because unknown IDs reach the fallback and return `null`.
 
 ## Multiple Server Processes
 
@@ -185,7 +185,9 @@ Each client starts and owns its own server process, for example one per VS Code 
 | P2 index | `<index file>.lock`, in bnd P2 repository | Wait up to 10 minutes, then read the index without the lock |
 | Maven index file | `cnf/cache/locks/<index>-<hash>.lock`, in bnd Maven repository | Wait up to 2 minutes, then continue without the lock |
 | Expanded JARs in `cnf/cache` | `cnf/cache/locks/expanded-<hash>.lock`, in bnd `Workspace` | Wait up to 2 minutes, then continue without the lock |
-| Launch storage | `<storage>.lock`, in the launcher | The launch fails and names the holder |
+| Launch storage | `<storage>.lock`, in the launcher, taken under the guard `~/.bnd/locks/storage.lock` | The launch fails and names the holder; `bnd.launch.prepare` reports a held `-runstorage` before the client starts the JVM |
+| Project clean | Storage locks in and around the cleaned directories, checked under the same guard | `bnd.build.clean` reports an error for the project and deletes nothing |
+| P2 index file shared by repositories with different URLs | Reserved per process when the repository initializes | The repository reports an error |
 | `.bndrun` write-back of `bnd.resolve` | `cnf/cache/locks/bndrun-<hash>.lock`, in `BndWorkspaceService` | Wait up to 10 minutes, then return an error and leave the file unchanged |
 
 A dry run of `bnd.resolve` does not write and takes no lock. The locks are advisory: bnd versions without them neither take nor honor them.

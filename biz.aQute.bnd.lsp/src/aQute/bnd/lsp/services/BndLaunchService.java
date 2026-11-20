@@ -1,12 +1,15 @@
 package aQute.bnd.lsp.services;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +24,8 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
+import aQute.libg.filelock.ProcessLock;
+import aQute.libg.filelock.StorageLocks;
 
 /**
  * Prepares OSGi launches for an external debugger and keeps the prepared
@@ -114,6 +119,7 @@ public class BndLaunchService {
 
 			List<String> errors = new ArrayList<>(project.getErrors());
 			errors.addAll(launcher.getErrors());
+			storageInUse(launcher).ifPresent(errors::add);
 			if (!errors.isEmpty()) {
 				throw new LaunchException(errors);
 			}
@@ -126,6 +132,28 @@ public class BndLaunchService {
 		} catch (Exception e) {
 			close(project, launcher, bndrun);
 			throw e;
+		}
+	}
+
+	/**
+	 * Report a -runstorage that another launch holds before the client starts
+	 * a JVM whose launcher would fail on it. The launcher still takes the lock
+	 * itself, this check only fails early in the editor.
+	 */
+	static Optional<String> storageInUse(ProjectLauncher launcher) {
+		File storage = launcher.getStorageDir();
+		if (storage == null) {
+			return Optional.empty();
+		}
+		try {
+			File directory = storage.getCanonicalFile();
+			return StorageLocks.findHeld(directory, !launcher.isKeep(), Set.of())
+				.map(lock -> String.format(
+					"The framework storage %s is in use by another launch that holds %s (%s). Stop that launch or use a different %s.",
+					directory, lock, ProcessLock.holder(lock), Constants.RUNSTORAGE));
+		} catch (IOException e) {
+			logger.debug("Cannot check the storage locks of {}", storage, e);
+			return Optional.empty();
 		}
 	}
 
