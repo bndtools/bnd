@@ -21,6 +21,24 @@ using [GitHub Pages](https://help.github.com/articles/what-are-github-pages/).
 ./build.sh
 ```
 
+## Export Documentation
+
+You can export the documentation to single HTML or PDF files for offline viewing or archiving:
+
+```bash
+# Export to single HTML file
+./export-single-html.sh
+
+# Export to PDF (requires wkhtmltopdf, weasyprint, or chromium)
+./export-pdf.sh
+
+# Export specific version
+./export-single-html.sh 7.0.0
+./export-pdf.sh 7.0.0
+```
+
+For more details, see [EXPORT_README.md](EXPORT_README.md).
+
 ## Setup local docs development environment (MacOS)
 
 If you get an error like `activesupport-7.0.7.2 requires ruby version >= 2.7.0, which is incompatible with the current version, ruby 2.6.10p210` when executing `./run.sh` then consider doing the following:
