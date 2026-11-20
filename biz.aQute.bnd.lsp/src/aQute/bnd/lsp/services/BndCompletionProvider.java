@@ -10,18 +10,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
-import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.lsp.models.BndDocumentModel;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.lsp.models.BndHeaderEntry;
 import aQute.bnd.properties.BadLocationException;
 import aQute.bnd.properties.IRegion;
@@ -29,10 +34,8 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 
 public class BndCompletionProvider {
-	private static final String[]		COMMON_MACROS	= {
-		"bsn", "version", "range", "filter", "tstamp", "def", "if", "list", "replace", "join", "sort", "uniq", "repo",
-		"classes", "packages", "exports", "imports", "dir", "basename", "isfile", "isdir", "pathseparator"
-	};
+	private static final Logger			logger	= LoggerFactory.getLogger(BndCompletionProvider.class);
+	private static volatile Map<String, String>	builderMacros;
 
 	private final BndWorkspaceManager	workspaceManager;
 
@@ -63,7 +66,7 @@ public class BndCompletionProvider {
 		int lastMacroStart = prefix.lastIndexOf("${");
 		if (lastMacroStart != -1 && !prefix.substring(lastMacroStart)
 			.contains("}")) {
-			addMacroCompletions(items);
+			addMacroCompletions(items, getFileFromUri(model.getUri()));
 			return Either.forRight(new CompletionList(false, items));
 		}
 
@@ -89,7 +92,15 @@ public class BndCompletionProvider {
 			String valuePrefix = prefix.substring(sepIndex + 1)
 				.trim();
 
-			if (isBundlePathHeader(key)) {
+			Syntax syntax = syntaxFor(key);
+			String clause = lastClausePart(valuePrefix);
+			if (syntax != null && clause != null) {
+				// after ';' in a clause: attributes, directives and their values
+				addParameterCompletions(items, syntax, clause);
+				if (!clause.contains("=") && isBundlePathHeader(key)) {
+					addVersionCompletions(items, targetFile, valuePrefix.split(";")[0].trim());
+				}
+			} else if (isBundlePathHeader(key)) {
 				addBundleCompletions(items, targetFile, valuePrefix);
 			} else if (key.equals("javac.source") || key.equals("javac.target") || key.equals("javac.release")) {
 				addJavaVersionCompletions(items);
@@ -122,15 +133,123 @@ public class BndCompletionProvider {
 		}
 	}
 
-	private void addMacroCompletions(List<CompletionItem> items) {
-		for (String macroName : COMMON_MACROS) {
+	private void addMacroCompletions(List<CompletionItem> items, File targetFile) {
+		Map<String, String> macros = new TreeMap<>(builderMacros());
+		Processor processor = targetFile == null ? null : workspaceManager.getProjectForFile(targetFile);
+		if (processor == null && targetFile != null) {
+			processor = workspaceManager.getWorkspaceForFile(targetFile);
+		}
+		if (processor != null) {
+			try {
+				processor.getReplacer()
+					.getCommands()
+					.forEach(macros::putIfAbsent);
+			} catch (Exception e) {
+				logger.debug("Cannot list the macros of {}", processor, e);
+			}
+		}
+		macros.forEach((macroName, help) -> {
 			CompletionItem item = new CompletionItem();
 			item.setLabel("${" + macroName + "}");
 			item.setKind(CompletionItemKind.Function);
 			item.setDetail("bnd macro");
+			if (help != null && !help.isBlank()) {
+				item.setDocumentation(help);
+			}
 			item.setInsertText(macroName);
 			items.add(item);
+		});
+	}
+
+	/**
+	 * The macros of bndlib's {@link Builder}, which include those of
+	 * {@code Analyzer}, {@code Processor} and {@code Macro}.
+	 */
+	static Map<String, String> builderMacros() {
+		Map<String, String> macros = builderMacros;
+		if (macros == null) {
+			try (Builder builder = new Builder()) {
+				macros = Collections.unmodifiableMap(builder.getReplacer()
+					.getCommands());
+			} catch (Exception e) {
+				logger.debug("Cannot list the bnd macros", e);
+				macros = Collections.emptyMap();
+			}
+			builderMacros = macros;
 		}
+		return macros;
+	}
+
+	/**
+	 * The text after the last ';' of the current clause, or null when the
+	 * cursor is still in the clause's first part.
+	 */
+	static String lastClausePart(String valuePrefix) {
+		int clauseStart = valuePrefix.lastIndexOf(',') + 1;
+		String clause = valuePrefix.substring(clauseStart);
+		int semicolon = clause.lastIndexOf(';');
+		return semicolon < 0 ? null
+			: clause.substring(semicolon + 1)
+				.trim();
+	}
+
+	private static Syntax syntaxFor(String key) {
+		Syntax syntax = Syntax.HELP.get(key);
+		if (syntax == null && key.indexOf('.', 1) > 0) {
+			syntax = Syntax.HELP.get(key.substring(0, key.indexOf('.', 1)));
+		}
+		return syntax;
+	}
+
+	private static void addParameterCompletions(List<CompletionItem> items, Syntax syntax, String clause) {
+		Syntax[] children = syntax.getChildren();
+		if (children == null) {
+			return;
+		}
+		int equals = clause.indexOf('=');
+		if (equals >= 0) {
+			String name = clause.substring(0, equals)
+				.trim();
+			if (name.endsWith(":")) {
+				name = name.substring(0, name.length() - 1);
+			}
+			for (Syntax child : children) {
+				if (parameterName(child).equals(name) && child.getValues() != null) {
+					for (String value : child.getValues()
+						.split(",")) {
+						String trimmed = value.trim();
+						if (!trimmed.isEmpty()) {
+							CompletionItem item = new CompletionItem(trimmed);
+							item.setKind(CompletionItemKind.Value);
+							item.setInsertText(trimmed);
+							items.add(item);
+						}
+					}
+				}
+			}
+			return;
+		}
+		for (Syntax child : children) {
+			String header = child.getHeader();
+			if (header == null || header.isEmpty()) {
+				continue;
+			}
+			boolean directive = header.endsWith(":");
+			String name = parameterName(child);
+			CompletionItem item = new CompletionItem(directive ? name + ":=" : name + "=");
+			item.setKind(directive ? CompletionItemKind.Keyword : CompletionItemKind.Field);
+			item.setDetail(child.getLead());
+			if (child.getExample() != null) {
+				item.setDocumentation(child.getExample());
+			}
+			item.setInsertText(directive ? name + ":=" : name + "=");
+			items.add(item);
+		}
+	}
+
+	private static String parameterName(Syntax child) {
+		String header = child.getHeader();
+		return header.endsWith(":") ? header.substring(0, header.length() - 1) : header;
 	}
 
 	private void addBundleCompletions(List<CompletionItem> items, File targetFile, String valuePrefix) {
@@ -230,14 +349,18 @@ public class BndCompletionProvider {
 	}
 
 	private void addRuneeCompletions(List<CompletionItem> items) {
-		String[] ees = {
-			"JavaSE-1.8", "JavaSE-11", "JavaSE-17", "JavaSE-21"
-		};
-		for (String ee : ees) {
+		int current = Runtime.version()
+			.feature();
+		for (EE ee : EE.values()) {
+			// Java SE 8 and later up to the running Java version
+			if (!"JavaSE".equals(ee.getCapabilityName()) || ee.getRelease() < 8 || ee.getRelease() > current) {
+				continue;
+			}
+			String name = ee.getEEName();
 			CompletionItem item = new CompletionItem();
-			item.setLabel(ee);
+			item.setLabel(name);
 			item.setKind(CompletionItemKind.Value);
-			item.setInsertText(ee);
+			item.setInsertText(name);
 			items.add(item);
 		}
 	}
