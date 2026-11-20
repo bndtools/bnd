@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.osgi.resource.Resource;
@@ -57,6 +59,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.filelock.ProcessLock;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
@@ -77,6 +80,7 @@ class IndexFile {
 	private final static Pattern				mavenNamePattern	= Pattern.compile("[.,;\"'-]+");
 
 	final File									indexFile;
+	private final File							lockFile;
 	final IMavenRepo							repo;
 	private final Processor						domain;
 	private final Macro							replacer;
@@ -98,13 +102,14 @@ class IndexFile {
 	/*
 	 * Constructor
 	 */
-	IndexFile(Processor domain, Reporter reporter, File file, String source, IMavenRepo repo,
+	IndexFile(Processor domain, Reporter reporter, File file, File lockFile, String source, IMavenRepo repo,
 		PromiseFactory promiseFactory, Set<String> multi) throws Exception {
 		this.source = source;
 		this.domain = (domain != null) ? domain : new Processor();
 		this.replacer = this.domain.getReplacer();
 		this.reporter = reporter;
 		this.indexFile = file;
+		this.lockFile = lockFile;
 		this.repo = repo;
 		this.promiseFactory = promiseFactory;
 		this.multi = multi;
@@ -254,7 +259,10 @@ class IndexFile {
 		Set<Archive> toBeAdded = new HashSet<>();
 
 		if (indexFile.isFile()) {
-			toBeAdded.addAll(read(indexFile));
+			// do not read a file that another process is replacing
+			try (Closeable lock = lockIndex()) {
+				toBeAdded.addAll(read(indexFile));
+			}
 		}
 		if (source != null) {
 			toBeAdded.addAll(read(source, false));
@@ -480,12 +488,25 @@ class IndexFile {
 	}
 
 	private void save(Set<Archive> add, Set<Archive> remove) throws Exception {
-		if (isPom) {
-			POMIndexFile.savePom(indexFile, sort(archives.keySet()));
-		} else {
-			saveText(add, remove);
+		// The index file is versioned and read-modified-written. Other
+		// processes that have the workspace open can change it as well.
+		try (Closeable lock = lockIndex()) {
+			if (isPom) {
+				POMIndexFile.savePom(indexFile, sort(archives.keySet()));
+			} else {
+				saveText(add, remove);
+			}
+			lastModified = indexFile.lastModified();
 		}
-		lastModified = indexFile.lastModified();
+	}
+
+	/**
+	 * Hold the cross-process lock of the index file. After a timeout, or when
+	 * the lock file cannot be used, continue without it as before.
+	 */
+	private Closeable lockIndex() throws InterruptedException {
+		return ProcessLock.lockOrContinue(lockFile, 2, TimeUnit.MINUTES,
+			problem -> reporter.warning("Continuing without the lock of index %s: %s", indexFile, problem));
 	}
 
 	private void saveText(Set<Archive> add, Set<Archive> remove) throws Exception {
@@ -536,16 +557,18 @@ class IndexFile {
 	void convertTextXml() {
 		Promise<Boolean> serializer = serialize(() -> {
 
-			if (isPom) {
-				try (Formatter f = new Formatter()) {
-					sort(archives.keySet()).forEach(archive -> f.format("%s\n", archive));
-					IO.store(f.toString(), indexFile);
-				}
+			try (Closeable lock = lockIndex()) {
+				if (isPom) {
+					try (Formatter f = new Formatter()) {
+						sort(archives.keySet()).forEach(archive -> f.format("%s\n", archive));
+						IO.store(f.toString(), indexFile);
+					}
 
-			} else {
-				POMIndexFile.savePom(indexFile, sort(archives.keySet()));
+				} else {
+					POMIndexFile.savePom(indexFile, sort(archives.keySet()));
+				}
+				lastModified = indexFile.lastModified();
 			}
-			lastModified = indexFile.lastModified();
 			return null;
 		});
 		sync(serializer);

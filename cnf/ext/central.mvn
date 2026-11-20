@@ -182,3 +182,8 @@ org.codehaus.plexus:plexus-classworlds:2.5.2
 org.eclipse.platform:org.eclipse.swt.cocoa.macosx.aarch64:jar:3.126.0
 org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:jar:3.126.0
 org.eclipse.platform:org.eclipse.swt:jar:3.126.0
+
+# LSP4J
+org.eclipse.lsp4j:org.eclipse.lsp4j:1.0.0
+org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:1.0.0
+com.google.code.gson:gson:2.11.0
