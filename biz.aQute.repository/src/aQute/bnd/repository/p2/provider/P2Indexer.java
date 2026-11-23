@@ -7,7 +7,11 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -18,7 +22,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -49,6 +55,7 @@ import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.MD5;
+import aQute.libg.filelock.ProcessLock;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.packed.Unpack200;
@@ -65,6 +72,11 @@ import aQute.service.reporter.Reporter;
 class P2Indexer implements Closeable {
 	private final static Logger				logger		= LoggerFactory.getLogger(P2Indexer.class);
 	private static final long				MAX_STALE	= TimeUnit.DAYS.toMillis(100);
+	/**
+	 * How long to wait for another process that reads the same repository
+	 * before the index is read without the lock.
+	 */
+	static volatile long					lockTimeout	= TimeUnit.MINUTES.toMillis(10);
 	private final Reporter					reporter;
 	private final Unpack200					processor;
 	final File								location;
@@ -72,9 +84,10 @@ class P2Indexer implements Closeable {
 	final String							name;
 	final String							urlHash;
 	final File								indexFile;
+	final File								lockFile;
 	private final HttpClient				client;
 	private final PromiseFactory			promiseFactory;
-	private final Runnable					beforeWrite;
+	private final File						buildDir;
 	private volatile BridgeRepository		bridge;
 	private static final SupportingResource	RECOVERY	= new ResourceBuilder().build();
 	private static final String				ECLIPSE_FEATURE_CAPABILITY	= "org.eclipse.update.feature";
@@ -86,12 +99,18 @@ class P2Indexer implements Closeable {
 
 	P2Indexer(Unpack200 processor, Reporter reporter, File location, File indexFile, HttpClient client, URI url,
 		String name) throws Exception {
-		this(processor, reporter, location, indexFile, client, url, name, () -> {});
+		this(processor, reporter, location, indexFile, client, url, name, null);
 	}
 
+	/**
+	 * @param buildDir the build directory (cnf) of the workspace owning the
+	 *            files of this indexer, or {@code null} when they are not owned
+	 *            by a build directory. Nothing is written once it is gone, and
+	 *            it is never recreated.
+	 */
 	P2Indexer(Unpack200 processor, Reporter reporter, File location, File indexFile, HttpClient client, URI url,
-		String name, Runnable beforeWrite) throws Exception {
-		this.beforeWrite = beforeWrite;
+		String name, File buildDir) throws Exception {
+		this.buildDir = buildDir == null ? null : buildDir.getAbsoluteFile();
 		this.processor = processor;
 		this.reporter = reporter;
 		this.location = location;
@@ -103,15 +122,73 @@ class P2Indexer implements Closeable {
 		this.urlHash = client.toName(url);
 		if (this.indexFile.isDirectory())
 			throw new IllegalArgumentException(this.indexFile + " is a directory, not an index file");
-		beforeWrite.run();
-		IO.mkdirs(this.location);
+		File absoluteIndex = this.indexFile.getAbsoluteFile();
+		this.lockFile = new File(absoluteIndex.getParentFile(), absoluteIndex.getName() + ".lock");
+		ensureDirectory(this.location);
 
 		validate();
 		init();
 	}
 
 	private void init() throws Exception {
-		bridge = new BridgeRepository(readRepository(indexFile));
+		bridge = new BridgeRepository(locked(() -> readRepository(indexFile)));
+	}
+
+	/**
+	 * Reading a repository validates the index and, when it is missing or
+	 * stale, downloads the artifacts and writes a new index. The lock makes
+	 * another process that uses the same index wait for that result instead
+	 * of doing the same work and replacing the index file concurrently.
+	 */
+	private <T> T locked(Callable<T> action) throws Exception {
+		ProcessLock lock = null;
+		// the lock creates missing parent directories
+		ensureDirectory(lockFile.getParentFile());
+		try {
+			lock = ProcessLock.lock(lockFile, lockTimeout, TimeUnit.MILLISECONDS);
+		} catch (TimeoutException | IOException e) {
+			if (reporter != null)
+				reporter.warning("%s: reading index %s without lock: %s", name, indexFile, e.getMessage());
+			else
+				logger.warn("{}: reading index {} without lock: {}", name, indexFile, e.getMessage());
+		}
+		try {
+			return action.call();
+		} finally {
+			IO.close(lock);
+		}
+	}
+
+	private void checkBuildDir() {
+		if (buildDir != null && !buildDir.isDirectory())
+			throw new IllegalStateException(
+				"The workspace build directory " + buildDir + " no longer exists, not creating the p2 index");
+	}
+
+	/**
+	 * Create a directory without ever recreating the build directory: the
+	 * directories below it are created one by one, which fails when it was
+	 * deleted in between.
+	 */
+	private void ensureDirectory(File dir) throws IOException {
+		checkBuildDir();
+		Path target = dir.getAbsoluteFile()
+			.toPath();
+		if (buildDir == null || !target.startsWith(buildDir.toPath())) {
+			IO.mkdirs(dir);
+			return;
+		}
+		Path path = buildDir.toPath();
+		for (Path name : buildDir.toPath()
+			.relativize(target)) {
+			path = path.resolve(name);
+			try {
+				Files.createDirectory(path);
+			} catch (FileAlreadyExistsException e) {
+				if (!Files.isDirectory(path))
+					throw e;
+			}
+		}
 	}
 
 	private void validate() {
@@ -144,7 +221,7 @@ class P2Indexer implements Closeable {
 		// name to avoid overwriting the bundle in the cache (and vice versa)
 		boolean isFeature = ResourceUtils.hasType(resource, ECLIPSE_FEATURE_CAPABILITY);
 		final File link = new File(location, bsn + "-" + version + (isFeature ? ".feature.jar" : ".jar"));
-		beforeWrite.run();
+		checkBuildDir();
 
 		IO.createSymbolicLinkOrCopy(link, source);
 
@@ -450,11 +527,29 @@ class P2Indexer implements Closeable {
 	}
 
 	private ResourcesRepository save(ResourcesRepository repository) throws IOException, Exception {
-		beforeWrite.run();
+		ensureDirectory(indexFile.getAbsoluteFile()
+			.getParentFile());
 		XMLResourceGenerator xrg = new XMLResourceGenerator();
 		xrg.repository(repository)
-			.name(urlHash)
-			.save(indexFile);
+			.name(urlHash);
+		// Not XMLResourceGenerator.save(File), it recreates missing parent
+		// directories. The temporary file fails when the directory is gone.
+		File dir = indexFile.getAbsoluteFile()
+			.getParentFile();
+		File tmp = Files.createTempFile(dir.toPath(), "index", ".xml")
+			.toFile();
+		try {
+			if (indexFile.getName()
+				.endsWith(".gz"))
+				xrg.compress();
+			try (OutputStream out = IO.outputStream(tmp)) {
+				xrg.save(out);
+			}
+			checkBuildDir();
+			IO.rename(tmp, indexFile);
+		} finally {
+			IO.delete(tmp);
+		}
 		return repository;
 	}
 
@@ -475,8 +570,10 @@ class P2Indexer implements Closeable {
 	}
 
 	void reread() throws Exception {
-		indexFile.delete();
-		init();
+		bridge = new BridgeRepository(locked(() -> {
+			indexFile.delete();
+			return readRepository(indexFile);
+		}));
 	}
 
 	/**

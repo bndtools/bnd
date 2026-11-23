@@ -26,6 +26,8 @@ Example:
 
 By default, this directory is set to `fw` under the project's target directory, but you can override it with this instruction.
 
+A framework owns its storage directory while it runs. For that time the launcher holds the lock file `<directory>.lock` next to the storage directory, and also next to the directory that `org.osgi.framework.storage` selects when that property overrides the storage. A launch that cannot take the lock, because another launch holds it or the lock file cannot be opened, fails with an error that names the reason. A second launch with the same storage directory fails with an error that names the process holding the lock, instead of deleting (see [-runkeep](/instructions/runkeep.html)) or sharing a storage that is in use. A launch with `-runkeep: false` fails when one of these two directories lies inside the other, because cleaning the outer one would delete the lock of the inner one. A launch also fails when its storage lies inside the storage of another running launch, or, with `-runkeep: false`, when a running launch has its storage inside the directory that would be deleted. A clean of the project does not delete its target directory while a running launch uses the target directory, a directory inside it, or a directory that contains it. Launches and cleans coordinate these checks through the short lived lock file `~/.bnd/locks/storage.lock`; when it cannot be created, they continue without it. Launchers of earlier bnd versions do not take this lock.
+
 
 <hr />
 TODO Needs review - AI Generated content
