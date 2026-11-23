@@ -20,6 +20,7 @@ import org.osgi.resource.Requirement;
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceLayout;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.repository.BaseRepository;
@@ -101,7 +102,11 @@ public class P2Repository extends BaseRepository
 
 			reserveIndex(url, indexFile);
 			try {
-				return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name);
+				// the build directory is captured, the workspace can switch to
+				// another one while the indexer is still running
+				File buildDir = workspace.getLayout() == WorkspaceLayout.BND ? workspace.getBuildDir() : null;
+				return new P2Indexer(new Unpack200(this.workspace), reporter, location, indexFile, client, url, name,
+					buildDir);
 			} catch (Exception | Error e) {
 				reservedIndex = null;
 				throw e;

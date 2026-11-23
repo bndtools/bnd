@@ -1,6 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -38,6 +39,44 @@ public class P2IndexerTest {
 
 	private String getName() {
 		return tmp.getName();
+	}
+
+	@Test
+	public void testDeletionAfterIndexingDoesNotRecreateBuildDir() throws Exception {
+		File cnf = new File(tmp, "ws/cnf");
+		File indexFile = new File(cnf, "ext/test.index.xml.gz");
+		IO.mkdirs(cnf);
+
+		try (HttpClient client = new HttpClient()) {
+			client.setCache(IO.getFile(tmp, "cache"));
+			P2Indexer indexer = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class),
+				indexFile.getParentFile(), indexFile, client, IO.getFile("testdata/p2/macbadge")
+					.toURI(),
+				getName(), cnf);
+			assertThat(indexFile).isFile();
+			IO.delete(cnf);
+
+			assertThatThrownBy(indexer::refresh).hasMessageContaining("no longer exists");
+			assertThatThrownBy(indexer::reread).hasMessageContaining("no longer exists");
+		}
+
+		assertThat(cnf).doesNotExist();
+	}
+
+	@Test
+	public void testDeletedBuildDirIsNotRecreatedByConstructor() throws Exception {
+		File cnf = new File(tmp, "ws/cnf");
+		File indexFile = new File(cnf, "ext/test.index.xml.gz");
+
+		try (HttpClient client = new HttpClient()) {
+			client.setCache(IO.getFile(tmp, "cache"));
+			assertThatThrownBy(() -> new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class),
+				indexFile.getParentFile(), indexFile, client, IO.getFile("testdata/p2/macbadge")
+					.toURI(),
+				getName(), cnf)).hasMessageContaining("no longer exists");
+		}
+
+		assertThat(cnf).doesNotExist();
 	}
 
 	@Test

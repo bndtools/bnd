@@ -853,6 +853,19 @@
 	</extension>
 	<!-- END DEPRECATION -->
 
+	<extension point="org.eclipse.ltk.core.refactoring.deleteParticipants">
+		<deleteParticipant
+			id="bndtools.refactoring.cnfDeleteParticipant"
+			name="Bndtools cnf Delete Participant"
+			class="bndtools.refactor.CnfDeleteParticipant">
+			<enablement>
+				<with variable="element">
+					<instanceof value="org.eclipse.core.resources.IProject" />
+				</with>
+			</enablement>
+		</deleteParticipant>
+	</extension>
+
 	<extension
 		point="org.eclipse.ltk.core.refactoring.renameParticipants">
 		<renameParticipant

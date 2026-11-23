@@ -222,6 +222,74 @@ public class P2RepositoryTest {
 	}
 
 	@Test
+	public void testDeletedWorkspaceDoesNotRecreateIndex() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File cnf = new File(tmp, "ws/cnf");
+		IO.mkdirs(cnf);
+		IO.store("", new File(cnf, "build.bnd"));
+		File indexFile = new File(cnf, "ext/test.index.xml.gz");
+		try (Workspace w = new Workspace(cnf.getParentFile()); P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			p2r.setRegistry(w);
+			p2r.setProperties(Map.of("url", repository.toURI()
+				.toString(), "name", "test", "location", "cnf/ext/test.index.xml.gz"));
+			IO.delete(cnf);
+
+			assertThatThrownBy(() -> p2r.list(null)).hasMessageContaining("no longer exists");
+			assertThat(indexFile).doesNotExist();
+			assertThat(cnf).doesNotExist();
+		}
+	}
+
+	@Test
+	public void testDeletedWorkspaceDoesNotRefreshIndex() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File cnf = new File(tmp, "ws/cnf");
+		IO.mkdirs(cnf);
+		IO.store("", new File(cnf, "build.bnd"));
+		File indexFile = new File(cnf, "ext/test.index.xml.gz");
+		try (Workspace w = new Workspace(cnf.getParentFile()); P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			p2r.setRegistry(w);
+			p2r.setProperties(Map.of("url", repository.toURI()
+				.toString(), "name", "test", "location", "cnf/ext/test.index.xml.gz"));
+			assertThat(p2r.list(null)).isNotEmpty();
+			assertThat(indexFile).isFile();
+			IO.delete(cnf);
+
+			assertThatThrownBy(p2r::refresh).hasMessageContaining("no longer exists");
+			assertThat(cnf).doesNotExist();
+		}
+	}
+
+	/**
+	 * The workspace can switch to the build directory of another workspace
+	 * while an indexer of the deleted workspace is still alive. It must not
+	 * accept the other build directory as its own.
+	 */
+	@Test
+	public void testSwitchedBuildDirDoesNotRecreateDeletedWorkspace() throws Exception {
+		File repository = IO.getFile("testdata/p2/macbadge");
+		File cnf = new File(tmp, "ws/cnf");
+		File fallbackCnf = new File(tmp, "fallback/cnf");
+		IO.mkdirs(cnf);
+		IO.mkdirs(fallbackCnf);
+		IO.store("", new File(cnf, "build.bnd"));
+		try (Workspace w = new Workspace(cnf.getParentFile()); P2Repository p2r = new P2Repository()) {
+			w.setProperty(Constants.CONNECTION_SETTINGS, "false");
+			p2r.setRegistry(w);
+			p2r.setProperties(Map.of("url", repository.toURI()
+				.toString(), "name", "test", "location", "cnf/ext/test.index.xml.gz"));
+			assertThat(p2r.list(null)).isNotEmpty();
+			IO.delete(cnf);
+			w.setBuildDir(fallbackCnf);
+
+			assertThatThrownBy(p2r::refresh).hasMessageContaining("no longer exists");
+			assertThat(cnf).doesNotExist();
+		}
+	}
+
+	@Test
 	public void testLocationWithInvalidCache() throws Exception {
 		File repository = IO.getFile("testdata/p2/macbadge");
 		File cache = new File(tmp, "not-a-directory");
