@@ -1,5 +1,6 @@
 ---
 title: Analysis Plugin
+parent: Plugins
 layout: default
 summary: A plugin to receive callbacks about analysis decisions
 ---

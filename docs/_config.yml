@@ -1,5 +1,8 @@
 theme: just-the-docs
 
+mermaid:
+  version: "11.12.0"
+
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
@@ -86,6 +89,10 @@ defaults:
       path: ""
     values:
       layout: bnd
+  - scope:
+      path: "development"
+    values:
+      nav_group: development
   # exclude all the files from `/releases/` in the sitemap
   - scope:
       path:            releases/**

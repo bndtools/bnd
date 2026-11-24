@@ -1,6 +1,6 @@
 ---
 layout: bnd
-title: bnd – OSGi Bundle Tooling for Java
+title: bnd – OSGi Tooling
 nav_order: 0
 has_children: true
 description: "bnd - the Swiss army knife of OSGi. Used for creating and working with OSGi bundles."
@@ -16,6 +16,11 @@ bnd is the engine behind many popular OSGi development tools, including Eclipse 
 </div>
 
 ---
+
+## Contributing to bnd
+
+See [Developing bnd and Bndtools]({{ '/development/' | relative_url }}) for
+contributor guides, architecture, documentation development, and release procedures.
 
 ## Quick Start Examples
 

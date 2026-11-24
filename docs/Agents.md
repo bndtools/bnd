@@ -26,6 +26,9 @@ This file defines agent workflows for the documentation site under `docs/`.
 ## NavBar, Search, Static Links, Glossary
 
 - Navigation is driven by frontmatter and Just-the-Docs collection settings in `_config.yml`.
+- `_includes/components/site_nav.html` keeps `development/` pages in the last
+  top-level group, after the reference collections (including Plugins).
+  Keep plugin pages parented to `Plugins`; retain theme nesting and sorting.
 - Top Nav / static links are configured with `aux_links` in `_config.yml`.
 - Search uses Just-the-Docs/Lunr integration (`search_enabled: true`).
 - Glossary-like discoverability should be implemented with stable collection pages and explicit cross-links, not ad-hoc isolated pages.
