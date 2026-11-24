@@ -63,7 +63,15 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(property = "bnd.baseline.fail.on.missing", defaultValue = "true")
 	private boolean					failOnMissing;
 
-	@Parameter(property = "bnd.baseline.include.distribution.management", defaultValue = "true")
+	/**
+	 * Also use the remote repository given via
+	 * {@code project.distributionManagement.repository.url} for retrieving the
+	 * base artifact.
+	 *
+	 * @see <a href="https://maven.apache.org/pom.html#Repository">POM
+	 *      Reference: Distribution Management -> Repository</a>
+	 */
+	@Parameter(property = "bnd.baseline.include.distribution.management", defaultValue = "false")
 	private boolean					includeDistributionManagement;
 
 	@Parameter(property = "bnd.baseline.full.report", defaultValue = "false")
