@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
@@ -56,6 +57,7 @@ import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.lib.xml.XML;
+import aQute.libg.filelock.ProcessLock;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
@@ -178,6 +180,32 @@ public class MavenBndRepoTest {
 		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
 		indexContent = IO.collect(index);
 		assertThat(indexContent).contains("org.osgi.service.log:1.3.0");
+	}
+
+	@Test
+	public void testIndexChangesWaitForAnotherProcessThatWritesTheIndex() throws Exception {
+		config(null);
+		assertThat(repo.list("org.osgi.service.log")).isEmpty();
+		File lockFile = new File(index.getPath() + ".lock");
+		String before = IO.collect(index);
+
+		CompletableFuture<Void> add;
+		try (ProcessLock other = ProcessLock.tryLock(lockFile)
+			.orElseThrow()) {
+			add = CompletableFuture.runAsync(() -> {
+				try {
+					repo.index.add(Archive.valueOf("org.osgi:org.osgi.service.log:1.3.0"));
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			});
+			Thread.sleep(500);
+			assertThat(add).isNotDone();
+			assertThat(IO.collect(index)).isEqualTo(before);
+		}
+		add.get(60, TimeUnit.SECONDS);
+		assertThat(IO.collect(index)).contains("org.osgi.service.log:1.3.0");
+		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
 	}
 
 	@Test
