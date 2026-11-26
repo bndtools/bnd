@@ -142,10 +142,23 @@ public class Workspace extends Processor {
 		final Memoize<Parameters>								gestalt;
 
 		WorkspaceData() {
-			this(true);
+			this(true, null);
 		}
 
 		WorkspaceData(boolean startRemoteServer) {
+			this(startRemoteServer, null);
+		}
+
+		/**
+		 * @param reuseRemoteServer an already running remote workspace server to keep
+		 *            instead of starting a new one, for example on a plain refresh
+		 *            where {@code -remoteworkspace} did not change. Always starting a
+		 *            new server (with a new ephemeral port) rewrites
+		 *            {@code cnf/cache/remotews} on every refresh, which can make two
+		 *            bnd processes on the same workspace (for example Eclipse and the
+		 *            language server) perpetually refresh each other.
+		 */
+		WorkspaceData(boolean startRemoteServer, RemoteWorkspaceServer reuseRemoteServer) {
 			repositories = Memoize.supplier(Workspace.this::initRepositories);
 			libraryHandler = CloseableMemoize.closeableSupplier(() -> new LibraryHandler(Workspace.this));
 			classIndex = CloseableMemoize.closeableSupplier(() -> new WorkspaceClassIndex(Workspace.this));
@@ -156,21 +169,41 @@ public class Workspace extends Processor {
 				gestalt.mergeWith(overallGestalt, false);
 				return gestalt;
 			});
+			boolean wantsRemoteServer = startRemoteServer
+				&& (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE)));
 			RemoteWorkspaceServer s = null;
-			if (startRemoteServer && (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE)))) {
-				try {
-					s = new RemoteWorkspaceServer(Workspace.this);
-				} catch (IOException e) {
-					exception(e, "Could not create remote workspace %s", getBase());
+			if (wantsRemoteServer) {
+				if (reuseRemoteServer != null) {
+					s = reuseRemoteServer;
+				} else {
+					try {
+						s = new RemoteWorkspaceServer(Workspace.this);
+					} catch (IOException e) {
+						exception(e, "Could not create remote workspace %s", getBase());
+					}
 				}
+			} else if (reuseRemoteServer != null) {
+				// -remoteworkspace was turned off since the previous refresh.
+				IO.close(reuseRemoteServer);
 			}
 			this.remoteServer = s;
 		}
 
 		@Override
 		public void close() {
+			close(true);
+		}
+
+		/**
+		 * @param closeRemoteServer false when {@link #remoteServer} is still owned by
+		 *            a newer {@link WorkspaceData} that reused it, so it must not be
+		 *            shut down here.
+		 */
+		void close(boolean closeRemoteServer) {
 			IO.close(libraryHandler);
-			IO.close(remoteServer);
+			if (closeRemoteServer) {
+				IO.close(remoteServer);
+			}
 			IO.close(classIndex);
 			IO.close(externalPlugins);
 		}
@@ -1130,8 +1163,9 @@ public class Workspace extends Processor {
 
 	private void refreshData() {
 		WorkspaceData oldData = data;
-		data = new WorkspaceData();
-		oldData.close();
+		data = new WorkspaceData(true, oldData.remoteServer);
+		// the remote server, if any, is reused and now owned by the new data
+		oldData.close(false);
 	}
 
 	/**
