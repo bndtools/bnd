@@ -134,7 +134,10 @@ public class BaselineMojo extends AbstractMojo {
 				}
 			}
 		} catch (RepositoryException re) {
-			// fall through
+			if (failOnMissing) {
+				throw new MojoExecutionException("An error occurred while calculating the baseline", re);
+			}
+			logger.warn("An error occurred while calculating the baseline", re);
 		} catch (Exception e) {
 			throw new MojoExecutionException("An error occurred while calculating the baseline", e);
 		}
