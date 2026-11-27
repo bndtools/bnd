@@ -1,10 +1,15 @@
 package aQute.bnd.lsp;
 
+import java.io.File;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
@@ -17,6 +22,7 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.ServerInfo;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
@@ -125,7 +131,42 @@ public class BndLanguageServer implements LanguageServer, LanguageClientAware {
 		capabilities.setExecuteCommandProvider(cmdOptions);
 		capabilities.setExperimental(Map.of(Constants.CAPABILITY_AUTO_BUILD, true));
 
-		return CompletableFuture.completedFuture(new InitializeResult(capabilities));
+		return CompletableFuture.completedFuture(new InitializeResult(capabilities, serverInfo()));
+	}
+
+	/**
+	 * Names the server with the Bundle-Version and Git-SHA of its JAR, so
+	 * clients can show which build runs.
+	 */
+	static ServerInfo serverInfo() {
+		String version = null;
+		try {
+			URL location = BndLanguageServer.class.getProtectionDomain()
+				.getCodeSource()
+				.getLocation();
+			File file = new File(location.toURI());
+			if (file.isFile()) {
+				try (JarFile jar = new JarFile(file)) {
+					version = version(jar.getManifest());
+				}
+			}
+		} catch (Exception e) {
+			logger.debug("Cannot read the manifest of the bnd Language Server", e);
+		}
+		return new ServerInfo("bnd Language Server", version);
+	}
+
+	static String version(Manifest manifest) {
+		if (manifest == null) {
+			return null;
+		}
+		Attributes main = manifest.getMainAttributes();
+		String version = main.getValue(aQute.bnd.osgi.Constants.BUNDLE_VERSION);
+		String sha = main.getValue("Git-SHA");
+		if (version == null) {
+			return null;
+		}
+		return sha == null || sha.isBlank() ? version : version + " (" + sha + ")";
 	}
 
 	@Override
