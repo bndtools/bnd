@@ -23,6 +23,29 @@ public class BndLanguageServerTest {
 	Path temporary;
 
 	@Test
+	public void serverInfoNamesBundleVersionAndGitSha() throws Exception {
+		java.util.jar.Manifest manifest = new java.util.jar.Manifest();
+		java.util.jar.Attributes main = manifest.getMainAttributes();
+		assertThat(BndLanguageServer.version(manifest)).isNull();
+		main.putValue("Bundle-Version", "7.6.0.202611271200");
+		assertThat(BndLanguageServer.version(manifest)).isEqualTo("7.6.0.202611271200");
+		main.putValue("Git-SHA", "a6d53ebdd89c999be8050b3f7acda1ebab9861ae");
+		assertThat(BndLanguageServer.version(manifest))
+			.isEqualTo("7.6.0.202611271200 (a6d53ebdd89c999be8050b3f7acda1ebab9861ae)");
+
+		BndLanguageServer server = new BndLanguageServer();
+		try {
+			assertThat(server.initialize(new InitializeParams())
+				.get()
+				.getServerInfo()
+				.getName()).isEqualTo("bnd Language Server");
+		} finally {
+			server.shutdown()
+				.get();
+		}
+	}
+
+	@Test
 	public void documentSymbolsUseSourceRanges() throws Exception {
 		String text = "Bundle-Version: 1\r\n  Bundle-Name:   \r\n-buildpath: \\\r\n  example.long.name,\\\r\n  x";
 		String uri = temporary.resolve("bnd.bnd").toUri().toString();
