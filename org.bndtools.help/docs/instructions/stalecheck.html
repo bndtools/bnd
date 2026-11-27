@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* ...</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-stalecheck srcs ';newer=' depends ( ';' ( warning | error | command ))* ...</h1>
+<ul>
+<li>
+<p>Example: <code>-stalecheck:   \
+        specs/**.md; \ 
+            newer='doc/**.doc' ; \ 
+            error='Markdown needs to be generated'</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/stalecheck.md -->
+<p>If you work in Bndtools then there is normally little to worry about, bndtools keeps everything up to dated all the time. 
+Any file you save, and guaranteed in s short time all dependent bundles are updated. This comes with a crucial guarantee 
+that anything you do in Bndtools is faithfully reproduced on the build server using Gradle. For a default workspace there 
+is no need for any gradle specific files. All the workspace's settings are defined in the bnd files.</p>
+<p>However, sometimes it is necessary to generate sources that need to be compiled. There are then two choices when you 
+checkout a workspace. Always use the command line let the build do its magic or checkin the generated sources. 
+Although generally frowned upon, it has the advantage that you do not need to store the tool itself under version control. 
+Any revision can always compile regardless of what happened to the tool. It is also nice to see it on Github, it actually 
+makes the experience of the majority of people that use the workspace and usually not touch the swagger file blithely 
+unaware of the underlying complexities.</p>
+<p>However, this has a very serious problem. Sometimes you touch the swagger file and forget to run the gradle to generate 
+new sources. It would be very convenient if bnd could generate an error if certain files were out of date respective
+to a set of other files.  Thhe <code>-stalecheck</code> instruction has this purpose.</p>
+<div class="highlight"><pre><span></span><code>-stalecheck ::=     clause ( &#39;,&#39; clause )*
+clause      ::=     src &#39;;&#39; &#39;newer=&#39; depends (&#39;;&#39; option )*
+src     ::= Ant Glob spec
+depends     ::=     Ant Glob spec
+option      ::=     &#39;error=&#39; STRING 
+        |   &#39;warning=&#39; STRING 
+        |   &#39;command=&#39; STRING
+</code></pre></div>
+
+<p>Just before bnd will start making the JAR(s) for a project it will check if any of the files in the <code>src</code> specification 
+is newer than the files in the <code>depends</code> set. If so, it will provide warning or error. If either a specific error or 
+warning <code>STRING</code> is given then this is reported accordingly.</p>
+<p>If a command <code>STRING</code> is given it is executed as in the <code>${system}</code> macro. If the command <code>STRING</code> starts with a 
+minus sign (<code>-</code>) then a failure is not an error, it is reported as warning.</p>
+<p>If no command is given, nor an error or warning then a default error is reported.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>-stalecheck:  \   
+    openapi.json; \ 
+        newer=&#39;gen-src/, checksum.md5&#39;
+
+-stalecheck:   \
+    specs/**.md; \ 
+        newer=&#39;doc/**.doc&#39; ; \ 
+        error=&#39;Markdown needs to be generated&#39;
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

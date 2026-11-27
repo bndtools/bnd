@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-maven-scope dependency-scope</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-maven-scope dependency-scope</h1>
+<ul>
+<li>
+<p>Example: <code>-maven-scope: compile</code></p>
+</li>
+<li>
+<p>Values: <code>(compile|provided)</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/maven_scope.md -->
+<p>The <a href="pom.html">-pom</a> instruction can be used to generate a pom in the bundle.  The <code>-maven-scope</code> instruction can be used to specify the default dependency scope to use when Bnd generates maven dependency information for a <a href="buildpath.html">-buildpath</a> entry that will be used to create a <code>&lt;dependency&gt;</code> in the generated pom.</p>
+<p>Also see the <a href="maven_dependencies.html">-maven_dependencies</a> instruction for information on how to manualy configure the maven dependency information in a generated pom.</p>
+<h2 id="default-behavior">Default behavior</h2>
+<p><code>-maven-scope</code> defaults to the value <code>compile</code> which is the default <a href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope">dependency scope</a> for Maven.</p>
+<h2 id="examples">Examples</h2>
+<p>Change the default dependency scope to <code>provided</code>.</p>
+<div class="highlight"><pre><span></span><code>-maven-scope: provided
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-export PATH ( ';' PARAMETER )* ( ',' PATH ( ';' PARAMETER )* )*</h1>
+<ul>
+<li>
+<p>Example: <code>-export: launcher.jar</code></p>
+</li>
+<li>
+<p>Values: <code>FILE ( ';' PARAMETER )* ( ',' FILE ( ';' PARAMETER )* )*</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/export.md -->
+<p>The <code>-export</code> instruction can be used to export a <code>bndrun</code> or <code>bnd</code> file to an executable JAR during the build process. In contrast to the export functions, this <code>-export</code> instruction is supported in all drivers, including Eclipse. It can be used to continously build executable JARs or other supported exporters. It can only be used in the top level bnd.bnd file.</p>
+<p>The format of the <code>-export</code> instruction is:</p>
+<div class="highlight"><pre><span></span><code>-export     ::= filespec ( &#39;,&#39; filespec )*
+filespec    ::= path (&#39;;&#39; PARAMATER )*
+</code></pre></div>
+
+<p>The <code>path</code> is either a relative path in the project directory or it is a wildcard specification using globs. All files in the project directory are selected. In general, these should be bnd or bndrun files.</p>
+<p>The following attributes are architected:</p>
+<ul>
+<li><code>type</code> – The type specifies the exporter type. The default type is <code>bnd.executablejar.pack</code>.</li>
+<li><code>name</code> – Overrides the default name of the output file. It should contain the extension. The file should not have path segments, it will be placed in the target directory. Without a name, the exporter defines the file name since the extensions can differ depending on the exporter.</li>
+<li><code>bsn</code> – Set the bundle symbolic name of the resulting JAR file if possible</li>
+<li><code>version</code> – Set the version of the resulting JAR file if possible</li>
+<li>other – Any remaining properties are added to the properties of the run file. For example, <code>-profile</code> can be used to select a specific property profile.</li>
+</ul>
+<p>The <code>-exporttype</code> can be used to set some default attributes for a specific type.</p>
+<h2 id="exporters">Exporters</h2>
+<p>The Exporters use a plugin mechanism and therefore the list is not closed. The following exporters are supported by bnd out of the box:</p>
+<ul>
+<li><code>bnd.executablejar.pack</code> – Exports a JAR file using the launcher from the <code>-runpath</code> or the default if no launcher is specified.</li>
+<li><code>bnd.executablejar</code> – Similar to the previous but does not support profiles, has no automatic bsn assigned, and entries are not signed. The reason there are two types for the more or less the same format with subtle differences is for backward compatibility.</li>
+<li><code>bnd.runbundles</code> – A JAR with the runbundles. As optional Attributes <code>targetDir</code> will output all runbundles in the set directory in the resulting jar and <code>template</code> will use a given jar/zip or directory as template to which the bundles will be added.</li>
+<li><code>osgi.subsystem.application</code> – Export into an application subsystem</li>
+<li><code>osgi.subsystem.feature</code> – Export into a feature subsystem </li>
+<li><code>osgi.subsystem.composite</code> – Export into a composite subsystem</li>
+<li><code>p2</code> – Export a P2 repository</li>
+</ul>
+<h2 id="example">Example</h2>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>-export: \
+    foo.bndrun; \
+        -profile=debug; \
+        -runkeep=true; \
+        name = &quot;foo.jar, \
+    bar.bndrun
+</code></pre></div>
+
+<h2 id="backward-compatibility">Backward Compatibility</h2>
+<p>If the  <code>filespec</code> clause does not set the <code>type</code> nor the <code>name</code> then it is assumed the backward compatible mode is required. This will set the output name to the file name with a <code>.jar</code> extension and it will set the bundle symbolic name.</p>
+<p><br /><br /></p>
+</body>
+</html>

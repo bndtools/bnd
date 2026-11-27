@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>matches STRING REGEX</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>matches STRING REGEX</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>matches</code> macro tests whether a string matches a given regular expression pattern. Returns true if the entire string matches, false otherwise.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${matches;&lt;string&gt;;&lt;regex&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>string</code> - The string to test</li>
+<li><code>regex</code> - The regular expression pattern (Java regex syntax)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Tests if entire string matches the pattern</li>
+<li>Returns boolean (true/false)</li>
+<li>Uses Java regular expression syntax</li>
+<li>Must match the entire string (implicit anchoring)</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Check pattern match:</p>
+<div class="highlight"><pre><span></span><code>${if;${matches;v1.2.3;v[0-9]+\.[0-9]+\.[0-9]+};valid-version;invalid}
+</code></pre></div>
+
+<p>Validate format:</p>
+<div class="highlight"><pre><span></span><code>${matches;com.example.api;com\.example\..*}
+# Returns: true
+</code></pre></div>
+
+<p>Check numeric:</p>
+<div class="highlight"><pre><span></span><code>${if;${matches;${value};[0-9]+};is-number;not-number}
+</code></pre></div>
+
+<p>Test package pattern:</p>
+<div class="highlight"><pre><span></span><code>${matches;${package};com\..*\.impl}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Pattern validation</li>
+<li>String format checking</li>
+<li>Conditional logic based on patterns</li>
+<li>Input validation</li>
+<li>Package name filtering</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Uses Java regex syntax</li>
+<li>Entire string must match (no partial matches)</li>
+<li>Case-sensitive by default</li>
+<li>For case-insensitive, use <code>(?i)</code> in pattern</li>
+<li>See also: <code>${filter}</code> for list filtering</li>
+<li>See also: <code>${find}</code> for substring search</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

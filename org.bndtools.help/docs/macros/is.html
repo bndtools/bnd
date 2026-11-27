@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>is ( ';' ANY )*</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>is ( ';' ANY )*</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>is</code> macro checks if all provided arguments are equal to each other. Returns true if all values match, false otherwise.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${is;&lt;value&gt;;&lt;value&gt;[;&lt;value&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>value</code> - Two or more values to compare (minimum 2 required)</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Compares all arguments using string equality</li>
+<li>Returns true only if all values are exactly equal</li>
+<li>Requires at least 2 arguments</li>
+<li>Case-sensitive comparison</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Check equality of two values:</p>
+<div class="highlight"><pre><span></span><code>${if;${is;${version};1.0.0};version-match;version-mismatch}
+</code></pre></div>
+
+<p>Compare multiple values:</p>
+<div class="highlight"><pre><span></span><code>${is;abc;abc;abc}
+# Returns: true
+</code></pre></div>
+
+<p>Check property equality:</p>
+<div class="highlight"><pre><span></span><code>${if;${is;${env};production};prod-config;dev-config}
+</code></pre></div>
+
+<p>Validate configuration:</p>
+<div class="highlight"><pre><span></span><code>${is;${driver};gradle;gradle}
+# Returns: true if driver is gradle
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Validating that values match</li>
+<li>Conditional logic based on equality</li>
+<li>Configuration validation</li>
+<li>Multi-value consistency checks</li>
+<li>String comparison in conditionals</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>All arguments must be exactly equal (string comparison)</li>
+<li>Case-sensitive</li>
+<li>Empty strings are valid values</li>
+<li>See also: <code>${equals}</code> for two-value comparison</li>
+<li>Useful with <code>${if}</code> for conditional logic</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

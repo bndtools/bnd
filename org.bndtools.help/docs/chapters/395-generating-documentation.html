@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Generating Documentation</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Generating Documentation</h1>
+<p>Bnd can help you to maintain your projects' documentation up-to-date. 
+In a best effort, Bnd can automatically update your documentation according to changes in your programs.
+Whenever it is not possible, you still have an easy way to edit the documentation manually. </p>
+<p>The process is in two steps: first, Bnd will analyze your projects and your bundles to 
+collect and aggragate relevant data into an intermediate format (<code>json</code> or <code>xml</code>). Then, 
+it will process the data with a template file (<code>xslt</code> or <code>twig</code>) to generate the documentation.</p>
+<p>Relevant data are the OSGi headers, the configuration of your services, code snippets that you write 
+with the help of your IDE, your Gogo commands, etc. Once they are collected you have three ways to use them:</p>
+<ol>
+<li>You can export the intermediate data into a file. You can then use the exported file with any external 
+tool (such as <em>Jekyll</em> to generate a static site for example).</li>
+<li>You can define your own documentation files and provide your own templates, Bnd can then directly export the final files.</li>
+<li>You can use built-in documentation templates. In this latter case, you have no mandatory configurations to provide and updating
+the documentation is done by executing a simple command.</li>
+</ol>
+<p>This feature is available for the Bnd Workspace Model and Maven projects respectivly using Bnd CLI and <code>bnd-reporter-maven-plugin</code>. We will use
+Bnd CLI as an example in the next sections, you can directly look at the documentation in the <a href="https://github.com/bndtools/bnd/blob/master/maven-plugins/bnd-reporter-maven-plugin/README.md">Github repository</a> for the corresponding feature with Maven.</p>
+<blockquote>
+<p>Note: It is necessary that the workspace is completely built before generating the documentation files to take into account the latest changes.</p>
+</blockquote>
+<h2 id="generating-custom-documentation">Generating custom documentation</h2>
+<p>Custom documentations are configured with the <a href="../instructions/exportreport.html">-exportreport</a> instruction. 
+This instruction defines a list of reports which can then be exported with the <a href="../commands/exportreport.html">exportreport export</a> subcommand.</p>
+<p>For example, executing <code>bnd exportreport export</code> on a project with the following configuration:</p>
+<p><strong>bnd.bnd</strong></p>
+<div class="highlight"><pre><span></span><code>-exportreport: metadata.json, info.html;template=https://.../mytemplate.xslt
+</code></pre></div>
+
+<p>will export two files: <code>metadata.json</code> (intermediate data) and <code>info.html</code> (final documentation file). </p>
+<h2 id="generating-built-in-documentation">Generating built-in documentation</h2>
+<h3 id="readme-files">Readme files</h3>
+<p>With the <a href="../commands/exportreport.html">exportreport readme</a> subcommand you can generate a set of README files.
+If this command is applied on a workspace, a <code>readme.md</code> file will be generated into the workspace folder as well as one
+<code>readme.md</code> file for each project. If a project builds multiple bundles, additional <code>readme.&lt;bsn&gt;.md</code> will be generated for each
+bundle built.</p>
+<h4 id="manual-edition">Manual edition</h4>
+<p>In case you want to customize the README files with your own text, you have to create a <code>readme.twig</code> file next to the <code>readme.md</code> file that you wish to customize.</p>
+<p>The simplest way to proceed is to copy-paste the following snippet into this file:</p>
+<div class="highlight"><pre><span></span><code>Write your own markdown text here.
+</code></pre></div>
+
+<p>Inside an <code>embed</code> tag one can only specify block tags which will override the parent template included. 
+Here, the parent template is the readme template file built-in into Bnd available at the <code>default:readme.twig</code> URL (see the file <a href="https://raw.githubusercontent.com/bndtools/bnd/master/biz.aQute.bnd.reporter/src/biz/aQute/bnd/reporter/plugins/transformer/templates/readme.twig">here</a>). This file defines a set of blocks that you can override with your own text. 
+In the above snippet, we override the <code>beforeTitle</code> block. You can add multiple blocks depending on where you want to insert your text, here is a list of available blocks:</p>
+<ul>
+<li><code>beforeTitle</code>, <code>afterTitle</code></li>
+<li><code>beforeOverview</code>, <code>afterOverview</code></li>
+<li><code>beforeLinks</code>, <code>afterLinks</code></li>
+<li><code>beforeCoordinates</code>, <code>afterCoordinates</code></li>
+<li><code>beforeArtifacts</code>, <code>afterArtifacts</code></li>
+<li><code>beforeCodeUsage</code>, <code>afterCodeUsage</code></li>
+<li><code>beforeComponents</code>, <code>afterComponents</code></li>
+<li><code>beforeDevelopers</code>, <code>afterDevelopers</code></li>
+<li><code>beforeLicenses</code>, <code>afterLicenses</code></li>
+<li><code>beforeCopyright</code>, <code>afterCopyright</code></li>
+<li><code>beforeVendor</code>, <code>afterVendor</code></li>
+</ul>
+<p><code>before*</code> blocks are shown between the title of a section and the generated content. <code>after*</code> blocks are shown at the end of a section, after the generated content. </p>
+<h4 id="parameters">Parameters</h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>iconUrl</code></td>
+<td>URL to an icon that will be shown in front of the title</td>
+<td>""</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

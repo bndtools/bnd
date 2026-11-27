@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>permissions (';' ( 'packages' | 'admin' | 'permissions' ) )+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>permissions (';' ( 'packages' | 'admin' | 'permissions' ) )+</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>permissions</code> macro generates OSGi permission declarations in the format required for the OSGi permissions resource (OSGI-INF/permissions.perm). It can generate package permissions and admin permissions.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${permissions[;&lt;type&gt;...]}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>type</code> (optional) - One or more permission types:</li>
+<li><code>packages</code> - Generate PackagePermission for imports and exports</li>
+<li><code>admin</code> - Generate AdminPermission</li>
+<li><code>all</code> - Generate all permission types</li>
+<li><code>permissions</code> - No-op marker</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Generates permission declarations in OSGi format</li>
+<li><strong>packages</strong>: Creates import and export PackagePermissions for all bundle packages (except java.* packages)</li>
+<li><strong>admin</strong>: Adds AdminPermission</li>
+<li><strong>all</strong>: Equivalent to both packages and admin</li>
+<li>Returns formatted permission strings</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Generate package permissions:</p>
+<div class="highlight"><pre><span></span><code>${permissions;packages}
+# Returns:
+# (org.osgi.framework.PackagePermission &quot;com.example.api&quot; &quot;import&quot;)
+# (org.osgi.framework.PackagePermission &quot;com.example.impl&quot; &quot;export&quot;)
+</code></pre></div>
+
+<p>Generate admin permissions:</p>
+<div class="highlight"><pre><span></span><code>${permissions;admin}
+# Returns: (org.osgi.framework.AdminPermission)
+</code></pre></div>
+
+<p>Generate all permissions:</p>
+<div class="highlight"><pre><span></span><code>${permissions;all}
+</code></pre></div>
+
+<p>Use in permissions file:</p>
+<div class="highlight"><pre><span></span><code># In OSGI-INF/permissions.perm
+${permissions;packages}
+${permissions;admin}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Generating OSGi permissions resource files</li>
+<li>Security policy configuration</li>
+<li>Java security manager setup</li>
+<li>Signed bundle permissions</li>
+<li>OSGi security specifications</li>
+<li>Fine-grained access control</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Follows OSGi permissions specification format</li>
+<li>PackagePermissions exclude java.* packages</li>
+<li>Use in OSGI-INF/permissions.perm resource</li>
+<li>Part of OSGi security framework</li>
+<li>Useful for signed bundles requiring explicit permissions</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

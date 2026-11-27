@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JAR Viewer</title>
+<link rel="stylesheet" href="../../help.css">
+</head>
+<body>
+<h1>JAR Viewer</h1>
+<p>Double clicking a JAR or ZIP file wil open the Bndtools JAR Editor. It will display the JAR file's content with the following tabs:</p>
+<ul>
+<li><a href="#content">Content</a> – The content of the selected JAR</li>
+<li><a href="#print">Print</a> – Summary of OSGi information</li>
+</ul>
+<p>If the JAR file changes on the file system, it will be automatically updated.</p>
+<h2 id="content">Content</h2>
+<p>In the content tab you can double click entries, this will open a new editor on that file. You can also drag files from the list on the file system or the Eclipse lists that accepts files.</p>
+<p><img src="https://bndtools.org/images/jar-editor-content.png" style="max-width:100%" class="view"></p>
+<p>You can view the files as text or as binary. The JAR Editor guess what the preferred view is. In the text display, a special character set can be selected.</p>
+<p><img src="https://bndtools.org/images/jar-editor-hex.png" style="max-width:100%" class="view"></p>
+<h2 id="print">Print</h2>
+<p><img src="https://bndtools.org/images/jar-editor-print.png" style="max-width:100%" class="view"></p>
+<h2 id="find">Find</h2>
+<p>In the print page, if you use <code>cmd/ctrl+f</code>, this will open a "find..." text box in the header. Once the "find" text box is open, you can close it with the "close" button on right hand side.</p>
+<p><img alt="Find feature" src="https://user-images.githubusercontent.com/595221/80650064-cb30dc00-8a38-11ea-98f2-356568bdc19d.png" /></p>
+<p>Once you type in some search text, it will highlight all of the matches in the whole page, and for the first occurrence it will set the selection on it as well as modify the highlight to signal its the "current" highlight.</p>
+<p><img alt="Search highlights" src="https://user-images.githubusercontent.com/595221/80650424-9a04db80-8a39-11ea-95b1-beca5ed5937a.png" /></p>
+<p>You can advance to next and previous match using arrows and the match/totalCount is displayed. Also you can use the global "next" and "previous" shortcuts as well. <code>cmd/ctrl+.</code>, <code>shift+cmd/ctrl+.</code> respectively.</p>
+<p><img alt="Navigation arrows" src="https://user-images.githubusercontent.com/595221/80650466-a852f780-8a39-11ea-815d-a50c01e0ddb0.png" /></p>
+<p>If the next occurrence is out of the current viewport of the text area, it will scroll the text view to show the new highlight.</p>
+</body>
+</html>

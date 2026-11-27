@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>select ';' LIST ';' REGEX</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>select ';' LIST ';' REGEX</h1>
+<h2 id="summary">Summary</h2>
+<p>Filter a list to include only elements that match a regular expression. This macro is an alias for the <a href="filter.html">filter</a> macro.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${select;&lt;list&gt;;&lt;regex&gt;}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><strong>list</strong>: Comma-separated list of elements to filter</li>
+<li><strong>regex</strong>: Regular expression pattern to match against</li>
+</ul>
+<h2 id="behavior">Behavior</h2>
+<p>Returns a new list containing only the elements from the input list that match the specified regular expression pattern.</p>
+<p>This macro is functionally identical to <a href="filter.html">filter</a>.</p>
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code># Select items starting with &quot;com.&quot;
+packages = com.example.api, org.sample.impl, com.example.util
+${select;${packages};com\..*}
+# Returns: com.example.api,com.example.util
+
+# Select files with specific extension
+files = foo.jar, bar.txt, baz.jar
+${select;${files};.*\.jar}
+# Returns: foo.jar,baz.jar
+
+# Select numbered items
+items = item1, item2, other, item3
+${select;${items};item\d+}
+# Returns: item1,item2,item3
+
+# Select packages matching pattern
+-conditionalpackage: ${select;${packages};com\.company\.internal\..*}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ol>
+<li><strong>Package Filtering</strong>: Select packages matching a naming pattern</li>
+<li><strong>File Selection</strong>: Filter file lists by extension or pattern</li>
+<li><strong>Dependency Filtering</strong>: Select specific dependencies from a larger list</li>
+<li><strong>Pattern Matching</strong>: Include only items matching a specific format</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>This is an alias for the <a href="filter.html">filter</a> macro - they behave identically</li>
+<li>Uses Java regular expression syntax</li>
+<li>Elements are matched in their entirety (use <code>.*</code> for partial matching)</li>
+<li>The opposite operation is provided by <a href="reject.html">reject</a> or <a href="filterout.html">filterout</a></li>
+</ul>
+<h2 id="related-macros">Related Macros</h2>
+<ul>
+<li><a href="filter.html">filter</a> - Identical functionality (primary name)</li>
+<li><a href="reject.html">reject</a> / <a href="filterout.html">filterout</a> - Exclude elements matching regex</li>
+<li><a href="removeall.html">removeall</a> - Remove specific elements from a list</li>
+<li><a href="retainall.html">retainall</a> - Keep only elements present in another list</li>
+</ul>
+<hr />
+<p>TODO Needs review - AI Generated content</p>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

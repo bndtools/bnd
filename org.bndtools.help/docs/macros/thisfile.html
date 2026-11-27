@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>thisfile</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>thisfile</h1>
+<h2 id="summary">Summary</h2>
+<p>The <code>thisfile</code> macro returns the absolute path to the properties file being processed. This provides the full path to the current <code>.bnd</code>, <code>.bndrun</code>, or other bnd configuration file.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="highlight"><pre><span></span><code>${thisfile}
+</code></pre></div>
+
+<h2 id="parameters">Parameters</h2>
+<p>None - this macro takes no parameters.</p>
+<h2 id="behavior">Behavior</h2>
+<ul>
+<li>Returns the absolute path to the current properties file</li>
+<li>Generates an error if no properties file is associated with the processor</li>
+<li>The path uses OS-specific separators</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<p>Get current file path:</p>
+<div class="highlight"><pre><span></span><code>Current-Config: ${thisfile}
+# Returns: &quot;/path/to/project/bnd.bnd&quot;
+</code></pre></div>
+
+<p>Use in logging:</p>
+<div class="highlight"><pre><span></span><code>Processing: ${thisfile}
+</code></pre></div>
+
+<p>Reference in documentation:</p>
+<div class="highlight"><pre><span></span><code># Configuration defined in: ${thisfile}
+</code></pre></div>
+
+<p>Conditional based on file:</p>
+<div class="highlight"><pre><span></span><code>${if;${endswith;${thisfile};test.bnd};test-mode;normal-mode}
+</code></pre></div>
+
+<h2 id="use-cases">Use Cases</h2>
+<ul>
+<li>Debugging configuration files</li>
+<li>Documenting which file defined settings</li>
+<li>Logging and diagnostics</li>
+<li>File-specific conditional logic</li>
+<li>Build metadata</li>
+<li>Tracing configuration sources</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Returns absolute path, not relative</li>
+<li>Generates error if called without a properties file</li>
+<li>Path includes the filename</li>
+<li>See also: <code>${basedir}</code> for the project directory</li>
+<li>See also: <code>${propertiesname}</code> for just the filename</li>
+<li>See also: <code>${propertiesdir}</code> for just the directory</li>
+</ul>
+<hr />
+<p><strong>See test cases in <a href="https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib.tests/test/test/MacroTestsForDocsExamples.java">MacroTestsForDocsExamples.java</a></strong></p>
+</body>
+</html>

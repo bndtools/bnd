@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Generating JARs</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>Generating JARs</h1>
+<p>This is about generating OSGi JARs - one of the main tasks of bnd.</p>
+<p>This is a simple example of <a href="/chapters/390-wrapping.html">wrapping a jar with bnd</a> (wrapping means: taking a non-OSGi jar and use <code>bnd</code> to add OSGi meta data to its MANIFEST.MF to get a proper OSGi <code>.jar</code>). </p>
+<p>The basic idea is to create a recipe (a <code>.bnd</code> file) that collects the different resources in the right way to create the new output <code>.jar</code> including the OSGi meta data in <code>MANIFEST.MF</code>.</p>
+<p>For example, you want to wrap the WebSocket server from https://github.com/TooTallNate/Java-WebSocket/releases/tag/Java-WebSocket-1.3.4. Download the <a href="https://github.com/TooTallNate/Java-WebSocket/releases/download/Java-WebSocket-1.3.4/Java-WebSocket-1.3.4.jar">binary</a> (Java-WebSocket-1.3.4.jar) and the <a href="https://github.com/TooTallNate/Java-WebSocket/releases/download/Java-WebSocket-1.3.4/Java-WebSocket-1.3.4-sources.jar">sources</a> in Java-WebSocket-1.3.4-sources.jar. </p>
+<h2 id="project">Project</h2>
+<p>Once you have these files, create a folder e.g. <code>mkdir wrappers</code> and add <code>bnd.bnd</code> file in the project to create the <code>org.websocket.jar</code> bundle.</p>
+<div class="highlight"><pre><span></span><code># bnd.bnd
+# Wrapped version of Github project TooTallNate/Java-WebSocket
+Bundle-SymbolicName: org.websocket
+Bundle-DocURL: https://github.com/TooTallNate/Java-WebSocket
+Bundle-License: https://github.com/TooTallNate/Java-WebSocket/blob/8ef67b46ecc927d5521849dcc2d85d10f9789c20/LICENSE
+Bundle-Description: This repository contains a barebones \
+ WebSocket server and client implementation written \
+ in 100% Java. The underlying classes are implemented \
+ using the Java ServerSocketChannel and SocketChannel \
+ classes, which allows for a non-blocking event-driven model \
+ (similar to the WebSocket API for web browsers). \
+ Implemented WebSocket protocol versions are: Hixie 75, \
+ Hixie 76, Hybi 10, and Hybi 17
+
+# version taken from the downloaded file above
+Bundle-Version: 1.3.4
+
+-includeresource: @Java-WebSocket-1.3.4.jar, OSGI-OPT/src=@Java-WebSocket-1.3.4-sources.jar
+-exportcontents: org.java_websocket
+</code></pre></div>
+
+<p>Either use the <a href="https://bndtools.org/">bndtools Eclipse plugin</a> or the <a href="/chapters/400-commands.html">bnd CLI</a> to process the <code>bnd.bnd</code> file and let bnd create the .jar. In case of bnd CLI the command is:</p>
+<div class="highlight"><pre><span></span><code>bnd bnd.bnd
+</code></pre></div>
+
+<h2 id="manifest">Manifest</h2>
+<p>Applying this recipe above gives the following <code>META-INF/MANIFEST.MF</code> in a JAR named <code>/generated/org.websocket.jar</code>:</p>
+<div class="highlight"><pre><span></span><code>Manifest-Version: 1.0
+Bnd-LastModified: 1338190175969
+Bundle-Description: This repository contains a barebones WebSocket serve
+ r and client implementation written in 100% Java. The underlying classe
+ s are implemented using the Java ServerSocketChannel and SocketChannel 
+ classes, which allows for a non-blocking event-driven model (similar to
+ the WebSocket API for web browsers). Implemented WebSocket protocol ve
+ rsions are: Hixie 75, Hixie 76, Hybi 10, and Hybi 17
+Bundle-DocURL: https://github.com/TooTallNate/Java-WebSocket
+Bundle-License: https://github.com/TooTallNate/Java-WebSocket/blob/8ef67
+ b46ecc927d5521849dcc2d85d10f9789c20/LICENSE
+Bundle-ManifestVersion: 2
+Bundle-Name: org.websocket
+Bundle-SymbolicName: org.websocket
+Bundle-Version: 1.3.4
+Export-Package: org.java_websocket;version=&quot;1.3.4&quot;;uses:=&quot;javax.net.ss
+l&quot;
+Import-Package: javax.net.ssl
+Private-Package: org.java_websocket.client,org.java_websocket.drafts,o
+rg.java_websocket.exceptions,org.java_websocket.framing,org.java_webs
+ocket.handshake,org.java_websocket.server,org.java_websocket.util
+Require-Capability: osgi.ee;filter:=&quot;(&amp;(osgi.ee=JavaSE)(version=1.5))&quot;
+</code></pre></div>
+
+<p>You notice that the <code>.bnd</code> file and the <code>MANIFEST</code> look similar but the bnd instructions caused bnd to generate headers like <code>Export-Package</code> and <code>Import-Package</code>. bnd did that by analysing the <code>.class</code> files inside <code>Java-WebSocket-1.3.4.jar</code> (e.g. by looking at all the <code>import</code> statements classes, methods, method parameters and return types).</p>
+<p>Note: The documentation headers like <code>Bundle-Description</code> are optional but very important, just spent the minute to document them since you'll be grateful later.</p>
+<p>If the target project does not have a version, makeup a version and maintain it. Notice that in general the recipe will only be used once for each version, it is normally not used in continuous integration builds. However, you normally use it to convert the next version of the project. Crisp versioning is important.</p>
+<p>The <a href="/instructions/includeresource.html"><code>-includeresource</code></a> statement unrolls the jars we downloaded in the root of the JAR and in <code>OSGI-OPT</code>. Since the source code is in the <code>src</code> directory in the  <code>WebSocket-src.zip</code> file, we put it in the new JAR under <code>OSGI-OPT/src</code>. This convention is supported by all IDEs to give you direct access to the bundle's source code. Since the binary and the source are kept together, you always have the correct source code available, and usually automatically. It is so convenient that once you're used to this it is hard to imagine a life without source code.</p>
+<p>The binaries and sources are not in the final jar but bnd does not yet know what needs to be exported. This can be indicated with the <a href="/instructions/exportcontents.html"><code>-exportcontents</code></a> instruction. It has the same syntax as <a href="/heads/export_package.html"><code>Export-Package</code></a> but does not copy from the classpath, it only applies the instruction to the content of the final JAR.</p>
+<h2 id="osgi-header-attribute-and-directive-ordering">OSGi Header Attribute and Directive Ordering</h2>
+<p>When bnd processes OSGi manifest headers, it automatically ensures consistent ordering of attributes and directives within header clauses. This ordering is applied to OSGi syntax headers such as <code>Export-Package</code>, <code>Import-Package</code>, <code>Require-Capability</code>, <code>Provide-Capability</code>, and others.</p>
+<h3 id="ordering-rules">Ordering Rules</h3>
+<p>Bnd applies the following ordering rules to attributes and directives within OSGi header clauses:</p>
+<ol>
+<li><strong>Attributes come before directives</strong> - All attributes (keys without a trailing colon) are placed before directives (keys with a trailing colon)</li>
+<li><strong>Alphabetical sorting within groups</strong> - Within the attribute group and directive group, keys are sorted alphabetically (case-insensitive)</li>
+</ol>
+<h3 id="example">Example</h3>
+<p>Given an input header like:</p>
+<div class="highlight"><pre><span></span><code>Export-Package: com.example.api;uses:=&quot;com.example.internal&quot;;version=1.0.0;mandatory:=&quot;version&quot;;provider=acme
+</code></pre></div>
+
+<p>Bnd will reorder it to:</p>
+<div class="highlight"><pre><span></span><code>Export-Package: com.example.api;provider=acme;version=1.0.0;mandatory:=&quot;version&quot;;uses:=&quot;com.example.internal&quot;
+</code></pre></div>
+
+<p>Notice how:
+- Attributes (<code>provider</code>, <code>version</code>) come first, sorted alphabetically
+- Directives (<code>mandatory:</code>, <code>uses:</code>) come second, sorted alphabetically</p>
+<h3 id="benefits">Benefits</h3>
+<p>This consistent ordering provides several benefits:</p>
+<ul>
+<li><strong>Reproducible builds</strong> - The same input always produces the same output, regardless of the original order (see also <a href="/instructions/reproducible.html">-reproducible</a>)</li>
+<li><strong>Easier comparison</strong> - Manifest files can be compared more easily when attributes and directives are consistently ordered</li>
+<li><strong>Better readability</strong> - Consistent ordering makes manifest headers easier to read and understand</li>
+</ul>
+<h3 id="affected-headers">Affected Headers</h3>
+<p>This ordering is applied to all headers defined in <code>Constants.OSGI_SYNTAX_HEADERS</code>, which includes:
+- <code>Export-Package</code>
+- <code>Import-Package</code>
+- <code>Require-Capability</code>
+- <code>Provide-Capability</code>
+- <code>Bundle-SymbolicName</code>
+- <code>Fragment-Host</code>
+- And other OSGi-defined headers that use the clause syntax</p>
+<h2 id="extra-entries-on-the-classpath">Extra entries on the Classpath</h2>
+<p>One of the great features of bnd is to use export version from other versions to generate the import ranges. This feature requires that the other JARs are on the classpath. In bndtools you can use the -buildpath. However, you always add entries on the class path per bnd descriptor with the <a href="/instructions/classpath.html">-classpath</a> instruction:</p>
+<div class="highlight"><pre><span></span><code>-classpath: dependency.jar, other.jar
+</code></pre></div>
+
+<h1 id="wrapper-project">Wrapper project</h1>
+<p>The easiest way to build these wrappers is to create a project in bndtools called <code>wrappers</code> and create a main <code>bnd.bnd</code> with the following content:</p>
+<div class="highlight"><pre><span></span><code>-sub: *.bnd
+</code></pre></div>
+
+<p>The create a <code>bnd.bnd</code> descriptor for each wrapper you need to build. e.g. </p>
+<ul>
+<li><code>websocket.bnd</code></li>
+<li><code>someotherlib.bnd</code></li>
+</ul>
+<p>When the main <code>bnd.bnd</code> is processed bnd creates a jar for each sub- .bnd file.
+E.g. </p>
+<div class="highlight"><pre><span></span><code>bnd bnd.bnd
+</code></pre></div>
+
+<p>creates a <code>/generated/websocket.jar</code> and <code>/generated/someotherlib.jar</code>.</p>
+<h1 id="all-headers">All headers</h1>
+<p>All headers are listed on the <a href="/chapters/800-headers.html">Headers index</a></p>
+</body>
+</html>

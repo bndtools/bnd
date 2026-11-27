@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>template ';' NAME [ ';' template ]+</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>template ';' NAME [ ';' template ]+</h1>
+<p>The <code>template</code> macro is intended to make it very simple to generate new information based on a <em>Parameters</em>. Parameters 
+are the Bnd workhorse to store information. The macro takes the following arguments:</p>
+<div class="highlight"><pre><span></span><code>macro name  The name of the macro (not the value)
+template+   the templates (these are  joined with the &#39;;&#39; as separator)
+</code></pre></div>
+
+<p>The template is expanded for each entry of the Parameters. They key can be referred by <code>${@}</code> and the attributes can be
+referred by <code>${@&lt;name&gt;}</code>, where the name is the name of the attribute. All entries are then joined with a comma (<code>,</code>) as 
+separator. </p>
+<p>For example, the following example shows how to extract and attribute as a list:</p>
+<div class="highlight"><pre><span></span><code>bnd shell
+&gt; parameters = key;attr=1, key;attr=&quot;2&quot;
+&gt; ${template;parameters;${@attr}}
+1,2
+</code></pre></div>
+
+<p>The <code>template</code> macro takes the <code>NAME</code> of the macro that contains the value. I.e. it does not take the expanded value as 
+argument.  The reason  is that the referred macro gets <em>merged</em> and <em>decorated</em>. Merge takes all properties that start with the given name. </p>
+<div class="highlight"><pre><span></span><code>&gt; parameters = key;attr=1, key;attr=&quot;2&quot;
+&gt; parameters.extra = KEY;attr=3, KEY;attr=&quot;4&quot;
+&gt; ${template;parameters;${@attr}}
+1,2,3,4
+</code></pre></div>
+
+<p>Decorate means that the property with the same name but with a <code>+</code> at the end will be matched with the value. In this property the
+key is a <em>glob</em>. It is matched against the key from the original merged properties. Any matching properties get the attributes
+from the decorator.</p>
+<div class="highlight"><pre><span></span><code>&gt; parameters = a;attr=1, b;attr=&quot;2&quot;
+&gt; parameters.extra = c;attr=3, d;attr=&quot;4&quot;
+&gt; parameters+ = (c|d);attr=X
+&gt; ${template;parameters;${@attr}}
+1,2,X,X
+</code></pre></div>
+
+<p>The macro accepts any number of arguments after the macro name. These values are joined with a semi-colon as separator.
+The reason is that then the <code>;</code> in the templates do not have to be escaped:</p>
+<div class="highlight"><pre><span></span><code>bnd shell
+&gt; parameters = a;attr=1, b;attr=&quot;2&quot;
+&gt; ${template;parameters;${@};key=${@};${@}=${@attr}}
+a;a=1,b;b=2
+</code></pre></div>
+</body>
+</html>

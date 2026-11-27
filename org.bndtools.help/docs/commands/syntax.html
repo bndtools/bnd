@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>syntax</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>syntax</h1>
+<h3 id="synopsis">Synopsis:</h3>
+<div class="highlight"><pre><span></span><code>   syntax [options]  &lt;header|instruction&gt; ...
+</code></pre></div>
+
+<h4 id="options">Options:</h4>
+<ul>
+<li><code>[ -w --width &lt;int&gt; ]</code> The width of the printout</li>
+</ul>
+<!-- Manual content from: ext/syntax.md -->
+<h2 id="examples">Examples</h2>
+<div class="highlight"><pre><span></span><code>biz.aQute.bnd (master)$ bnd syntax Bundle-Version
+
+[Bundle-Version]
+    The Bundle-Version header specifies the version of this bundle.
+
+    Pattern                               : [0-9]{1,9}(\.[0-9]{1,9}(\.[0-9]{1,9}(\.[0-9A-Za-z_-]+)?)?)?
+    Example                               : Bundle-Version: 1.23.4.build200903221000
+</code></pre></div>
+
+<p><br /><br /></p>
+</body>
+</html>

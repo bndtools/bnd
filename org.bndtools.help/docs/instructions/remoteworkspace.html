@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-remoteworkspace (true|false)</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-remoteworkspace (true|false)</h1>
+<ul>
+<li>
+<p>Example: <code>-remoteworkspace: true</code></p>
+</li>
+<li>
+<p>Values: <code>true,false</code></p>
+</li>
+<li>
+<p>Pattern: <code>true|false|TRUE|FALSE</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/remoteworkspace.md -->
+<p>Launchpad is a library that enables testing in local JUnit settings. Launchpad needs access to the enclosing 
+bnd workspace. However, this workspace runs in another process then the test code. Launchpad will therefore
+attempt to a <em>workspace remote server</em>. </p>
+<p>For security reasons, this remote workspace server is not enabled by default. It requires:</p>
+<div class="highlight"><pre><span></span><code>-remoteworkspace        true
+</code></pre></div>
+
+<p>Remote Workspace servers can be nested. That is, you can run Eclipse and then Gradle on the same workspace.
+Launchpad will use the latest initialized remote workspace.</p>
+<h2 id="details">Details</h2>
+<p>If you enable the remote workspace, its socket's port will be registered in the <code>/cnf/cache/remotews</code> directory.</p>
+<p>The remote workspace server can only be accessed from the local machine on 127.0.0.1 to prevent outside 
+attacks.</p>
+<p><br /><br /></p>
+</body>
+</html>

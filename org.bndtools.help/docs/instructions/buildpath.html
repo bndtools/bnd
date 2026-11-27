@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-buildpath PATH</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>-buildpath PATH</h1>
+<ul>
+<li>
+<p>Example: <code>-buildpath=osgi;version=4.1</code></p>
+</li>
+<li>
+<p>Values: <code>${repo;bsns}</code></p>
+</li>
+<li>
+<p>Pattern: <code>[-\w]+(:?\.[-\w]+)*</code></p>
+</li>
+</ul>
+<h3 id="directives">Directives</h3>
+<ul>
+<li><code>version</code> Specifies the range in the repository, project or file.</li>
+<li>
+<p>Example: <code>version=project</code></p>
+</li>
+<li>
+<p>Values: <code>project,type</code></p>
+</li>
+<li>
+<p>Pattern: <code>project|type|((\(|\[)\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?,\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?(\]|\)))|\d{1,9}(\.\d{1,9}(\.\d{1,9}(\.[-\w]+)?)?)?</code></p>
+</li>
+</ul>
+<!-- Manual content from: ext/buildpath.md -->
+<p>The <code>-buildpath</code> instruction is the main mechanism to add build-time dependencies to a project. A dependency is either another project in the workspace, or a bundle in a repository. The <code>-buildpath</code> is only used during compile and build time; it is never used to run projects.  Because <code>-buildpath</code> dependencies are only used compile time it's recommended to add bundles containing only APIs; you don't need bundles containing implementations.</p>
+<h2 id="examples">Examples</h2>
+<p>An example of the <code>-buildpath</code> could be the following, where three dependencies are defined:</p>
+<div class="highlight"><pre><span></span><code>-buildpath: \
+ some.other.workspace.project;version=project,\
+ osgi.core;version=4.3.1,\
+ osgi.cmpn;version=4.3.1
+</code></pre></div>
+
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="testpath.html">-testpath</a> for setting the test path.</li>
+<li><a href="maven-dependencies.html">-maven-dependencies</a> for how to configure maven dependency information.</li>
+</ul>
+<p><br /><br /></p>
+</body>
+</html>

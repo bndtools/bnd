@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>.bnd</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<h1>.bnd</h1>
+<ul>
+<li>Pattern: <code>.*</code></li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>build-deps</code> Stores build dependencies of bnd from gradle, ant, etc. In general, bnd will be among this. The files in this directory must be fully versioned</li>
+<li>
+<p>Example: <code>~/.bnd/biz.aQute.bnd-2.2.0.jar</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>settings.json</code> Contains the settings used by bnd in json format. These settings are maintained by bnd command line (bnd help settings). These settings can be used through macros and can provide passwords, user ids, and platform specific settings. Names starting witha dot (.) are considered protected</p>
+</li>
+<li>
+<p>Example: <code>{"id":"30...001","map":{".github.secret":"xxxxxx","github.user":"minime","email":"Peter.Kriens@aQute.biz"},"secret":"308...CC56"}</code></p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p>Options: </p>
+<ul>
+<li><code>email</code> The user's email address</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>id</code> The public key for this machine</p>
+</li>
+<li>
+<p>Pattern: <code>.*</code></p>
+</li>
+<li>
+<p><code>secret</code> The private key for this machine</p>
+</li>
+<li>Pattern: <code>.*</code></li>
+</ul>
+</li>
+<li>
+<p><code>caches/shas</code> Directory with sha artifacts. The sha is the name of the directory, it contains the artifact with a normal bsn-version.jar name</p>
+</li>
+<li>Pattern: <code>.*</code></li>
+</ul>
+</body>
+</html>
